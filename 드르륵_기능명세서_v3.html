@@ -9018,17 +9018,29 @@ const selBubble = document.getElementById('sel-bubble');
 function hideBubble() { selBubble.style.display = 'none'; _selRange = null; }
 
 document.addEventListener('selectionchange', () => {
-  if (editMode) { hideBubble(); return; }
   const sel = window.getSelection();
   if (!sel || sel.isCollapsed || sel.toString().trim().length < 2) {
     hideBubble(); return;
   }
+  // In edit mode only save range for toolbar ops (don't show bubble unless selecting)
+  if (editMode) {
+    const range = sel.getRangeAt(0);
+    _selRange = range.cloneRange();
+    // Show bubble in edit mode for link/image owner tools
+    if (!window._isOwner || !window._isOwner()) { hideBubble(); return; }
+  }
   const range = sel.getRangeAt(0);
   _selRange = range.cloneRange();
   const rect = range.getBoundingClientRect();
+  if (rect.width === 0 && rect.height === 0) { hideBubble(); return; }
+  // Adjust owner-only buttons visibility
+  const isOwner = window._isOwner && window._isOwner();
+  document.querySelectorAll('.sel-owner-only').forEach(el => {
+    el.style.display = isOwner ? '' : 'none';
+  });
   selBubble.style.display = 'flex';
-  selBubble.style.left = Math.max(4, rect.left + rect.width/2 - 70) + 'px';
-  selBubble.style.top  = (rect.top + window.scrollY - 46) + 'px';
+  selBubble.style.left = Math.max(4, rect.left + rect.width/2 - 80) + 'px';
+  selBubble.style.top  = (rect.top + window.scrollY - 52) + 'px';
 });
 
 document.addEventListener('mousedown', e => {
