@@ -9077,11 +9077,22 @@ function renderBookmarks() {
     return;
   }
   pane.innerHTML = arr.map(b => `
-    <div class="bkm-card">
+    <div class="bkm-card" onclick="scrollToBkm(${b.id})" title="클릭하면 해당 위치로 이동" style="cursor:pointer;">
       <div class="bkm-title">🔖 ${b.title}</div>
       <div class="bkm-quote">"${b.quote.slice(0,80)}${b.quote.length>80?'…':''}"</div>
-      <div class="bkm-meta"><span>${b.ts}</span><button class="bkm-del" onclick="delBkm(${b.id})">삭제</button></div>
+      <div class="bkm-meta"><span>${b.ts}</span><button class="bkm-del" onclick="event.stopPropagation();delBkm(${b.id})">삭제</button></div>
     </div>`).join('');
+}
+
+function scrollToBkm(id) {
+  const mark = document.querySelector('.bkm-mark[data-bid="' + id + '"]');
+  if (!mark) { showSaveToast('⚠️ 북마크 위치를 문서에서 찾을 수 없습니다', '#ef4444'); return; }
+  mark.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  // Flash highlight to show the target
+  mark.style.outline = '2.5px solid #6366f1';
+  mark.style.outlineOffset = '3px';
+  mark.style.borderRadius = '3px';
+  setTimeout(() => { mark.style.outline = ''; mark.style.outlineOffset = ''; mark.style.borderRadius = ''; }, 1800);
 }
 
 function delBkm(id) {
