@@ -5171,6 +5171,105 @@ function toggleExtra(role) {
 </tr>
 </tbody></table></div>
 </section>
+<section class="doc-section" id="nav-16b-담보-적합도-산정-시스템">
+<h2 class="sec-h1"><span style="color:#FFC11F;font-size:16pt">16-B. 담보 적합도 산정 시스템</span></h2>
+<p class="sec-body">담보물의 대출 적합성을 수치화하는 규칙 기반 시스템이다. 외부 노출 용어는 <strong>적합도</strong>를 사용하며, LGD(Loss Given Default)는 내부 리스크 계산에만 사용하고 외부 UI에 노출하지 않는다. "건전성" 용어도 외부 노출에서 제거하고 "적합도"로 대체한다.</p>
+<h3 class="sec-h2"><span style="color:#FFC11F">16-B.1 적합도 산정 기준 (규칙 기반 MVP)</span></h3>
+<div class="tbl-wrap"><table class="tbl-spec">
+<tbody><tr>
+<th style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">항목</span></div></th>
+<td style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">배점</span></div></td>
+<td style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">산정 기준</span></div></td>
+</tr>
+<tr>
+<td style="background:#F0F4FF" class=""><div><span style="font-weight:600">자산군 환금성</span></div></td>
+<td style="background:#F0F4FF" class=""><div>40점</div></td>
+<td style="background:#F0F4FF" class=""><div>자산군별 유동성·환금 용이성 기준 점수 룩업. 금/귀금속/명품 시계 40점 → IT 기기 30점 → 명품 가방 25점 → 기타 15점 (예시)</div></td>
+</tr>
+<tr>
+<td class=""><div><span style="font-weight:600">컨디션 등급</span></div></td>
+<td class=""><div>25점</div></td>
+<td class=""><div>S(새제품급) = 25점 / A(상급) = 20점 / B(중급) = 12점 / C(하급) = 5점</div></td>
+</tr>
+<tr>
+<td style="background:#F0F4FF" class=""><div><span style="font-weight:600">정품 증빙 여부</span></div></td>
+<td style="background:#F0F4FF" class=""><div>20점</div></td>
+<td style="background:#F0F4FF" class=""><div>정품 증빙 포함 시 +20점 / 없으면 0점</div></td>
+</tr>
+<tr>
+<td class=""><div><span style="font-weight:600">모델 시세 안정성</span></div></td>
+<td class=""><div>15점</div></td>
+<td class=""><div>시세 변동성 낮음 = 15점 / 중간 = 10점 / 높음 = 5점 (룩업테이블 기준)</div></td>
+</tr>
+<tr>
+<td style="background:#F0F4FF" class=""><div><span style="font-weight:600">총점</span></div></td>
+<td style="background:#F0F4FF" class=""><div>100점</div></td>
+<td style="background:#F0F4FF" class=""><div>4개 항목 합산</div></td>
+</tr>
+</tbody></table></div>
+<h3 class="sec-h2"><span style="color:#FFC11F">16-B.2 적합도 등급 기준</span></h3>
+<div class="tbl-wrap"><table class="tbl-spec">
+<tbody><tr>
+<th style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">점수</span></div></th>
+<td style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">적합도 등급</span></div></td>
+<td style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">UI 표시</span></div></td>
+</tr>
+<tr>
+<td style="background:#F0F4FF" class=""><div>80점 이상</div></td>
+<td style="background:#F0F4FF" class=""><div><span style="font-weight:600;color:#16a34a">높음</span></div></td>
+<td style="background:#F0F4FF" class=""><div>녹색 배지</div></td>
+</tr>
+<tr>
+<td class=""><div>60~79점</div></td>
+<td class=""><div><span style="font-weight:600;color:#d97706">보통</span></div></td>
+<td class=""><div>황색 배지</div></td>
+</tr>
+<tr>
+<td style="background:#F0F4FF" class=""><div>59점 이하</div></td>
+<td style="background:#F0F4FF" class=""><div><span style="font-weight:600;color:#dc2626">주의</span></div></td>
+<td style="background:#F0F4FF" class=""><div>적색 배지</div></td>
+</tr>
+</tbody></table></div>
+<h3 class="sec-h2"><span style="color:#FFC11F">16-B.3 UI 노출 기준</span></h3>
+<div class="tbl-wrap"><table class="tbl-spec">
+<tbody><tr>
+<th style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">대상</span></div></th>
+<td style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">노출 항목</span></div></td>
+</tr>
+<tr>
+<td style="background:#F0F4FF" class=""><div><span style="font-weight:600">유저</span></div></td>
+<td style="background:#F0F4FF" class=""><div>권장 최대 대출금 / 예상 금리 범위 / 담보 적합도 (높음·보통·주의) / 담보비율(LTV)</div></td>
+</tr>
+<tr>
+<td class=""><div><span style="font-weight:600">바이어</span></div></td>
+<td class=""><div>권장 입찰 상한 / 담보 적합도 / 담보비율(LTV)</div></td>
+</tr>
+<tr>
+<td style="background:#F0F4FF" class=""><div><span style="font-weight:600">내부 (미노출)</span></div></td>
+<td style="background:#F0F4FF" class=""><div>LGD (Loss Given Default) — 내부 리스크 계산 전용. 외부 UI 미노출.</div></td>
+</tr>
+</tbody></table></div>
+<h3 class="sec-h2"><span style="color:#FFC11F">16-B.4 예상 금리 범위 로직</span></h3>
+<p class="sec-body">규칙 기반 룩업테이블로 MVP 구현. 적합도 등급 × 담보비율 조합으로 예상 금리 범위를 산출한다.</p>
+<div class="tbl-wrap"><table class="tbl-spec">
+<tbody><tr>
+<th style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">조건</span></div></th>
+<td style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">예상 금리 범위</span></div></td>
+</tr>
+<tr>
+<td style="background:#F0F4FF" class=""><div>적합도 높음 + 낮은 담보비율</div></td>
+<td style="background:#F0F4FF" class=""><div>하단 범위 — 예: 연 12~15%</div></td>
+</tr>
+<tr>
+<td class=""><div>적합도 보통 + 중간 담보비율</div></td>
+<td class=""><div>중간 범위 — 예: 연 15~17%</div></td>
+</tr>
+<tr>
+<td style="background:#F0F4FF" class=""><div>적합도 주의 + 높은 담보비율</div></td>
+<td style="background:#F0F4FF" class=""><div>상단 범위 — 예: 연 17~20%</div></td>
+</tr>
+</tbody></table></div>
+</section>
 <section class="doc-section" id="nav-17-상환-관리-상태-머신-알림-설계-위험-지표">
 <h2 class="sec-h1"><span style="color:#FFC11F;font-size:16pt">17. 상환 관리 — 상태 머신, 알림 설계, 위험 지표</span></h2>
 <p class="sec-body">본 섹션은 유저(채무자)와 바이어(대부업자) 간 직접 송금 구조를 전제로 한 상환 관리 시스템의 상태 머신, 알림 타임라인, 입금 확인 UX, 연체 위험 지표를 정의한다. 플랫폼(드르륵)은 실제 입금을 직접 확인할 수 없으므로, 최종 완료 판정 권한은 바이어에게 있으며 유저의 송금 신고는 보조 신호로만 사용된다.</p>
