@@ -9242,7 +9242,8 @@ document.getElementById('pwd-modal').addEventListener('click', e => {
 // Gate edit mode with password (listener is registered in the main script block above — no duplicate here)
 window._editModeWithAuth = function() {
   if (editMode) { toggleEditMode(); return; }
-  if (_pwdVerified) { toggleEditMode(); return; }
+  // Owner bypasses password entirely; non-owners need one-time password verification
+  if (_pwdVerified || (window._isOwner && window._isOwner())) { toggleEditMode(); return; }
   openPwdModal(() => toggleEditMode());
 };
 document.addEventListener('keydown', function(e2) {
