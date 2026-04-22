@@ -8619,6 +8619,9 @@ function toggleCollabPanel() {
   panel.classList.toggle('open');
   btn.classList.toggle('active', panel.classList.contains('open'));
   document.body.classList.toggle('collab-open', panel.classList.contains('open'));
+  if (panel.classList.contains('open')) {
+    switchTab(_activeTab);
+  }
 }
 
 function switchTab(tab) {
