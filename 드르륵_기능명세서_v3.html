@@ -8991,11 +8991,11 @@ function openCmtDialog(quote, savedRange) {
     arr.unshift(cmt);
     saveAllComments(arr);
     // highlight
-    if (_selRange && quote) {
+    if (savedRange && quote) {
       try {
         const mark = document.createElement('mark');
         mark.className = 'cmt-mark'; mark.dataset.cid = cmt.id;
-        _selRange.surroundContents(mark);
+        savedRange.surroundContents(mark);
         mark.onclick = () => { openCollabPanel('comments'); };
       } catch {}
     }
