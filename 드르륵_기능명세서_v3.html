@@ -6359,6 +6359,54 @@ IT 기기: 최대 70%<br>
 <p class="sec-body">전자서명법: 연장 계약서는 원 계약서와 동일한 SHA-256 전자서명 + 블록체인 타임스탬프 적용. 원 계약서 ID를 연장 계약서에 명시하여 계약 연속성 입증.</p>
 <p class="sec-body">바이어 거절 권한: 바이어는 연장을 거절할 수 있으며, 이 경우 유저는 만기일까지 원금+이자를 상환하거나 유질 처분 플로우에 진입한다. 바이어에게 연장 강제를 불가하며, 이를 유저에게 사전 고지.</p>
 </section>
+<section class="doc-section" id="nav-18b-실행후-모니터링">
+<h2 class="sec-h1"><span style="color:#FFC11F;font-size:16pt">18-B. 실행 후 모니터링 — 자산수첩 시세 기반</span></h2>
+<p class="sec-body">대출 실행 이후 담보물의 시세 변동을 모니터링하여 바이어에게 위험 신호를 제공하는 시스템이다. 계약 조건을 직접 바꾸지 않는 리스크 신호 역할만 한다.</p>
+<h3 class="sec-h2"><span style="color:#FFC11F">18-B.1 모니터링 LTV</span></h3>
+<div class="tbl-wrap"><table class="tbl-spec">
+<tbody><tr>
+<th style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">항목</span></div></th>
+<td style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">내용</span></div></td>
+</tr>
+<tr>
+<td style="background:#F0F4FF" class=""><div><span style="font-weight:600">시세 기준</span></div></td>
+<td style="background:#F0F4FF" class=""><div>자산수첩 실시간 시세 (계속 변동). 계약 시 기준 감정가와 별도로 추적.</div></td>
+</tr>
+<tr>
+<td class=""><div><span style="font-weight:600">계산식</span></div></td>
+<td class=""><div><code>모니터링 LTV = 남은 원금 ÷ 현재 자산수첩 시세 × 100</code></div></td>
+</tr>
+<tr>
+<td style="background:#F0F4FF" class=""><div><span style="font-weight:600">계약 조건 영향</span></div></td>
+<td style="background:#F0F4FF" class=""><div>계약 조건을 직접 바꾸지 않음 — 리스크 신호·경고 목적으로만 사용</div></td>
+</tr>
+</tbody></table></div>
+<h3 class="sec-h2"><span style="color:#FFC11F">18-B.2 알림 기준</span></h3>
+<div class="tbl-wrap"><table class="tbl-spec">
+<tbody><tr>
+<th style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">상황</span></div></th>
+<td style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">알림 메시지</span></div></td>
+<td style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">수신 대상</span></div></td>
+</tr>
+<tr>
+<td style="background:#F0F4FF" class=""><div>담보 가치 상승</div></td>
+<td style="background:#F0F4FF" class=""><div>"담보 가치가 올라 여유 담보비율이 생겼어요"</div></td>
+<td style="background:#F0F4FF" class=""><div>바이어 (안심 정보)</div></td>
+</tr>
+<tr>
+<td class=""><div>담보 가치 하락 (모니터링 LTV 상승)</div></td>
+<td class=""><div>"담보비율이 높아지고 있어요 — 확인이 필요합니다"</div></td>
+<td class=""><div>바이어 (위험 경고)</div></td>
+</tr>
+<tr>
+<td style="background:#F0F4FF" class=""><div>연장 신청 시</div></td>
+<td style="background:#F0F4FF" class=""><div>실시간 자산수첩 시세가 아닌 <strong>재평가 감정가</strong>(③ 연장 심사용) 사용</div></td>
+<td style="background:#F0F4FF" class=""><div>-</div></td>
+</tr>
+</tbody></table></div>
+<h3 class="sec-h2"><span style="color:#FFC11F">18-B.3 모니터링 목적</span></h3>
+<p class="sec-body">① 바이어 위험 경고 — 담보 가치 급락 시 선제적 안내<br>② 연장 심사 시 보수적 판단 참고 — 실시간 시세 트렌드 확인<br>③ 깡통담보 위험 모니터링 — 모니터링 LTV가 자산군 cap 접근 시 경고</p>
+</section>
 <section class="doc-section" id="nav-19-법적-참고-조항-가이드">
 <h2 class="sec-h1"><span style="color:#FFC11F;font-size:16pt">19. 법적 참고 조항 가이드</span></h2>
 <p class="sec-body"><span style="font-weight:600;color:#FFC11F">📋 기능별 법적 참고 조항 연결 인덱스</span></p>
