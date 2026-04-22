@@ -736,8 +736,8 @@ body.edit-mode.paint-mode [contenteditable]:hover {
   to   { opacity: 0.75; }
 }
 
-/* ── Comment system ── */
-#btn-comments {
+/* ── Collaboration panel toggle button ── */
+#btn-collab {
   padding: 5px 12px;
   border: 1px solid var(--gray-200);
   border-radius: 6px;
@@ -752,8 +752,8 @@ body.edit-mode.paint-mode [contenteditable]:hover {
   align-items: center;
   gap: 4px;
 }
-#btn-comments:hover { background: #fef9c3; border-color: #f59e0b; }
-#btn-comments.has-comments { border-color: #ef4444; color: #b91c1c; }
+#btn-collab:hover { background: #fef9c3; border-color: #f59e0b; }
+#btn-collab.active { background: #1e293b; color: white; border-color: #1e293b; }
 
 /* Floating comment bubble (appears on text selection) */
 #comment-bubble {
