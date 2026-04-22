@@ -7099,6 +7099,8 @@ function toggleEditMode() {
     currentFocus = null;
     hideToolbar();
     document.body.classList.remove('edit-mode');
+    // Clear multi-select state when exiting edit mode
+    if (typeof msClear === 'function') msClear();
     // Auto-save on edit mode exit (overwrite original)
     autoSave();
   }
