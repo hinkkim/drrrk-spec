@@ -8098,6 +8098,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   document.addEventListener('click', function(e) {
+    // If user just selected text (non-collapsed), don't open CE — sel-bubble handles it
+    const _ceSel = window.getSelection();
+    if (_ceSel && !_ceSel.isCollapsed && _ceSel.toString().trim().length > 1) return;
     if (isInsideCEPanel(e.target) || isInsideToolbar(e.target) ||
         isInsideSidebar(e.target) || isLink(e.target)) return;
 
