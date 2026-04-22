@@ -5000,7 +5000,27 @@ function toggleExtra(role) {
 </section>
 <section class="doc-section" id="nav-16-Prime-바이어-점수-산정-시스템-상세">
 <h2 class="sec-h1"><span style="color:#FFC11F;font-size:16pt">16. Prime 바이어 점수 산정 시스템 상세</span></h2>
-<p class="sec-body">상위 기획서에 명시된 Prime 점수 산정 로직을 기능 요구사항으로 구체화한다. Prime 점수는 바이어 등급(Bronze/Silver/Gold/Platinum) 산정의 기준이며, 수수료 할인 및 입찰 우선 노출에 영향을 미친다.</p>
+<p class="sec-body">상위 기획서에 명시된 Prime 점수 산정 로직을 기능 요구사항으로 구체화한다. 외부 노출은 <strong>Prime 바이어 / 일반 바이어</strong> 이진 구조로만 표시하며, 내부 점수는 유지하되 등급 라벨(Bronze/Silver/Gold/Platinum)은 외부에 노출하지 않는다. 수수료 할인 차등은 폐지되며, Prime 여부는 입찰 우선 노출에만 영향을 미친다.</p>
+<div class="tbl-wrap"><table class="tbl-spec">
+<tbody><tr>
+<th style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">Prime 바이어 부여 조건 (최근 90일 기준)</span></div></th>
+</tr>
+<tr>
+<td style="background:#F0F4FF" class=""><div>① 완료 거래 5건 이상</div></td>
+</tr>
+<tr>
+<td class=""><div>② 응답속도 기준 충족 — 평균 응답 24시간 이내</div></td>
+</tr>
+<tr>
+<td style="background:#F0F4FF" class=""><div>③ 연체율 0%</div></td>
+</tr>
+<tr>
+<td class=""><div>④ 제재 이력 없음</div></td>
+</tr>
+<tr>
+<td style="background:#F0F4FF" class=""><div>⑤ 대부업 면허 유효</div></td>
+</tr>
+</tbody></table></div>
 <h3 class="sec-h2" id="nav-171-Prime-점수-구성-요소"><span style="color:#FFC11F">11.1 Prime 점수 구성 요소</span></h3>
 <div class="tbl-wrap"><table class="tbl-spec">
 <tbody><tr>
