@@ -2970,8 +2970,25 @@ function toggleExtra(role) {
 </tbody></table></div>
 <div class="tbl-wrap"><table class="tbl-spec">
 <tbody><tr>
-<th style="background:#eff6ff" class=""><div><span style="font-weight:600;color:#FFC11F">⚠ LTV 기준</span></div>
-<div>LTV(Loan-to-Value) 계산식: 대출잔액 ÷ AI감정가 × 100• 70% 이하 — 안전 (녹색)• 70~85% — 주의 (황색)• 85% 초과 — 위험 (적색)바이어는 LTV 85% 초과 시 시스템 경고를 확인한 후에만 진행 가능.</div></th>
+<th style="background:#eff6ff" class=""><div><span style="font-weight:600;color:#FFC11F">⚠ 자산군별 LTV 기준</span></div>
+<div>LTV(Loan-to-Value) 계산식: 대출잔액 ÷ AI감정가 × 100</div></th>
+</tr>
+<tr>
+<td style="background:#F0F4FF" class=""><div>
+<table style="width:100%;border-collapse:collapse;font-size:13px">
+<tr style="background:#dbe4f0;font-weight:600"><td style="padding:4px 8px">자산군</td><td style="padding:4px 8px">권장 범위</td><td style="padding:4px 8px">최대 cap</td></tr>
+<tr><td style="padding:4px 8px">금 / 귀금속 / 명품 시계</td><td style="padding:4px 8px">70~80%</td><td style="padding:4px 8px">85%</td></tr>
+<tr style="background:#eef2ff"><td style="padding:4px 8px">IT 기기</td><td style="padding:4px 8px">55~65%</td><td style="padding:4px 8px">70%</td></tr>
+<tr><td style="padding:4px 8px">명품 가방 / 패션잡화</td><td style="padding:4px 8px">50~60%</td><td style="padding:4px 8px">70%</td></tr>
+<tr style="background:#eef2ff"><td style="padding:4px 8px">기타</td><td style="padding:4px 8px">45~55%</td><td style="padding:4px 8px">60%</td></tr>
+</table>
+</div></td>
+</tr>
+<tr>
+<td class=""><div><strong>유저 UI:</strong> "담보비율 XX% — 이 자산군의 권장 범위 안이에요" (권장 범위 초과 시 경고 표시)</div></td>
+</tr>
+<tr>
+<td style="background:#F0F4FF" class=""><div><strong>바이어 UI:</strong> 권장 입찰 상한 / 담보비율(LTV) / 자산군 적합도 표시. cap 초과 시 시스템 경고 후 진행 가능.</div></td>
 </tr>
 </tbody></table></div>
 <p class="sec-body sec-func-heading has-panel" data-panel-src="드르륵_전당포바이어_Part3_모바일WF_v1.html"><span style="color:#FFC11F">5.2.3 전자계약 보관함 (P-10)</span></p>
