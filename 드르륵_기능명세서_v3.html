@@ -8839,6 +8839,7 @@ function selAddLink() {
   const savedRange = _selRange;
   hideBubble();
   const ov = document.createElement('div');
+  ov.className = 'modal-ov';
   ov.style.cssText = 'position:fixed;inset:0;z-index:19999;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;';
   ov.innerHTML = `
     <div style="background:white;border-radius:14px;padding:24px 28px;width:380px;box-shadow:0 24px 80px rgba(0,0,0,0.25);display:flex;flex-direction:column;gap:12px;font-family:var(--font-main);">
@@ -8846,7 +8847,7 @@ function selAddLink() {
       ${savedRange && savedRange.toString().trim() ? `<div style="font-size:11px;color:#64748b;border-left:3px solid #fbbf24;padding-left:8px;font-style:italic;">"${savedRange.toString().trim().slice(0,80)}..."</div>` : ''}
       <input id="link-url-input" type="url" placeholder="https://..." value="https://" style="padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:var(--font-main);outline:none;">
       <div style="display:flex;gap:8px;">
-        <button onclick="this.closest('[style]').remove()" style="flex:0;padding:9px 16px;border:1px solid #e2e8f0;border-radius:7px;background:none;font-size:13px;cursor:pointer;color:#64748b;">취소</button>
+        <button onclick="this.closest('.modal-ov').remove()" style="flex:0;padding:9px 16px;border:1px solid #e2e8f0;border-radius:7px;background:none;font-size:13px;cursor:pointer;color:#64748b;">취소</button>
         <button id="link-submit" style="flex:1;padding:9px;background:#FFC11F;border:none;border-radius:7px;font-size:13px;font-weight:800;color:#0f172a;cursor:pointer;">링크 삽입</button>
       </div>
     </div>`;
