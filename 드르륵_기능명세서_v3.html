@@ -8964,6 +8964,7 @@ function selAddComment() {
 
 function openCmtDialog(quote, savedRange) {
   const ov = document.createElement('div');
+  ov.className = 'modal-ov';
   ov.style.cssText = 'position:fixed;inset:0;z-index:19999;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;';
   ov.innerHTML = `
     <div style="background:white;border-radius:14px;padding:24px 28px;width:380px;box-shadow:0 24px 80px rgba(0,0,0,0.25);display:flex;flex-direction:column;gap:12px;font-family:var(--font-main);">
@@ -8971,7 +8972,7 @@ function openCmtDialog(quote, savedRange) {
       ${quote ? `<div style="font-size:11px;color:#64748b;border-left:3px solid #fbbf24;padding-left:8px;font-style:italic;line-height:1.5;">"${quote.slice(0,100)}${quote.length>100?'…':''}"</div>` : ''}
       <textarea id="cd-text" placeholder="댓글을 입력하세요… (@이름으로 멘션 가능)" rows="4" oninput="handleMentionInputInDialog(this)" style="padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:var(--font-main);outline:none;resize:vertical;line-height:1.6;"></textarea>
       <div style="display:flex;gap:8px;">
-        <button onclick="this.closest('[style]').remove()" style="flex:0;padding:9px 16px;border:1px solid #e2e8f0;border-radius:7px;background:none;font-family:var(--font-main);font-size:13px;color:#64748b;cursor:pointer;">취소</button>
+        <button onclick="this.closest('.modal-ov').remove()" style="flex:0;padding:9px 16px;border:1px solid #e2e8f0;border-radius:7px;background:none;font-family:var(--font-main);font-size:13px;color:#64748b;cursor:pointer;">취소</button>
         <button id="cd-submit" style="flex:1;padding:9px;background:#FFC11F;border:none;border-radius:7px;font-family:var(--font-main);font-size:13px;font-weight:800;color:#0f172a;cursor:pointer;">등록 (⌘Enter)</button>
       </div>
     </div>`;
