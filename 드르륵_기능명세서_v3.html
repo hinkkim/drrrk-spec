@@ -1126,7 +1126,12 @@ body.edit-mode.paint-mode [contenteditable]:hover {
       <button class="tb-btn" onclick="insertImage()">🖼️ 이미지 삽입</button>
       <button class="tb-btn" onclick="attachScreenToSection()">📎 화면 연결</button>
     </div>
-    <span class="tb-hint">⌘E 편집 모드 토글 · ⌘S 저장</span>
+    <div class="tb-sep"></div>
+    <span class="tb-label">도구</span>
+    <div class="tb-group">
+      <button class="tb-btn" id="tb-paint-btn" onclick="toggleFormatPainter()" title="서식 복사: 클릭 후 원본 선택 → 대상 클릭으로 적용" style="font-size:12px;">🖌 서식 복사</button>
+    </div>
+    <span class="tb-hint">⌘E 편집모드 토글 · ⌘S 저장 · Shift+클릭 다중선택</span>
   </div>
 
   <!-- Floating mini-toolbar (appears near selected element) -->
