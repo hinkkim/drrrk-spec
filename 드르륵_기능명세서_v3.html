@@ -4778,37 +4778,37 @@ function toggleExtra(role) {
 <td class=""><div style="text-align:center">P1</div></td>
 </tr>
 </tbody></table></div>
-<p class="sec-body">수수료 산정 구조 (상위 기획서 기준):</p>
+<p class="sec-body">수수료 산정 구조 (v3 기준 — 건별 청구, 단일 요율):</p>
 <div class="tbl-wrap"><table class="tbl-spec">
 <tbody><tr>
 <th style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">항목</span></div></th>
-<td style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">수수료율</span></div></td>
-<td style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">적용 조건</span></div></td>
+<td style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">내용</span></div></td>
+<td style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">비고</span></div></td>
 </tr>
 <tr>
-<td style="background:#F0F4FF" class=""><div><span style="font-weight:600">기본 수수료</span></div></td>
-<td style="background:#F0F4FF" class=""><div>2.5%</div></td>
-<td style="background:#F0F4FF" class=""><div>모든 바이어 공통 적용 (대출 실행 금액 기준)</div></td>
+<td style="background:#F0F4FF" class=""><div><span style="font-weight:600">수수료율</span></div></td>
+<td style="background:#F0F4FF" class=""><div>3% (단일)</div></td>
+<td style="background:#F0F4FF" class=""><div>모든 바이어 공통 적용. 할인 없음.</div></td>
 </tr>
 <tr>
-<td class=""><div><span style="font-weight:600">Prime Gold 할인</span></div></td>
-<td class=""><div>-0.3% (→ 2.2%)</div></td>
-<td class=""><div>Prime Gold 등급 달성 시 자동 적용</div></td>
+<td class=""><div><span style="font-weight:600">계산식</span></div></td>
+<td class=""><div>실행 대출금 × 3%</div></td>
+<td class=""><div>대출 실행 완료 시점의 실제 송금액 기준</div></td>
 </tr>
 <tr>
-<td style="background:#F0F4FF" class=""><div><span style="font-weight:600">월 10건 달성 할인</span></div></td>
-<td style="background:#F0F4FF" class=""><div>-0.2% 추가 (→ 2.0%)</div></td>
-<td style="background:#F0F4FF" class=""><div>당월 거래 완주 10건 이상 달성 시</div></td>
+<td style="background:#F0F4FF" class=""><div><span style="font-weight:600">청구 방식</span></div></td>
+<td style="background:#F0F4FF" class=""><div>건별 청구 (월말 합산 정산 폐지)</div></td>
+<td style="background:#F0F4FF" class=""><div>트리거: 대출 실행 완료 이벤트</div></td>
 </tr>
 <tr>
-<td class=""><div><span style="font-weight:600">최저 수수료</span></div></td>
-<td class=""><div>2.0%</div></td>
-<td class=""><div>최대 할인 적용 시 하한선</div></td>
+<td class=""><div><span style="font-weight:600">세금계산서</span></div></td>
+<td class=""><div>건별 발행</div></td>
+<td class=""><div>대출 실행 완료 건마다 즉시 발행</div></td>
 </tr>
 <tr>
-<td style="background:#F0F4FF" class=""><div><span style="font-weight:600">정산 시점</span></div></td>
-<td style="background:#F0F4FF" class=""><div>대출 실행 완료 후 D+3 영업일</div></td>
-<td style="background:#F0F4FF" class=""><div>이전 단계 취소/분쟁 건은 수수료 미발생</div></td>
+<td style="background:#F0F4FF" class=""><div><span style="font-weight:600">미발생 조건</span></div></td>
+<td style="background:#F0F4FF" class=""><div>이전 단계 취소/분쟁 건</div></td>
+<td style="background:#F0F4FF" class=""><div>대출 실행 완료 전 취소 시 수수료 미발생</div></td>
 </tr>
 </tbody></table></div>
 </section>
