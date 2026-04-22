@@ -8445,25 +8445,581 @@ document.addEventListener('keydown', function(e) {
   </div>
 </div>
 
-<!-- ── Comments Panel ────────────────────────── -->
-<div id="comments-panel">
-  <div id="comments-panel-header">
-    <h3>💬 댓글 목록</h3>
-    <button id="comments-panel-close" onclick="toggleCommentsPanel()">✕</button>
-  </div>
-  <div id="comments-list">
-    <div id="comments-empty">아직 댓글이 없습니다.<br><br>문서에서 텍스트를 드래그하면<br>💬 댓글 달기 버튼이 나타납니다.</div>
-  </div>
-  <div id="comments-panel-footer">
-    <button id="btn-email-comments" onclick="emailAllComments()">📨 댓글 전체 이메일로 전송</button>
-    <button id="btn-clear-comments" onclick="clearAllComments()">🗑 댓글 전체 삭제</button>
+<!-- ── Login Modal ──────────────────────────── -->
+<div id="login-modal">
+  <div id="login-box">
+    <div style="font-size:28px;text-align:center;">📋</div>
+    <h2 style="text-align:center;">드르륵 기능명세서</h2>
+    <p style="text-align:center;">팀 협업을 위해 이름과 슬랙 이메일을 입력해 주세요.</p>
+    <div class="login-field">
+      <label class="login-label">이름 또는 닉네임</label>
+      <input class="login-input" id="li-name" type="text" placeholder="예: 민준, 기획팀 hink" autocomplete="name">
+    </div>
+    <div class="login-field">
+      <label class="login-label">슬랙 이메일</label>
+      <input class="login-input" id="li-email" type="email" placeholder="name@drrrk.ai" autocomplete="email">
+    </div>
+    <button id="login-submit" onclick="doLogin()">입장하기 →</button>
   </div>
 </div>
 
-<!-- ── Comment Bubble ────────────────────────── -->
-<div id="comment-bubble">💬 댓글 달기</div>
+<!-- ── Selection Bubble ────────────────────── -->
+<div id="sel-bubble">
+  <button class="sel-btn" onclick="selAddComment()">💬 댓글</button>
+  <div class="sel-sep"></div>
+  <button class="sel-btn" onclick="selAddBookmark()">🔖 북마크</button>
+</div>
+
+<!-- ── @Mention Dropdown ─────────────────── -->
+<div id="mention-dropdown"></div>
+
+<!-- ── Right Collaboration Panel ─────────── -->
+<div id="collab-panel">
+  <div id="collab-header">
+    <div id="collab-user-bar">
+      <div id="collab-avatar"></div>
+      <div id="collab-user-name">로그인 중...</div>
+      <button id="collab-close" onclick="toggleCollabPanel()">✕</button>
+    </div>
+    <div id="collab-tabs">
+      <button class="collab-tab active" onclick="switchTab('comments')" id="tab-btn-comments">💬 댓글</button>
+      <button class="collab-tab" onclick="switchTab('bookmarks')" id="tab-btn-bookmarks">🔖 북마크</button>
+      <button class="collab-tab" onclick="switchTab('notes')" id="tab-btn-notes">📝 메모</button>
+      <button class="collab-tab" onclick="switchTab('history')" id="tab-btn-history">📋 이력</button>
+    </div>
+  </div>
+  <div id="collab-body">
+    <!-- Comments tab -->
+    <div class="collab-pane active" id="pane-comments">
+      <div class="collab-empty" id="cmt-empty">아직 댓글이 없습니다.<br>텍스트를 드래그하면<br>💬 버튼이 나타납니다.</div>
+    </div>
+    <!-- Bookmarks tab -->
+    <div class="collab-pane" id="pane-bookmarks">
+      <div class="collab-empty" id="bkm-empty">북마크가 없습니다.<br>텍스트를 드래그하면<br>🔖 버튼이 나타납니다.</div>
+    </div>
+    <!-- Notes tab -->
+    <div class="collab-pane" id="pane-notes" style="padding:0;">
+      <textarea id="notes-area" placeholder="개인 메모를 여기에 작성하세요…&#10;&#10;내용은 이 브라우저에 자동 저장됩니다."></textarea>
+      <div id="notes-save-hint">⌘S 또는 자동저장 · 개인 메모는 이 기기에만 저장됩니다</div>
+    </div>
+    <!-- History tab -->
+    <div class="collab-pane" id="pane-history">
+      <div class="collab-empty" id="hist-loading">GitHub에서 이력을 불러오는 중…</div>
+    </div>
+  </div>
+  <div id="collab-footer">
+    <button class="cftr-btn" onclick="emailAllComments()">📨 이메일 전송</button>
+    <button class="cftr-btn" onclick="clearAllComments()">🗑 댓글 삭제</button>
+  </div>
+</div>
+
+<!-- ── Password Modal ─────────────────────── -->
+<div id="pwd-modal">
+  <div id="pwd-modal-box">
+    <h3>🔒 편집 모드 잠금</h3>
+    <p>편집 권한이 있는 사용자만 수정할 수 있습니다.<br>비밀번호를 입력하세요.</p>
+    <input type="password" id="pwd-input" placeholder="비밀번호" autocomplete="off">
+    <div id="pwd-error">❌ 비밀번호가 올바르지 않습니다.</div>
+    <div class="pwd-btns">
+      <button id="pwd-cancel" onclick="closePwdModal()">취소</button>
+      <button id="pwd-confirm" onclick="confirmPwd()">확인</button>
+    </div>
+  </div>
+</div>
 
 <script>
+// ══════════════════════════════════════════════════════════════
+// ── USER SESSION ──────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+const USER_KEY = 'drrrk-user-v2';
+let _me = null; // { id, name, email, color }
+
+const USER_COLORS = [
+  '#ef4444','#f97316','#eab308','#22c55e','#14b8a6',
+  '#3b82f6','#8b5cf6','#ec4899','#06b6d4','#84cc16'
+];
+function nameToColor(name) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  return USER_COLORS[h % USER_COLORS.length];
+}
+function initials(name) {
+  return (name || '?').split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0,2);
+}
+
+function doLogin() {
+  const name  = document.getElementById('li-name').value.trim();
+  const email = document.getElementById('li-email').value.trim();
+  if (!name) { document.getElementById('li-name').focus(); return; }
+  if (!email || !email.includes('@')) { document.getElementById('li-email').focus(); return; }
+  _me = { id: 'u_' + Date.now(), name, email, color: nameToColor(name) };
+  localStorage.setItem(USER_KEY, JSON.stringify(_me));
+  document.getElementById('login-modal').style.display = 'none';
+  onLoggedIn();
+}
+
+function onLoggedIn() {
+  // Set avatar
+  const av = document.getElementById('collab-avatar');
+  av.textContent = initials(_me.name);
+  av.style.background = _me.color;
+  document.getElementById('collab-user-name').textContent = _me.name;
+  // Load notes
+  const saved = localStorage.getItem('drrrk-notes-' + _me.id) || '';
+  document.getElementById('notes-area').value = saved;
+  // Render comments & bookmarks
+  renderComments();
+  renderBookmarks();
+  updateCollabBadge();
+  // Load history
+  loadHistory();
+}
+
+document.getElementById('li-name').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('li-email').focus(); });
+document.getElementById('li-email').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+// Auto-login if session exists
+(function() {
+  try {
+    const stored = localStorage.getItem(USER_KEY);
+    if (stored) {
+      _me = JSON.parse(stored);
+      document.getElementById('login-modal').style.display = 'none';
+      onLoggedIn();
+    }
+  } catch {}
+})();
+
+// ── Notes auto-save ───────────────────────────────────────────
+let _noteTimer = null;
+document.getElementById('notes-area').addEventListener('input', () => {
+  clearTimeout(_noteTimer);
+  _noteTimer = setTimeout(() => {
+    if (_me) localStorage.setItem('drrrk-notes-' + _me.id, document.getElementById('notes-area').value);
+  }, 800);
+});
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 's' && document.activeElement === document.getElementById('notes-area')) {
+    e.preventDefault();
+    if (_me) localStorage.setItem('drrrk-notes-' + _me.id, document.getElementById('notes-area').value);
+  }
+});
+
+// ══════════════════════════════════════════════════════════════
+// ── COLLAB PANEL ─────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+let _activeTab = 'comments';
+
+function toggleCollabPanel() {
+  const panel = document.getElementById('collab-panel');
+  const btn   = document.getElementById('btn-collab');
+  panel.classList.toggle('open');
+  btn.classList.toggle('active', panel.classList.contains('open'));
+  document.body.classList.toggle('collab-open', panel.classList.contains('open'));
+}
+
+function switchTab(tab) {
+  _activeTab = tab;
+  document.querySelectorAll('.collab-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.collab-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-btn-' + tab).classList.add('active');
+  document.getElementById('pane-' + tab).classList.add('active');
+  if (tab === 'history') loadHistory();
+}
+
+function updateCollabBadge() {
+  const cmts = loadAllComments().filter(c => !c.resolved).length;
+  const badge = document.getElementById('collab-badge');
+  const btn   = document.getElementById('btn-collab');
+  if (cmts > 0) { badge.textContent = cmts; badge.style.display = 'inline'; }
+  else badge.style.display = 'none';
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── COMMENT SYSTEM (localStorage, shared via email)  ─────────
+// ══════════════════════════════════════════════════════════════
+const CMT_KEY = 'drrrk-comments-v2';
+const OWNER_EMAIL = 'shenowhere2@gmail.com';
+
+function loadAllComments() {
+  try { return JSON.parse(localStorage.getItem(CMT_KEY) || '[]'); }
+  catch { return []; }
+}
+function saveAllComments(arr) { localStorage.setItem(CMT_KEY, JSON.stringify(arr)); }
+
+function renderComments() {
+  const pane = document.getElementById('pane-comments');
+  const arr  = loadAllComments();
+  if (!arr.length) {
+    pane.innerHTML = '<div class="collab-empty">아직 댓글이 없습니다.<br>텍스트를 드래그하면 💬 버튼이 나타납니다.</div>';
+    return;
+  }
+  pane.innerHTML = arr.map(c => {
+    const av = `<div class="cmt-avatar" style="background:${c.color}">${initials(c.author)}</div>`;
+    const resolved = c.resolved ? 'resolved' : '';
+    const resolveLabel = c.resolved ? '✓ 완료' : '완료 처리';
+    const repliesHtml = (c.replies||[]).map(r => `
+      <div class="cmt-reply">
+        <div class="cmt-reply-head">
+          <div class="cmt-avatar" style="background:${r.color};width:16px;height:16px;font-size:8px;">${initials(r.author)}</div>
+          <span class="cmt-reply-author">${r.author}</span>
+          <span class="cmt-reply-ts">${r.ts}</span>
+          <button class="cmt-del-btn" onclick="deleteReply(${c.id},${r.id})">✕</button>
+        </div>
+        <div class="cmt-reply-body">${renderMentions(r.text)}</div>
+      </div>`).join('');
+    return `<div class="cmt-card ${resolved}" data-cid="${c.id}">
+      <div class="cmt-card-head">
+        ${av}
+        <span class="cmt-author">${c.author}</span>
+        <span class="cmt-ts">${c.ts}</span>
+        <button class="cmt-resolve-btn ${c.resolved?'done':''}" onclick="resolveComment(${c.id})">${resolveLabel}</button>
+        <button class="cmt-del-btn" onclick="deleteCmt(${c.id})">✕</button>
+      </div>
+      ${c.quote ? `<div class="cmt-quote">"${c.quote.slice(0,80)}${c.quote.length>80?'…':''}"</div>` : ''}
+      <div class="cmt-body">${renderMentions(c.text)}</div>
+      <div class="cmt-replies">${repliesHtml}
+        <div class="cmt-reply-form">
+          <input class="cmt-reply-input" placeholder="답글… (@이름으로 멘션)" id="ri-${c.id}" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendReply(${c.id})}" oninput="handleMentionInput(this,${c.id})">
+          <button class="cmt-reply-send" onclick="sendReply(${c.id})">전송</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  updateCollabBadge();
+}
+
+function renderMentions(text) {
+  return text.replace(/@([\w가-힣]+)/g, '<span class="mention">@$1</span>');
+}
+
+function resolveComment(id) {
+  const arr = loadAllComments().map(c => c.id === id ? {...c, resolved: !c.resolved} : c);
+  saveAllComments(arr);
+  renderComments();
+  updateCollabBadge();
+}
+
+function deleteCmt(id) {
+  saveAllComments(loadAllComments().filter(c => c.id !== id));
+  renderComments();
+  updateCollabBadge();
+  removeHighlight('cmt', id);
+}
+
+function deleteReply(cid, rid) {
+  const arr = loadAllComments().map(c => c.id === cid ? {...c, replies: (c.replies||[]).filter(r => r.id !== rid)} : c);
+  saveAllComments(arr);
+  renderComments();
+}
+
+function sendReply(cid) {
+  if (!_me) return;
+  const inp = document.getElementById('ri-' + cid);
+  if (!inp) return;
+  const text = inp.value.trim();
+  if (!text) return;
+  const reply = { id: Date.now(), author: _me.name, color: _me.color, text, ts: fmtTs() };
+  const arr = loadAllComments().map(c => c.id === cid ? {...c, replies: [...(c.replies||[]), reply]} : c);
+  saveAllComments(arr);
+  renderComments();
+  // Notify mentioned users by email
+  notifyMentions(text, `답글 (${_me.name})`);
+}
+
+function emailAllComments() {
+  const arr = loadAllComments();
+  if (!arr.length) { alert('보낼 댓글이 없습니다.'); return; }
+  const subj = encodeURIComponent('[드르륵 기능명세서] 댓글 모음');
+  const body = encodeURIComponent(
+    `드르륵 기능명세서 댓글 (${fmtTs()})\n\n` +
+    arr.map((c,i) => `[${i+1}] ${c.author} · ${c.ts}${c.resolved?' [완료]':''}\n인용: "${c.quote||''}"\n${c.text}\n` +
+      (c.replies||[]).map(r => `  └ ${r.author}: ${r.text}`).join('\n')).join('\n───\n\n')
+  );
+  window.open(`mailto:${OWNER_EMAIL}?subject=${subj}&body=${body}`);
+}
+
+function clearAllComments() {
+  if (!confirm('모든 댓글을 삭제하시겠습니까?')) return;
+  saveAllComments([]);
+  renderComments();
+  updateCollabBadge();
+  document.querySelectorAll('.cmt-mark').forEach(m => unwrapMark(m));
+}
+
+// ── @mention dropdown ─────────────────────────────────────────
+let _mentionEl = null, _mentionCid = null;
+const TEAM_MEMBERS = [
+  { name: 'hink', email: 'shenowhere2@gmail.com', color: '#FFC11F' },
+];
+
+function getKnownUsers() {
+  // Merge TEAM_MEMBERS + any commenters seen
+  const all = [...TEAM_MEMBERS];
+  loadAllComments().forEach(c => {
+    if (!all.find(u => u.name === c.author)) all.push({ name: c.author, email: c.email||'', color: c.color });
+  });
+  return all;
+}
+
+function handleMentionInput(el, cid) {
+  _mentionEl = el; _mentionCid = cid;
+  const val = el.value;
+  const atIdx = val.lastIndexOf('@');
+  if (atIdx < 0) { hideMentionDropdown(); return; }
+  const query = val.slice(atIdx + 1).toLowerCase();
+  const matches = getKnownUsers().filter(u => u.name.toLowerCase().startsWith(query));
+  if (!matches.length) { hideMentionDropdown(); return; }
+  const dd = document.getElementById('mention-dropdown');
+  const rect = el.getBoundingClientRect();
+  dd.style.cssText = `display:flex;flex-direction:column;left:${rect.left}px;top:${rect.bottom + 4}px;`;
+  dd.innerHTML = matches.map(u => `
+    <div class="mention-item" onclick="insertMention('${u.name}')">
+      <div class="mention-dot" style="background:${u.color}"></div>
+      <span>@${u.name}</span>
+      <span style="font-size:10px;color:#94a3b8;margin-left:auto;">${u.email}</span>
+    </div>`).join('');
+}
+
+function insertMention(name) {
+  if (!_mentionEl) return;
+  const val = _mentionEl.value;
+  const atIdx = val.lastIndexOf('@');
+  _mentionEl.value = val.slice(0, atIdx) + '@' + name + ' ';
+  _mentionEl.focus();
+  hideMentionDropdown();
+}
+
+function hideMentionDropdown() {
+  document.getElementById('mention-dropdown').style.display = 'none';
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#mention-dropdown')) hideMentionDropdown();
+});
+
+function notifyMentions(text, context) {
+  const matches = [...text.matchAll(/@([\w가-힣]+)/g)].map(m => m[1]);
+  if (!matches.length) return;
+  const users = getKnownUsers().filter(u => matches.includes(u.name) && u.email);
+  users.forEach(u => {
+    if (u.email === (_me && _me.email)) return; // don't self-notify
+    const subj = encodeURIComponent(`[드르륵] ${_me?.name||'누군가'}님이 @${u.name}를 멘션했습니다`);
+    const body = encodeURIComponent(`${context}\n\n"${text}"\n\n→ 문서 보기: ${location.href}`);
+    window.open(`mailto:${u.email}?subject=${subj}&body=${body}`);
+  });
+}
+
+// ── Add comment (from selection bubble) ──────────────────────
+let _selRange = null;
+
+function selAddComment() {
+  if (!_me) return;
+  const quote = _selRange ? _selRange.toString().trim().slice(0, 200) : '';
+  hideBubble();
+  openCmtDialog(quote);
+}
+
+function openCmtDialog(quote) {
+  const ov = document.createElement('div');
+  ov.style.cssText = 'position:fixed;inset:0;z-index:19999;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;';
+  ov.innerHTML = `
+    <div style="background:white;border-radius:14px;padding:24px 28px;width:380px;box-shadow:0 24px 80px rgba(0,0,0,0.25);display:flex;flex-direction:column;gap:12px;font-family:var(--font-main);">
+      <div style="font-size:15px;font-weight:800;color:#0f172a;">💬 댓글 달기</div>
+      ${quote ? `<div style="font-size:11px;color:#64748b;border-left:3px solid #fbbf24;padding-left:8px;font-style:italic;line-height:1.5;">"${quote.slice(0,100)}${quote.length>100?'…':''}"</div>` : ''}
+      <textarea id="cd-text" placeholder="댓글을 입력하세요… (@이름으로 멘션 가능)" rows="4" oninput="handleMentionInputInDialog(this)" style="padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:var(--font-main);outline:none;resize:vertical;line-height:1.6;"></textarea>
+      <div style="display:flex;gap:8px;">
+        <button onclick="this.closest('[style]').remove()" style="flex:0;padding:9px 16px;border:1px solid #e2e8f0;border-radius:7px;background:none;font-family:var(--font-main);font-size:13px;color:#64748b;cursor:pointer;">취소</button>
+        <button id="cd-submit" style="flex:1;padding:9px;background:#FFC11F;border:none;border-radius:7px;font-family:var(--font-main);font-size:13px;font-weight:800;color:#0f172a;cursor:pointer;">등록 (⌘Enter)</button>
+      </div>
+    </div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); });
+  const ta = ov.querySelector('#cd-text');
+  setTimeout(() => ta.focus(), 60);
+  ta.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) ov.querySelector('#cd-submit').click(); });
+
+  ov.querySelector('#cd-submit').onclick = () => {
+    const text = ta.value.trim();
+    if (!text) { ta.focus(); return; }
+    const cmt = {
+      id: Date.now(), author: _me.name, email: _me.email,
+      color: _me.color, text, quote, ts: fmtTs(),
+      resolved: false, replies: []
+    };
+    const arr = loadAllComments();
+    arr.unshift(cmt);
+    saveAllComments(arr);
+    // highlight
+    if (_selRange && quote) {
+      try {
+        const mark = document.createElement('mark');
+        mark.className = 'cmt-mark'; mark.dataset.cid = cmt.id;
+        _selRange.surroundContents(mark);
+        mark.onclick = () => { openCollabPanel('comments'); };
+      } catch {}
+    }
+    _selRange = null;
+    renderComments();
+    updateCollabBadge();
+    ov.remove();
+    if (!document.getElementById('collab-panel').classList.contains('open')) toggleCollabPanel();
+    switchTab('comments');
+    notifyMentions(text, `새 댓글 — ${_me.name}`);
+    showSaveToast('💬 댓글 등록 완료', '#1d4ed8');
+  };
+}
+
+function handleMentionInputInDialog(el) {
+  _mentionEl = el; _mentionCid = null;
+  const val = el.value;
+  const atIdx = val.lastIndexOf('@');
+  if (atIdx < 0) { hideMentionDropdown(); return; }
+  const query = val.slice(atIdx + 1).toLowerCase();
+  const matches = getKnownUsers().filter(u => u.name.toLowerCase().startsWith(query));
+  if (!matches.length) { hideMentionDropdown(); return; }
+  const dd = document.getElementById('mention-dropdown');
+  const rect = el.getBoundingClientRect();
+  dd.style.cssText = `display:flex;flex-direction:column;left:${rect.left}px;top:${rect.bottom+4}px;z-index:20000;`;
+  dd.innerHTML = matches.map(u => `<div class="mention-item" onclick="insertMention('${u.name}')"><div class="mention-dot" style="background:${u.color}"></div><span>@${u.name}</span><span style="font-size:10px;color:#94a3b8;margin-left:auto;">${u.email}</span></div>`).join('');
+}
+
+function openCollabPanel(tab) {
+  const panel = document.getElementById('collab-panel');
+  if (!panel.classList.contains('open')) toggleCollabPanel();
+  switchTab(tab);
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── BOOKMARK SYSTEM ───────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+const BKM_KEY = () => 'drrrk-bkm-' + (_me ? _me.id : 'anon');
+
+function loadBookmarks() {
+  try { return JSON.parse(localStorage.getItem(BKM_KEY()) || '[]'); } catch { return []; }
+}
+function saveBookmarks(arr) { localStorage.setItem(BKM_KEY(), JSON.stringify(arr)); }
+
+function selAddBookmark() {
+  if (!_me) return;
+  const quote = _selRange ? _selRange.toString().trim().slice(0, 200) : '';
+  if (!quote) return;
+  const title = prompt('북마크 제목 (선택사항):', quote.slice(0, 30)) || quote.slice(0, 30);
+  hideBubble();
+  const bkm = { id: Date.now(), title, quote, ts: fmtTs() };
+  const arr = loadBookmarks();
+  arr.unshift(bkm);
+  saveBookmarks(arr);
+  if (_selRange) {
+    try {
+      const mark = document.createElement('mark');
+      mark.className = 'bkm-mark'; mark.dataset.bid = bkm.id;
+      mark.title = '🔖 ' + title;
+      _selRange.surroundContents(mark);
+    } catch {}
+  }
+  _selRange = null;
+  renderBookmarks();
+  if (!document.getElementById('collab-panel').classList.contains('open')) toggleCollabPanel();
+  switchTab('bookmarks');
+  showSaveToast('🔖 북마크 추가 완료', '#6366f1');
+}
+
+function renderBookmarks() {
+  const pane = document.getElementById('pane-bookmarks');
+  const arr  = loadBookmarks();
+  if (!arr.length) {
+    pane.innerHTML = '<div class="collab-empty">북마크가 없습니다.<br>텍스트를 드래그하면 🔖 버튼이 나타납니다.</div>';
+    return;
+  }
+  pane.innerHTML = arr.map(b => `
+    <div class="bkm-card">
+      <div class="bkm-title">🔖 ${b.title}</div>
+      <div class="bkm-quote">"${b.quote.slice(0,80)}${b.quote.length>80?'…':''}"</div>
+      <div class="bkm-meta"><span>${b.ts}</span><button class="bkm-del" onclick="delBkm(${b.id})">삭제</button></div>
+    </div>`).join('');
+}
+
+function delBkm(id) {
+  saveBookmarks(loadBookmarks().filter(b => b.id !== id));
+  renderBookmarks();
+  removeHighlight('bkm', id);
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── DOCUMENT HISTORY (GitHub API) ────────────────────────────
+// ══════════════════════════════════════════════════════════════
+let _histLoaded = false;
+
+async function loadHistory() {
+  if (_histLoaded) return;
+  const pane = document.getElementById('pane-history');
+  const FILE = encodeURIComponent('드르륵_기능명세서_v3.html');
+  const URL  = `https://api.github.com/repos/hinkkim/drrrk-spec/commits?path=${FILE}&per_page=30`;
+  try {
+    const res = await fetch(URL);
+    if (!res.ok) throw new Error('GitHub API error');
+    const commits = await res.json();
+    _histLoaded = true;
+    if (!commits.length) { pane.innerHTML = '<div class="collab-empty">이력이 없습니다.</div>'; return; }
+    const today = new Date().toDateString();
+    pane.innerHTML = commits.map(c => {
+      const d   = new Date(c.commit.author.date);
+      const isToday = d.toDateString() === today;
+      const dateStr = d.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      const msg  = c.commit.message.split('\n')[0];
+      const author = c.commit.author.name;
+      return `<div class="hist-card ${isToday?'today':''}">
+        <div class="hist-date">${isToday ? '🟡 오늘 · ' : ''}${dateStr}</div>
+        <div class="hist-msg">${msg}</div>
+        <div class="hist-author">by ${author}</div>
+      </div>`;
+    }).join('');
+  } catch {
+    pane.innerHTML = '<div class="collab-empty">이력 로드 실패.<br>인터넷 연결을 확인하세요.</div>';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── SELECTION BUBBLE ─────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+const selBubble = document.getElementById('sel-bubble');
+
+function hideBubble() { selBubble.style.display = 'none'; _selRange = null; }
+
+document.addEventListener('selectionchange', () => {
+  if (editMode) { hideBubble(); return; }
+  const sel = window.getSelection();
+  if (!sel || sel.isCollapsed || sel.toString().trim().length < 2) {
+    hideBubble(); return;
+  }
+  const range = sel.getRangeAt(0);
+  _selRange = range.cloneRange();
+  const rect = range.getBoundingClientRect();
+  selBubble.style.display = 'flex';
+  selBubble.style.left = Math.max(4, rect.left + rect.width/2 - 70) + 'px';
+  selBubble.style.top  = (rect.top + window.scrollY - 46) + 'px';
+});
+
+document.addEventListener('mousedown', e => {
+  if (!e.target.closest('#sel-bubble')) hideBubble();
+});
+
+// ══════════════════════════════════════════════════════════════
+// ── HELPERS ───────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+function fmtTs() { return new Date().toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }); }
+
+function removeHighlight(type, id) {
+  const sel = type === 'cmt' ? `.cmt-mark[data-cid="${id}"]` : `.bkm-mark[data-bid="${id}"]`;
+  document.querySelectorAll(sel).forEach(m => unwrapMark(m));
+}
+function unwrapMark(m) {
+  const p = m.parentNode;
+  while (m.firstChild) p.insertBefore(m.firstChild, m);
+  p.removeChild(m);
+}
+
 // ══════════════════════════════════════════════════════════════
 // ── PASSWORD PROTECTION ───────────────────────────────────────
 // SHA-256 of "drrrk!2026"
@@ -8474,41 +9030,32 @@ let _pwdCallback = null;
 
 async function sha256(str) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
 }
 
-function openPwdModal(onSuccess) {
-  _pwdCallback = onSuccess;
-  const modal = document.getElementById('pwd-modal');
-  const input = document.getElementById('pwd-input');
-  const err   = document.getElementById('pwd-error');
-  modal.classList.add('open');
-  err.style.display = 'none';
-  input.value = '';
-  setTimeout(() => input.focus(), 80);
+function openPwdModal(cb) {
+  _pwdCallback = cb;
+  const m = document.getElementById('pwd-modal');
+  m.classList.add('open');
+  document.getElementById('pwd-error').style.display = 'none';
+  const inp = document.getElementById('pwd-input');
+  inp.value = '';
+  setTimeout(() => inp.focus(), 80);
 }
-
-function closePwdModal() {
-  document.getElementById('pwd-modal').classList.remove('open');
-  _pwdCallback = null;
-}
-
+function closePwdModal() { document.getElementById('pwd-modal').classList.remove('open'); _pwdCallback = null; }
 async function confirmPwd() {
   const val  = document.getElementById('pwd-input').value;
-  const err  = document.getElementById('pwd-error');
   const hash = await sha256(val);
   if (hash === EDIT_PWD_HASH) {
     _pwdVerified = true;
     closePwdModal();
     if (_pwdCallback) _pwdCallback();
   } else {
-    err.style.display = 'block';
-    const inp = document.getElementById('pwd-input');
-    inp.value = '';
-    inp.focus();
+    document.getElementById('pwd-error').style.display = 'block';
+    document.getElementById('pwd-input').value = '';
+    document.getElementById('pwd-input').focus();
   }
 }
-
 document.getElementById('pwd-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') confirmPwd();
   if (e.key === 'Escape') closePwdModal();
@@ -8517,225 +9064,20 @@ document.getElementById('pwd-modal').addEventListener('click', e => {
   if (e.target === document.getElementById('pwd-modal')) closePwdModal();
 });
 
-// Intercept toggleEditMode to require password
-const _origToggleEditModeGlobal = toggleEditMode;
+// Gate edit mode with password
 window._editModeWithAuth = function() {
-  if (editMode) {
-    // Exiting edit mode — no password needed
-    toggleEditMode();
-    return;
-  }
-  if (_pwdVerified) {
-    toggleEditMode();
-  } else {
-    openPwdModal(() => toggleEditMode());
-  }
+  if (editMode) { toggleEditMode(); return; }
+  if (_pwdVerified) { toggleEditMode(); return; }
+  openPwdModal(() => toggleEditMode());
 };
 document.getElementById('btn-edit-mode').onclick = null;
 document.getElementById('btn-edit-mode').addEventListener('click', () => window._editModeWithAuth());
-
-// Also gate keyboard shortcut ⌘E
 document.addEventListener('keydown', function(e2) {
   if ((e2.metaKey || e2.ctrlKey) && e2.key === 'e') {
-    e2.stopImmediatePropagation();
-    e2.preventDefault();
+    e2.stopImmediatePropagation(); e2.preventDefault();
     window._editModeWithAuth();
   }
 }, true);
-
-// ══════════════════════════════════════════════════════════════
-// ── COMMENT SYSTEM ────────────────────────────────────────────
-// Storage key: drrrk-comments
-// Structure: [{id, quote, text, author, ts, page}]
-// ══════════════════════════════════════════════════════════════
-const CMTS_KEY  = 'drrrk-comments';
-const AUTHOR_EMAIL = 'shenowhere2@gmail.com';
-
-function loadComments() {
-  try { return JSON.parse(localStorage.getItem(CMTS_KEY) || '[]'); }
-  catch { return []; }
-}
-function saveComments(arr) {
-  localStorage.setItem(CMTS_KEY, JSON.stringify(arr));
-}
-
-// ── Comment bubble (floating on text selection) ───────────────
-const bubble = document.getElementById('comment-bubble');
-let _selRange = null;
-
-function hideBubble() { bubble.style.display = 'none'; _selRange = null; }
-
-document.addEventListener('selectionchange', () => {
-  if (editMode) return; // editor only — no bubble in edit mode
-  const sel = window.getSelection();
-  if (!sel || sel.isCollapsed || sel.toString().trim().length < 2) {
-    hideBubble();
-    return;
-  }
-  const range = sel.getRangeAt(0);
-  _selRange = range.cloneRange();
-  const rect = range.getBoundingClientRect();
-  bubble.style.display = 'flex';
-  bubble.style.left = (rect.left + rect.width / 2 - bubble.offsetWidth / 2 + window.scrollX) + 'px';
-  bubble.style.top  = (rect.top + window.scrollY - 44) + 'px';
-});
-
-bubble.addEventListener('click', openCommentDialog);
-
-function openCommentDialog() {
-  if (!_selRange) return;
-  const quote = _selRange.toString().trim().slice(0, 200);
-  if (!quote) return;
-  hideBubble();
-
-  // Simple inline dialog (no external library)
-  const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;';
-
-  overlay.innerHTML = `
-    <div style="background:white;border-radius:12px;padding:24px 28px;width:360px;box-shadow:0 20px 60px rgba(0,0,0,0.25);display:flex;flex-direction:column;gap:12px;font-family:var(--font-main);">
-      <div style="font-size:14px;font-weight:700;color:#0f172a;">💬 댓글 달기</div>
-      <div style="font-size:11px;color:#64748b;border-left:3px solid #fbbf24;padding-left:8px;font-style:italic;line-height:1.5;">"${quote.length > 80 ? quote.slice(0,80)+'…' : quote}"</div>
-      <input id="cmt-author" type="text" placeholder="이름 (선택사항)" style="padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:6px;font-size:13px;font-family:var(--font-main);outline:none;">
-      <textarea id="cmt-text" placeholder="댓글 내용을 입력하세요…" rows="4" style="padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:6px;font-size:13px;font-family:var(--font-main);outline:none;resize:vertical;line-height:1.6;"></textarea>
-      <div style="display:flex;gap:8px;">
-        <button id="cmt-cancel" style="flex:0;padding:8px 16px;border:1px solid #e2e8f0;border-radius:6px;background:none;font-family:var(--font-main);font-size:13px;color:#64748b;cursor:pointer;">취소</button>
-        <button id="cmt-submit" style="flex:1;padding:8px;background:#FFC11F;border:none;border-radius:6px;font-family:var(--font-main);font-size:13px;font-weight:700;color:#0f172a;cursor:pointer;">댓글 등록</button>
-      </div>
-    </div>`;
-
-  document.body.appendChild(overlay);
-  setTimeout(() => overlay.querySelector('#cmt-author').focus(), 60);
-
-  overlay.querySelector('#cmt-cancel').onclick  = () => document.body.removeChild(overlay);
-  overlay.addEventListener('click', e => { if (e.target === overlay) document.body.removeChild(overlay); });
-
-  overlay.querySelector('#cmt-submit').onclick = () => {
-    const text   = overlay.querySelector('#cmt-text').value.trim();
-    const author = overlay.querySelector('#cmt-author').value.trim() || '익명';
-    if (!text) { overlay.querySelector('#cmt-text').focus(); return; }
-
-    const comment = {
-      id: Date.now(),
-      quote,
-      text,
-      author,
-      ts: new Date().toLocaleString('ko-KR'),
-      url: location.href,
-    };
-
-    const arr = loadComments();
-    arr.push(comment);
-    saveComments(arr);
-    renderComments();
-    document.body.removeChild(overlay);
-    updateCommentBadge();
-
-    // Highlight the selected text
-    if (_selRange) {
-      try {
-        const mark = document.createElement('mark');
-        mark.className = 'comment-mark';
-        mark.dataset.cmtId = comment.id;
-        mark.title = `${author}: ${text}`;
-        _selRange.surroundContents(mark);
-      } catch { /* skip if range spans multiple elements */ }
-    }
-    _selRange = null;
-
-    showSaveToast('💬 댓글이 등록됐습니다', '#1d4ed8');
-  };
-
-  overlay.querySelector('#cmt-text').addEventListener('keydown', e => {
-    if (e.key === 'Enter' && e.metaKey) overlay.querySelector('#cmt-submit').click();
-  });
-}
-
-// ── Render comments in panel ──────────────────────────────────
-function renderComments() {
-  const arr  = loadComments();
-  const list = document.getElementById('comments-list');
-  const empty = document.getElementById('comments-empty');
-
-  if (!arr.length) {
-    list.innerHTML = '';
-    list.appendChild(empty);
-    return;
-  }
-
-  list.innerHTML = arr.map(c => `
-    <div class="comment-card" data-id="${c.id}">
-      <div class="cc-quote">"${c.quote.length > 100 ? c.quote.slice(0,100)+'…' : c.quote}"</div>
-      <div class="cc-body">${c.text}</div>
-      <div class="cc-meta">
-        <span>✍️ ${c.author} · ${c.ts}</span>
-        <button class="cc-del" onclick="deleteComment(${c.id})">삭제</button>
-      </div>
-    </div>`).join('');
-}
-
-function deleteComment(id) {
-  const arr = loadComments().filter(c => c.id !== id);
-  saveComments(arr);
-  renderComments();
-  updateCommentBadge();
-  // Remove highlight if present
-  const mark = document.querySelector(`.comment-mark[data-cmt-id="${id}"]`);
-  if (mark) { const parent = mark.parentNode; while (mark.firstChild) parent.insertBefore(mark.firstChild, mark); parent.removeChild(mark); }
-}
-
-function clearAllComments() {
-  if (!confirm('모든 댓글을 삭제하시겠습니까?')) return;
-  saveComments([]);
-  renderComments();
-  updateCommentBadge();
-  document.querySelectorAll('.comment-mark').forEach(m => {
-    const p = m.parentNode;
-    while (m.firstChild) p.insertBefore(m.firstChild, m);
-    p.removeChild(m);
-  });
-}
-
-function updateCommentBadge() {
-  const arr  = loadComments();
-  const badge = document.getElementById('comment-count-badge');
-  const btn   = document.getElementById('btn-comments');
-  if (arr.length > 0) {
-    badge.textContent = arr.length;
-    badge.style.display = 'inline';
-    btn.classList.add('has-comments');
-  } else {
-    badge.style.display = 'none';
-    btn.classList.remove('has-comments');
-  }
-}
-
-// ── Comments panel toggle ─────────────────────────────────────
-function toggleCommentsPanel() {
-  const panel = document.getElementById('comments-panel');
-  panel.classList.toggle('open');
-  if (panel.classList.contains('open')) {
-    renderComments();
-    updateCommentBadge();
-  }
-}
-
-// ── Email all comments ────────────────────────────────────────
-function emailAllComments() {
-  const arr = loadComments();
-  if (!arr.length) { alert('보낼 댓글이 없습니다.'); return; }
-  const subject = encodeURIComponent('[드르륵 기능명세서] 팀원 댓글 모음');
-  const body = encodeURIComponent(
-    `드르륵 기능명세서 댓글 목록 (${new Date().toLocaleString('ko-KR')})\n\n` +
-    arr.map((c, i) =>
-      `[${i+1}] ${c.author} · ${c.ts}\n인용: "${c.quote}"\n댓글: ${c.text}\n`
-    ).join('\n---\n\n')
-  );
-  window.open(`mailto:${AUTHOR_EMAIL}?subject=${subject}&body=${body}`);
-}
-
-// ── Init on load ──────────────────────────────────────────────
-updateCommentBadge();
 </script>
 
 </body></html>
