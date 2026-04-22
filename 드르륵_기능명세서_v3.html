@@ -1543,10 +1543,11 @@ body.collab-open #wrapper { padding-right: var(--collab-w); }
      ══════════════════════════════════════════════════════════ -->
 <div id="role-tabs-wrap" style="margin:0 0 36px 0;">
   <!-- Tab buttons -->
-  <div style="display:flex;gap:0;border-bottom:2px solid #e2e8f0;margin-bottom:0;">
+  <div style="display:flex;gap:0;border-bottom:2px solid #e2e8f0;margin-bottom:0;align-items:flex-end;">
     <button onclick="switchRoleTab('uiux')" id="rtab-uiux" class="role-tab-btn active" style="padding:10px 22px;font-size:13px;font-weight:700;border:none;background:none;cursor:pointer;border-bottom:3px solid #FFC11F;margin-bottom:-2px;color:#0f172a;font-family:var(--font-main);">🎨 UI/UX 디자이너</button>
     <button onclick="switchRoleTab('fe')" id="rtab-fe" class="role-tab-btn" style="padding:10px 22px;font-size:13px;font-weight:700;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;color:#64748b;font-family:var(--font-main);">⚡ 프론트엔드</button>
     <button onclick="switchRoleTab('be')" id="rtab-be" class="role-tab-btn" style="padding:10px 22px;font-size:13px;font-weight:700;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;color:#64748b;font-family:var(--font-main);">🛠 백엔드</button>
+    <button onclick="resetTabChecks()" style="margin-left:auto;padding:6px 12px;font-size:11px;font-weight:600;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;color:#94a3b8;cursor:pointer;margin-bottom:4px;font-family:var(--font-main);">↺ 체크 초기화</button>
   </div>
 
   <!-- ── UI/UX 탭 ─────────────────────────────────────────── -->
