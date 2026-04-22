@@ -9067,14 +9067,12 @@ document.getElementById('pwd-modal').addEventListener('click', e => {
   if (e.target === document.getElementById('pwd-modal')) closePwdModal();
 });
 
-// Gate edit mode with password
+// Gate edit mode with password (listener is registered in the main script block above — no duplicate here)
 window._editModeWithAuth = function() {
   if (editMode) { toggleEditMode(); return; }
   if (_pwdVerified) { toggleEditMode(); return; }
   openPwdModal(() => toggleEditMode());
 };
-document.getElementById('btn-edit-mode').onclick = null;
-document.getElementById('btn-edit-mode').addEventListener('click', () => window._editModeWithAuth());
 document.addEventListener('keydown', function(e2) {
   if ((e2.metaKey || e2.ctrlKey) && e2.key === 'e') {
     e2.stopImmediatePropagation(); e2.preventDefault();
