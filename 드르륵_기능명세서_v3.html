@@ -9126,11 +9126,34 @@ const selBubble = document.getElementById('sel-bubble');
 
 function hideBubble() { selBubble.style.display = 'none'; _selRange = null; }
 
-// Show sel-bubble on mouseup (after drag-select finishes) — more reliable than selectionchange
+// Drag detection — track whether the mouse actually moved while button was held
 let _selBubbleTimer = null;
+let _isDragSelect   = false;
+let _dragOriginX    = 0;
+let _dragOriginY    = 0;
+
+// mousedown: reset drag flag, hide any existing bubble
+document.addEventListener('mousedown', e => {
+  if (selBubble.contains(e.target)) return; // clicking inside bubble — don't hide
+  hideBubble();
+  _isDragSelect = false;
+  _dragOriginX  = e.clientX;
+  _dragOriginY  = e.clientY;
+});
+
+// mousemove: if left button held and mouse moved >5px → this is a drag gesture
+document.addEventListener('mousemove', e => {
+  if (!(e.buttons & 1)) return; // left button not held
+  if (_isDragSelect) return;    // already flagged
+  const dx = e.clientX - _dragOriginX;
+  const dy = e.clientY - _dragOriginY;
+  if (Math.abs(dx) > 5 || Math.abs(dy) > 5) _isDragSelect = true;
+});
+
+// mouseup: only show bubble when this was a real drag-select
 document.addEventListener('mouseup', e => {
-  // Don't show if clicking inside the bubble itself
   if (selBubble.contains(e.target)) return;
+  if (!_isDragSelect) return; // plain click — no bubble
   clearTimeout(_selBubbleTimer);
   _selBubbleTimer = setTimeout(() => {
     const sel = window.getSelection();
@@ -9154,16 +9177,7 @@ document.addEventListener('mouseup', e => {
     selBubble.style.display = 'flex';
     selBubble.style.left = Math.max(4, rect.left + rect.width/2 - bubbleW/2) + 'px';
     selBubble.style.top  = (rect.top + window.scrollY - 52) + 'px';
-  }, 50);
-});
-
-// Hide bubble on mousedown outside bubble
-document.addEventListener('mousedown', e => {
-  if (!selBubble.contains(e.target)) hideBubble();
-});
-
-document.addEventListener('mousedown', e => {
-  if (!e.target.closest('#sel-bubble')) hideBubble();
+  }, 80);
 });
 
 // ══════════════════════════════════════════════════════════════
