@@ -7046,26 +7046,74 @@ function showSaveToast(msg, color) {
   setTimeout(() => { sb.textContent = orig; sb.style.background = ''; sb.style.color = ''; }, 2500);
 }
 
+// ── IndexedDB helpers: persist FileSystemFileHandle across page reloads ──
+const IDB_NAME = 'drrrk-spec-db';
+const IDB_STORE = 'handles';
+const IDB_KEY   = 'specFile';
+
+function idbOpen() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(IDB_NAME, 1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore(IDB_STORE);
+    req.onsuccess = e => resolve(e.target.result);
+    req.onerror   = () => reject(req.error);
+  });
+}
+async function idbGetHandle() {
+  try {
+    const db = await idbOpen();
+    return await new Promise((res, rej) => {
+      const tx = db.transaction(IDB_STORE, 'readonly');
+      const req = tx.objectStore(IDB_STORE).get(IDB_KEY);
+      req.onsuccess = () => res(req.result || null);
+      req.onerror   = () => res(null);
+    });
+  } catch { return null; }
+}
+async function idbPutHandle(handle) {
+  try {
+    const db = await idbOpen();
+    await new Promise((res, rej) => {
+      const tx = db.transaction(IDB_STORE, 'readwrite');
+      tx.objectStore(IDB_STORE).put(handle, IDB_KEY);
+      tx.oncomplete = res;
+      tx.onerror    = rej;
+    });
+  } catch { /* silent */ }
+}
+
 // autoSave: called on 편집 완료 — overwrites original silently
+// Uses IndexedDB to remember the save path across page reloads
 async function autoSave() {
   if (!window.showSaveFilePicker) {
-    // No API: fall back to download
     saveAsHTML();
     return;
   }
   try {
-    // First time: ask user to pick the file (must be user gesture — it is, via button click)
+    // 1. Use in-memory handle if available
+    if (!_fileHandle) {
+      _fileHandle = await idbGetHandle();
+    }
+    // 2. Re-verify write permission (needed after page reload)
+    if (_fileHandle) {
+      const perm = await _fileHandle.queryPermission({ mode: 'readwrite' });
+      if (perm !== 'granted') {
+        const req = await _fileHandle.requestPermission({ mode: 'readwrite' });
+        if (req !== 'granted') _fileHandle = null;
+      }
+    }
+    // 3. No stored handle → ask user once, then save the choice
     if (!_fileHandle) {
       _fileHandle = await window.showSaveFilePicker({
         suggestedName: '드르륵_기능명세서_v3.html',
-        startIn: 'downloads',
         types: [{ description: 'HTML 파일', accept: { 'text/html': ['.html'] } }]
       });
+      await idbPutHandle(_fileHandle);
     }
     const writable = await _fileHandle.createWritable();
     await writable.write(getCleanHTML());
     await writable.close();
-    showSaveToast('✅ 자동 저장 완료', '#166534');
+    showSaveToast('✅ 저장 완료', '#166534');
   } catch (err) {
     if (err.name === 'AbortError') { _fileHandle = null; return; }
     console.warn('autoSave failed:', err);
