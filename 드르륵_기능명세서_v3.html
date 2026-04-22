@@ -6165,7 +6165,7 @@ function toggleExtra(role) {
 <p class="sec-body compact-list">MVP 제외 사유: 연장 기능은 단순 기간 연장 UI 이상으로, 이자율 재산정<br><br><br><br><br><br><br>• 신규 전자계약 생성<br><br><br><br><br><br><br>• LTV 재검토<br><br><br><br><br><br><br>• 블록체인 타임스탬프 재발행 등 백엔드 복잡도가 높아 MVP 범위에서 제외하였다.</p>
 <p class="sec-body">후순위 개발 필요성: 최소 대출기간 1개월 설정 시, 만기 도래 후 원금 상환이 어려운 유저의 유일한 대안이 유질 처분으로 직행되는 문제가 발생한다. 연장 기능 없이는 유저 이탈 및 플랫폼 신뢰도 저하 위험이 있다.</p>
 <p class="sec-body">개발 우선순위: MVP 안정화 → 유질물 처분 플로우 고도화 → 대출 연장하기 순서. 2차 스프린트 내 포함 권장.</p>
-<h3 class="sec-h2" id="nav-192-연장-가능-조건-비즈니스-규칙"><span style="color:#FFC11F">11.2 연장 가능 조건 (비즈니스 규칙)</span></h3>
+<h3 class="sec-h2" id="nav-192-연장-가능-조건-비즈니스-규칙"><span style="color:#FFC11F">11.2 연장 심사 공통 게이트 (Step 1~6)</span></h3>
 <p class="sec-body"><span id="fn_19_2"></span><span id="fn_19_2"></span></p>
 <div class="tbl-wrap"><table class="tbl-legal">
 <tbody><tr>
@@ -6181,11 +6181,94 @@ function toggleExtra(role) {
 <td style="background:#fef3c7" class=""><div><a href="#sec20_4" class="doc-link">→ 섹션 11.4 상세 법적 가이드 보기</a></div></td>
 </tr>
 </tbody></table></div>
-<p class="sec-body">1. 연장 신청 가능 시점: 만기일 D-7 ~ D+0 (연체 발생 전). 연체 발생(D+1) 이후에는 연장 신청 불가, 유질 처분 플로우로 전환.</p>
-<p class="sec-body">2. 연장 횟수 제한: 최대 2회 (1회 연장 기간 1~3개월 선택). 2회 초과 시 연장 버튼 비활성화, 만기 상환 또는 유질 처분만 가능.</p>
-<p class="sec-body">3. 바이어 수락 필수: 연장은 유저 단독으로 확정되지 않는다. 유저 연장 신청 → 바이어 수락/거절(48시간 이내) → 쌍방 합의 후 연장 계약서 자동 생성.</p>
-<p class="sec-body">4. LTV 재검토: 연장 시점에 AI 감정가로 LTV 재산정. LTV 90% 초과 시 연장 자동 거절 (시스템 잠금).</p>
-<p class="sec-body">5. 이자율 재산정: 연장 이자율은 원 계약 이자율 이상, 이자제한법 연 20%(월 1.66%) 이내 하드 잠금. 바이어가 연장 이자율을 제안하고 유저가 동의하는 구조.</p>
+<div class="tbl-wrap"><table class="tbl-spec">
+<tbody><tr>
+<th style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">Step</span></div></th>
+<td style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">심사 내용</span></div></td>
+<td style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">실패 시 처리</span></div></td>
+</tr>
+<tr>
+<td style="background:#F0F4FF" class=""><div><span style="font-weight:600">Step 1. 자격 체크</span></div></td>
+<td style="background:#F0F4FF" class=""><div>
+① 현재 미납 회차 없는지<br>
+② 확정된 연체이자·미납이자 정리됐는지 (연장 승인 전 정산 완료 원칙 — 자본화 금지)<br>
+③ 남은 원금 존재하는지<br>
+④ 연장 시점 담보가치 재평가 가능한지<br>
+⑤ 자산군별 연장 LTV cap 이내인지
+</div></td>
+<td style="background:#F0F4FF" class=""><div>조건 미충족 시 연장 신청 차단. 미납·연체이자 먼저 정산 안내.</div></td>
+</tr>
+<tr>
+<td class=""><div><span style="font-weight:600">Step 2. 재감정</span></div></td>
+<td class=""><div>연장 시점 감정가 새로 생성 (견적 공고 기준 감정가와 별도의 "연장 심사용 재평가 감정가" 사용)</div></td>
+<td class=""><div>재감정 실패 시 연장 보류, 어드민 에스컬레이션</div></td>
+</tr>
+<tr>
+<td style="background:#F0F4FF" class=""><div><span style="font-weight:600">Step 3. 연장 LTV 계산</span></div></td>
+<td style="background:#F0F4FF" class=""><div><code>연장 LTV = 남은 원금(remaining_principal) ÷ 연장 시점 재평가 감정가 × 100</code><br>미납이자·연체이자는 연장 승인 전 정산 완료 원칙 — 자본화하지 않음</div></td>
+<td style="background:#F0F4FF" class=""><div>-</div></td>
+</tr>
+<tr>
+<td class=""><div><span style="font-weight:600">Step 4. 자산군 cap 비교</span></div></td>
+<td class=""><div>
+금/시계/귀금속: 최대 85%<br>
+IT 기기: 최대 70%<br>
+명품 가방: 최대 70%<br>
+기타: 최대 60%
+</div></td>
+<td class=""><div>연장 LTV가 자산군 cap 초과 시 연장 자동 거절 (시스템 잠금)</div></td>
+</tr>
+<tr>
+<td style="background:#F0F4FF" class=""><div><span style="font-weight:600">Step 5. 기간 체크</span></div></td>
+<td style="background:#F0F4FF" class=""><div>선택 가능 기간: 1개월 / 2개월 / 3개월. 내부 최대 횟수(2회) 초과 시 연장 불가.</div></td>
+<td style="background:#F0F4FF" class=""><div>최대 횟수 초과 시 연장 버튼 비활성화</div></td>
+</tr>
+<tr>
+<td class=""><div><span style="font-weight:600">Step 6. 바이어 수락/거절</span></div></td>
+<td class=""><div>바이어에게 연장 요청 전송 (48시간 응답 기한). 미응답 시 자동 거절.</div></td>
+<td class=""><div>거절 시 원 만기 상환 플로우 복귀</div></td>
+</tr>
+</tbody></table></div>
+<div class="tbl-wrap"><table class="tbl-spec">
+<tbody><tr>
+<th style="background:#eff6ff" class=""><div><span style="font-weight:600;color:#FFC11F">⚠ 핵심 원칙: LTV와 연장 기간의 관계</span></div>
+<div>연장 기간(1개월/2개월/3개월)은 LTV 자체를 바꾸지 않는다. LTV = 남은 원금 ÷ 담보가치이므로, 기간이 바꾸는 건 월 납부금·총이자·바이어 리스크 인식뿐이다.</div></th>
+</tr>
+</tbody></table></div>
+<h4 class="sec-h3"><span style="font-weight:600">상환방식별 연장 후 계산식</span></h4>
+<div class="tbl-wrap"><table class="tbl-spec">
+<tbody><tr>
+<th style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">상환방식</span></div></th>
+<td style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">연장 후 계산식</span></div></td>
+</tr>
+<tr>
+<td style="background:#F0F4FF" class=""><div><span style="font-weight:600">A. 만기일시상환 연장</span></div></td>
+<td style="background:#F0F4FF" class=""><div>연장 후 매월 이자 = <code>remaining_principal × 월이율</code>. 만기 시 원금 일시 상환. LTV는 기간과 무관.</div></td>
+</tr>
+<tr>
+<td class=""><div><span style="font-weight:600">B. 원리금균등상환 연장</span></div></td>
+<td class=""><div>새 월 납부금 = <code>P × i × (1+i)^n ÷ ((1+i)^n - 1)</code><br>P = remaining_principal, i = 연장 월이율, n = 연장 개월 수. 서버가 새 스케줄 재생성.</div></td>
+</tr>
+<tr>
+<td style="background:#F0F4FF" class=""><div><span style="font-weight:600">C. 원금균등상환 연장</span></div></td>
+<td style="background:#F0F4FF" class=""><div>매월 원금 = <code>remaining_principal ÷ 연장개월수(m)</code>. 매월 이자 = <code>남은 원금 × 월이율</code>. 회차가 지날수록 총 납부금 감소.</div></td>
+</tr>
+</tbody></table></div>
+<h4 class="sec-h3"><span style="font-weight:600">유저 / 바이어 연장 플로우</span></h4>
+<div class="tbl-wrap"><table class="tbl-spec">
+<tbody><tr>
+<th style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">대상</span></div></th>
+<td style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">플로우</span></div></td>
+</tr>
+<tr>
+<td style="background:#F0F4FF" class=""><div><span style="font-weight:600">유저</span></div></td>
+<td style="background:#F0F4FF" class=""><div>만기 7일 전 / 3일 전 배너 노출 → 배너 버튼: 이자 납부 처리 / 연장하기 → "연장하기" 클릭 → 모달: 유의사항 + 연장 기간 선택(1/2/3개월) + 연장 신청</div></td>
+</tr>
+<tr>
+<td class=""><div><span style="font-weight:600">바이어</span></div></td>
+<td class=""><div>연장 신청 배너 수신 → 현재 계약 정보 + 재평가 감정가 + 연장 LTV 표시 → 선택: 연장 수락 / 연장 거절</div></td>
+</tr>
+</tbody></table></div>
 <h3 class="sec-h2 has-panel" id="nav-193-기능-요구사항-F19XX" data-panel-src="드르륵_전당포바이어_연체상환관리캘린더_WF_v1.html"><span style="color:#FFC11F">11.3 기능 요구사항 (F-19-XX)</span></h3>
 <p class="sec-body"><span id="fn_19_3"></span><span id="fn_19_3"></span></p>
 <div class="tbl-wrap"><table class="tbl-legal">
