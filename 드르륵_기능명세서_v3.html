@@ -7778,13 +7778,6 @@ function tbCmd(cmd, val) {
   _origTbCmd(cmd, val);
 }
 
-// Clear multi-select when exiting edit mode
-const _origToggle = toggleEditMode;
-function toggleEditMode() {
-  _origToggle();
-  if (!editMode) msClear();
-}
-
 // ══════════════════════════════════════════════════════════════
 // ── FORMAT PAINTER (서식 복사) ────────────────────────────────
 // ══════════════════════════════════════════════════════════════
