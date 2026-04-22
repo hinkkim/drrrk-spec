@@ -1942,6 +1942,30 @@ function toggleExtra(role) {
 <td class=""><div>이자 납부 모니터링, 연체 시 유질물 처분 절차 개시</div></td>
 </tr>
 </tbody></table></div>
+<h3 class="sec-h2" id="nav-25-감정가-3tier-구조"><span style="color:#FFC11F">2.5 감정가 3-tier 구조</span></h3>
+<p class="sec-body">드르륵 플랫폼에서 사용하는 감정가는 목적에 따라 3종으로 분리된다. <strong>핵심 원칙: 입찰 기준값 ≠ 자산수첩 실시간값 (분리 유지)</strong></p>
+<div class="tbl-wrap"><table class="tbl-spec">
+<tbody><tr>
+<th style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">종류</span></div></th>
+<td style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">설명</span></div></td>
+<td style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">사용 시점</span></div></td>
+</tr>
+<tr>
+<td style="background:#F0F4FF" class=""><div><span style="font-weight:600">① 자산수첩 실시간 시세</span></div></td>
+<td style="background:#F0F4FF" class=""><div>계속 변동하는 시세. 드르륵 플랫폼 내 실거래 데이터 기반으로 실시간 업데이트.</div></td>
+<td style="background:#F0F4FF" class=""><div>사용자 자산 관리 / 대출 실행 후 모니터링 LTV 계산에 사용. 입찰 기준으로는 사용하지 않음.</div></td>
+</tr>
+<tr>
+<td class=""><div><span style="font-weight:600">② 견적 공고 기준 감정가</span></div></td>
+<td class=""><div>유저가 견적 요청을 등록하는 순간 스냅샷 생성. 48시간 입찰 기간 동안 고정 유지.</div></td>
+<td class=""><div>바이어 비교의 기준값. 모든 바이어가 동일한 감정가 기준으로 입찰. 입찰 기간 중 실시간 시세 변동에도 고정.</div></td>
+</tr>
+<tr>
+<td style="background:#F0F4FF" class=""><div><span style="font-weight:600">③ 연장 심사용 재평가 감정가</span></div></td>
+<td style="background:#F0F4FF" class=""><div>연장 신청 시점에 새로 생성. 연장 LTV 계산에 사용.</div></td>
+<td style="background:#F0F4FF" class=""><div>연장 심사 전용. 연장 LTV = 남은 원금 ÷ 재평가 감정가 × 100. 모니터링 실시간 시세와 별도.</div></td>
+</tr>
+</tbody></table></div>
 </section>
 
 <section class="doc-section" id="nav-flow-diagrams">
