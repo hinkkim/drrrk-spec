@@ -8812,6 +8812,20 @@ function notifyMentions(text, context) {
 // ── Add comment (from selection bubble) ──────────────────────
 let _selRange = null;
 
+// ── Color edit from selection bubble ─────────────────────────
+function selOpenColorEdit() {
+  if (!window._isOwner || !window._isOwner()) return;
+  if (!_selRange) return;
+  // Get the CE-targetable element containing the selection
+  const container = _selRange.commonAncestorContainer;
+  const el = container.nodeType === 3 ? container.parentElement : container;
+  hideBubble();
+  // Clear selection first so CE click handler doesn't bail out on isCollapsed check
+  window.getSelection().removeAllRanges();
+  // Trigger a synthetic click on the element after a short delay
+  setTimeout(() => { if (el && el.click) el.click(); }, 30);
+}
+
 // ── Link insertion ────────────────────────────────────────────
 function selAddLink() {
   if (!window._isOwner()) return;
