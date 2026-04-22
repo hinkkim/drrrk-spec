@@ -9187,7 +9187,8 @@ document.addEventListener('mouseup', e => {
     const bubbleW = isOwner ? 280 : 160;
     selBubble.style.display = 'flex';
     selBubble.style.left = Math.max(4, rect.left + rect.width/2 - bubbleW/2) + 'px';
-    selBubble.style.top  = (rect.top + window.scrollY - 52) + 'px';
+    // position:fixed uses viewport coords — rect.top is already viewport-relative, don't add scrollY
+    selBubble.style.top  = Math.max(8, rect.top - 52) + 'px';
   }, 80);
 });
 
