@@ -7440,7 +7440,10 @@ function saveAsHTML() {
   showSaveToast('⬇️ 다운로드 완료', '#1d4ed8');
 }
 
-editBtn.addEventListener('click', toggleEditMode);
+editBtn.addEventListener('click', function() {
+  if (window._editModeWithAuth) window._editModeWithAuth();
+  else toggleEditMode();
+});
 saveBtn.addEventListener('click', saveAsHTML);
 
 // ── Prevent toolbar clicks from stealing focus/selection ──────
