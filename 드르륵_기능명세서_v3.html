@@ -7909,6 +7909,8 @@ document.getElementById('content').addEventListener('click', function(e) {
 
 document.addEventListener('dblclick', function(e) {
   if (editMode) return; // already in edit mode — browser handles word-select
+  // Only the owner can activate edit mode via double-click
+  if (!window._isOwner || !window._isOwner()) return;
   if (e.target.closest('#sidebar, #top-bar, #color-editor, #edit-toolbar, button, a, input, select')) return;
 
   // Find which editable element was double-clicked
