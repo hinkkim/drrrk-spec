@@ -8098,9 +8098,16 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   document.addEventListener('click', function(e) {
-    // If user just selected text (non-collapsed), don't open CE — sel-bubble handles it
-    const _ceSel = window.getSelection();
-    if (_ceSel && !_ceSel.isCollapsed && _ceSel.toString().trim().length > 1) return;
+    // CE only opens via selOpenColorEdit() from the sel-bubble — NEVER on direct click
+    if (!window._ceOpenRequested) {
+      // Still close CE if user clicks completely outside it
+      if (!isInsideCEPanel(e.target) && !isInsideToolbar(e.target) &&
+          !isInsideSidebar(e.target) && !isLink(e.target)) {
+        closeCE();
+      }
+      return;
+    }
+    window._ceOpenRequested = false;
     if (isInsideCEPanel(e.target) || isInsideToolbar(e.target) ||
         isInsideSidebar(e.target) || isLink(e.target)) return;
 
