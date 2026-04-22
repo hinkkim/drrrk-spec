@@ -8339,5 +8339,311 @@ document.addEventListener('keydown', function(e) {
 
 </script>
 
+<!-- ── Password Modal ─────────────────────────── -->
+<div id="pwd-modal">
+  <div id="pwd-modal-box">
+    <h3>🔒 편집 모드 잠금</h3>
+    <p>편집 권한이 있는 사용자만 수정할 수 있습니다.<br>비밀번호를 입력하세요.</p>
+    <input type="password" id="pwd-input" placeholder="비밀번호" autocomplete="off">
+    <div id="pwd-error">❌ 비밀번호가 올바르지 않습니다.</div>
+    <div class="pwd-btns">
+      <button id="pwd-cancel" onclick="closePwdModal()">취소</button>
+      <button id="pwd-confirm" onclick="confirmPwd()">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Comments Panel ────────────────────────── -->
+<div id="comments-panel">
+  <div id="comments-panel-header">
+    <h3>💬 댓글 목록</h3>
+    <button id="comments-panel-close" onclick="toggleCommentsPanel()">✕</button>
+  </div>
+  <div id="comments-list">
+    <div id="comments-empty">아직 댓글이 없습니다.<br><br>문서에서 텍스트를 드래그하면<br>💬 댓글 달기 버튼이 나타납니다.</div>
+  </div>
+  <div id="comments-panel-footer">
+    <button id="btn-email-comments" onclick="emailAllComments()">📨 댓글 전체 이메일로 전송</button>
+    <button id="btn-clear-comments" onclick="clearAllComments()">🗑 댓글 전체 삭제</button>
+  </div>
+</div>
+
+<!-- ── Comment Bubble ────────────────────────── -->
+<div id="comment-bubble">💬 댓글 달기</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// ── PASSWORD PROTECTION ───────────────────────────────────────
+// SHA-256 of "drrrk!2026"
+// ══════════════════════════════════════════════════════════════
+const EDIT_PWD_HASH = '4d26b5fa5b7f45b1db7b0fb6babf65f1931dd55f2199579c200b3546765a16ae';
+let _pwdVerified = false;
+let _pwdCallback = null;
+
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function openPwdModal(onSuccess) {
+  _pwdCallback = onSuccess;
+  const modal = document.getElementById('pwd-modal');
+  const input = document.getElementById('pwd-input');
+  const err   = document.getElementById('pwd-error');
+  modal.classList.add('open');
+  err.style.display = 'none';
+  input.value = '';
+  setTimeout(() => input.focus(), 80);
+}
+
+function closePwdModal() {
+  document.getElementById('pwd-modal').classList.remove('open');
+  _pwdCallback = null;
+}
+
+async function confirmPwd() {
+  const val  = document.getElementById('pwd-input').value;
+  const err  = document.getElementById('pwd-error');
+  const hash = await sha256(val);
+  if (hash === EDIT_PWD_HASH) {
+    _pwdVerified = true;
+    closePwdModal();
+    if (_pwdCallback) _pwdCallback();
+  } else {
+    err.style.display = 'block';
+    const inp = document.getElementById('pwd-input');
+    inp.value = '';
+    inp.focus();
+  }
+}
+
+document.getElementById('pwd-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') confirmPwd();
+  if (e.key === 'Escape') closePwdModal();
+});
+document.getElementById('pwd-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('pwd-modal')) closePwdModal();
+});
+
+// Intercept toggleEditMode to require password
+const _origToggleEditModeGlobal = toggleEditMode;
+window._editModeWithAuth = function() {
+  if (editMode) {
+    // Exiting edit mode — no password needed
+    toggleEditMode();
+    return;
+  }
+  if (_pwdVerified) {
+    toggleEditMode();
+  } else {
+    openPwdModal(() => toggleEditMode());
+  }
+};
+document.getElementById('btn-edit-mode').onclick = null;
+document.getElementById('btn-edit-mode').addEventListener('click', () => window._editModeWithAuth());
+
+// Also gate keyboard shortcut ⌘E
+document.addEventListener('keydown', function(e2) {
+  if ((e2.metaKey || e2.ctrlKey) && e2.key === 'e') {
+    e2.stopImmediatePropagation();
+    e2.preventDefault();
+    window._editModeWithAuth();
+  }
+}, true);
+
+// ══════════════════════════════════════════════════════════════
+// ── COMMENT SYSTEM ────────────────────────────────────────────
+// Storage key: drrrk-comments
+// Structure: [{id, quote, text, author, ts, page}]
+// ══════════════════════════════════════════════════════════════
+const CMTS_KEY  = 'drrrk-comments';
+const AUTHOR_EMAIL = 'shenowhere2@gmail.com';
+
+function loadComments() {
+  try { return JSON.parse(localStorage.getItem(CMTS_KEY) || '[]'); }
+  catch { return []; }
+}
+function saveComments(arr) {
+  localStorage.setItem(CMTS_KEY, JSON.stringify(arr));
+}
+
+// ── Comment bubble (floating on text selection) ───────────────
+const bubble = document.getElementById('comment-bubble');
+let _selRange = null;
+
+function hideBubble() { bubble.style.display = 'none'; _selRange = null; }
+
+document.addEventListener('selectionchange', () => {
+  if (editMode) return; // editor only — no bubble in edit mode
+  const sel = window.getSelection();
+  if (!sel || sel.isCollapsed || sel.toString().trim().length < 2) {
+    hideBubble();
+    return;
+  }
+  const range = sel.getRangeAt(0);
+  _selRange = range.cloneRange();
+  const rect = range.getBoundingClientRect();
+  bubble.style.display = 'flex';
+  bubble.style.left = (rect.left + rect.width / 2 - bubble.offsetWidth / 2 + window.scrollX) + 'px';
+  bubble.style.top  = (rect.top + window.scrollY - 44) + 'px';
+});
+
+bubble.addEventListener('click', openCommentDialog);
+
+function openCommentDialog() {
+  if (!_selRange) return;
+  const quote = _selRange.toString().trim().slice(0, 200);
+  if (!quote) return;
+  hideBubble();
+
+  // Simple inline dialog (no external library)
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;';
+
+  overlay.innerHTML = `
+    <div style="background:white;border-radius:12px;padding:24px 28px;width:360px;box-shadow:0 20px 60px rgba(0,0,0,0.25);display:flex;flex-direction:column;gap:12px;font-family:var(--font-main);">
+      <div style="font-size:14px;font-weight:700;color:#0f172a;">💬 댓글 달기</div>
+      <div style="font-size:11px;color:#64748b;border-left:3px solid #fbbf24;padding-left:8px;font-style:italic;line-height:1.5;">"${quote.length > 80 ? quote.slice(0,80)+'…' : quote}"</div>
+      <input id="cmt-author" type="text" placeholder="이름 (선택사항)" style="padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:6px;font-size:13px;font-family:var(--font-main);outline:none;">
+      <textarea id="cmt-text" placeholder="댓글 내용을 입력하세요…" rows="4" style="padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:6px;font-size:13px;font-family:var(--font-main);outline:none;resize:vertical;line-height:1.6;"></textarea>
+      <div style="display:flex;gap:8px;">
+        <button id="cmt-cancel" style="flex:0;padding:8px 16px;border:1px solid #e2e8f0;border-radius:6px;background:none;font-family:var(--font-main);font-size:13px;color:#64748b;cursor:pointer;">취소</button>
+        <button id="cmt-submit" style="flex:1;padding:8px;background:#FFC11F;border:none;border-radius:6px;font-family:var(--font-main);font-size:13px;font-weight:700;color:#0f172a;cursor:pointer;">댓글 등록</button>
+      </div>
+    </div>`;
+
+  document.body.appendChild(overlay);
+  setTimeout(() => overlay.querySelector('#cmt-author').focus(), 60);
+
+  overlay.querySelector('#cmt-cancel').onclick  = () => document.body.removeChild(overlay);
+  overlay.addEventListener('click', e => { if (e.target === overlay) document.body.removeChild(overlay); });
+
+  overlay.querySelector('#cmt-submit').onclick = () => {
+    const text   = overlay.querySelector('#cmt-text').value.trim();
+    const author = overlay.querySelector('#cmt-author').value.trim() || '익명';
+    if (!text) { overlay.querySelector('#cmt-text').focus(); return; }
+
+    const comment = {
+      id: Date.now(),
+      quote,
+      text,
+      author,
+      ts: new Date().toLocaleString('ko-KR'),
+      url: location.href,
+    };
+
+    const arr = loadComments();
+    arr.push(comment);
+    saveComments(arr);
+    renderComments();
+    document.body.removeChild(overlay);
+    updateCommentBadge();
+
+    // Highlight the selected text
+    if (_selRange) {
+      try {
+        const mark = document.createElement('mark');
+        mark.className = 'comment-mark';
+        mark.dataset.cmtId = comment.id;
+        mark.title = `${author}: ${text}`;
+        _selRange.surroundContents(mark);
+      } catch { /* skip if range spans multiple elements */ }
+    }
+    _selRange = null;
+
+    showSaveToast('💬 댓글이 등록됐습니다', '#1d4ed8');
+  };
+
+  overlay.querySelector('#cmt-text').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.metaKey) overlay.querySelector('#cmt-submit').click();
+  });
+}
+
+// ── Render comments in panel ──────────────────────────────────
+function renderComments() {
+  const arr  = loadComments();
+  const list = document.getElementById('comments-list');
+  const empty = document.getElementById('comments-empty');
+
+  if (!arr.length) {
+    list.innerHTML = '';
+    list.appendChild(empty);
+    return;
+  }
+
+  list.innerHTML = arr.map(c => `
+    <div class="comment-card" data-id="${c.id}">
+      <div class="cc-quote">"${c.quote.length > 100 ? c.quote.slice(0,100)+'…' : c.quote}"</div>
+      <div class="cc-body">${c.text}</div>
+      <div class="cc-meta">
+        <span>✍️ ${c.author} · ${c.ts}</span>
+        <button class="cc-del" onclick="deleteComment(${c.id})">삭제</button>
+      </div>
+    </div>`).join('');
+}
+
+function deleteComment(id) {
+  const arr = loadComments().filter(c => c.id !== id);
+  saveComments(arr);
+  renderComments();
+  updateCommentBadge();
+  // Remove highlight if present
+  const mark = document.querySelector(`.comment-mark[data-cmt-id="${id}"]`);
+  if (mark) { const parent = mark.parentNode; while (mark.firstChild) parent.insertBefore(mark.firstChild, mark); parent.removeChild(mark); }
+}
+
+function clearAllComments() {
+  if (!confirm('모든 댓글을 삭제하시겠습니까?')) return;
+  saveComments([]);
+  renderComments();
+  updateCommentBadge();
+  document.querySelectorAll('.comment-mark').forEach(m => {
+    const p = m.parentNode;
+    while (m.firstChild) p.insertBefore(m.firstChild, m);
+    p.removeChild(m);
+  });
+}
+
+function updateCommentBadge() {
+  const arr  = loadComments();
+  const badge = document.getElementById('comment-count-badge');
+  const btn   = document.getElementById('btn-comments');
+  if (arr.length > 0) {
+    badge.textContent = arr.length;
+    badge.style.display = 'inline';
+    btn.classList.add('has-comments');
+  } else {
+    badge.style.display = 'none';
+    btn.classList.remove('has-comments');
+  }
+}
+
+// ── Comments panel toggle ─────────────────────────────────────
+function toggleCommentsPanel() {
+  const panel = document.getElementById('comments-panel');
+  panel.classList.toggle('open');
+  if (panel.classList.contains('open')) {
+    renderComments();
+    updateCommentBadge();
+  }
+}
+
+// ── Email all comments ────────────────────────────────────────
+function emailAllComments() {
+  const arr = loadComments();
+  if (!arr.length) { alert('보낼 댓글이 없습니다.'); return; }
+  const subject = encodeURIComponent('[드르륵 기능명세서] 팀원 댓글 모음');
+  const body = encodeURIComponent(
+    `드르륵 기능명세서 댓글 목록 (${new Date().toLocaleString('ko-KR')})\n\n` +
+    arr.map((c, i) =>
+      `[${i+1}] ${c.author} · ${c.ts}\n인용: "${c.quote}"\n댓글: ${c.text}\n`
+    ).join('\n---\n\n')
+  );
+  window.open(`mailto:${AUTHOR_EMAIL}?subject=${subject}&body=${body}`);
+}
+
+// ── Init on load ──────────────────────────────────────────────
+updateCommentBadge();
+</script>
 
 </body></html>
