@@ -8827,8 +8827,8 @@ function selOpenColorEdit() {
   const container = _selRange.commonAncestorContainer;
   const el = container.nodeType === 3 ? container.parentElement : container;
   hideBubble();
-  // Clear selection first so CE click handler doesn't bail out on isCollapsed check
-  window.getSelection().removeAllRanges();
+  // Set gate flag so CE click handler knows this is an authorized open
+  window._ceOpenRequested = true;
   // Trigger a synthetic click on the element after a short delay
   setTimeout(() => { if (el && el.click) el.click(); }, 30);
 }
