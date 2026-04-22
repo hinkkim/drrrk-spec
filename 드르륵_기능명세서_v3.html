@@ -8345,6 +8345,9 @@ document.addEventListener('keydown', function(e) {
     if (e.target.closest('#color-editor, #edit-toolbar, #sidebar, #top-bar, button, a')) return;
     // In edit-mode, let cells be normally editable (no drag-select interference)
     if (document.body.classList.contains('edit-mode')) return;
+    // Only activate table drag-select when color-editor is open — otherwise allow normal text selection
+    const _ce = document.getElementById('color-editor');
+    if (!_ce || !_ce.classList.contains('visible')) return;
     isDragging = true;
     dragStart = cell;
     dragEnd = cell;
