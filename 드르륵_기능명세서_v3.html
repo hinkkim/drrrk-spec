@@ -5763,6 +5763,29 @@ function toggleExtra(role) {
 <td style="background:#F0F4FF" class=""><div>청구: 120,000원 / D-day 80,000원 입금 / D+2 40,000원 입금→ 80,000원: 연체이자 없음→ 40,000원: D+1 00:00 ~ D+2 actual_received_at 기간분 연체이자</div></td>
 </tr>
 </tbody></table></div>
+<h4 class="sec-h3"><span style="font-weight:600">연체/상환 로직 핵심 원칙 (추가 명시)</span></h4>
+<div class="tbl-wrap"><table class="tbl-spec">
+<tbody><tr>
+<th style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">원칙</span></div></th>
+<td style="background:#FFC11F" class=""><div style="text-align:center"><span style="font-weight:600;color:#1a1209">상세</span></div></td>
+</tr>
+<tr>
+<td style="background:#F0F4FF" class=""><div><span style="font-weight:600">연체이자 계산 범위</span></div></td>
+<td style="background:#F0F4FF" class=""><div>연체이자는 <strong>미납 잔액에 대해서만</strong> 계산. 이미 납부된 금액에는 연체이자 적용 없음.</div></td>
+</tr>
+<tr>
+<td class=""><div><span style="font-weight:600">자동 완납 처리 금지</span></div></td>
+<td class=""><div><strong>부분납부 후 추가납부가 들어와도 시스템이 자동으로 완납 처리하지 않는다.</strong> 완납은 반드시 바이어의 "잔액 확인" 클릭으로만 확정된다.</div></td>
+</tr>
+<tr>
+<td style="background:#F0F4FF" class=""><div><span style="font-weight:600">유저 UX</span></div></td>
+<td style="background:#F0F4FF" class=""><div>미납금 표시 / 연체일수 표시 / 추가 비용(연체이자 누적) / "지금 납부 시 종료" 예상 금액 안내</div></td>
+</tr>
+<tr>
+<td class=""><div><span style="font-weight:600">바이어 UX</span></div></td>
+<td class=""><div>입금 확인 버튼 / 미입금 표시 / 확인 보류 버튼 / 부분납부 금액 입력 / 잔액 확인 버튼</div></td>
+</tr>
+</tbody></table></div>
 <h3 class="sec-h2" id="nav-188-바이어-SLA-및-어드민-에스컬레이션"><span style="color:#FFC11F">11.8 바이어 SLA 및 어드민 에스컬레이션</span></h3>
 <p class="sec-body"><span id="fn_18_8"></span><span id="fn_18_8"></span></p>
 <div class="tbl-wrap"><table class="tbl-legal">
