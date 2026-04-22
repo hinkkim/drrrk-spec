@@ -7431,6 +7431,175 @@ function attachImageFileToSection() {
 // ── Double-click → auto enter edit mode ───────────────────────
 // When not in edit mode, double-clicking any editable element
 // automatically activates edit mode and places the cursor there.
+// ══════════════════════════════════════════════════════════════
+// ── MULTI-SELECT (Shift+Click) ───────────────────────────────
+// ══════════════════════════════════════════════════════════════
+const _multiSel = new Set(); // set of selected contenteditable elements
+
+function msToggle(el) {
+  if (_multiSel.has(el)) {
+    _multiSel.delete(el);
+    el.classList.remove('ms-selected');
+  } else {
+    _multiSel.add(el);
+    el.classList.add('ms-selected');
+  }
+  _updateMsHint();
+}
+
+function msClear() {
+  _multiSel.forEach(el => el.classList.remove('ms-selected'));
+  _multiSel.clear();
+  _updateMsHint();
+}
+
+function _updateMsHint() {
+  const hint = document.querySelector('.tb-hint');
+  if (!hint) return;
+  if (_multiSel.size > 1) {
+    hint.textContent = `${_multiSel.size}개 선택됨 · 서식 적용 시 전체 반영 · Shift+클릭으로 선택 추가`;
+  } else {
+    hint.textContent = '⌘E 편집모드 토글 · ⌘S 저장 · Shift+클릭 다중선택';
+  }
+}
+
+// Intercept clicks in edit mode for multi-select (Shift+Click)
+document.getElementById('content').addEventListener('click', function(e) {
+  if (!editMode) return;
+  if (!e.shiftKey) { msClear(); return; }
+
+  // Find the editable element that was clicked
+  const selectors = EDITABLE_SEL.split(', ');
+  let targetEl = null;
+  for (const sel of selectors) {
+    const match = e.target.closest(sel.trim());
+    if (match && match.getAttribute('contenteditable') === 'true') {
+      targetEl = match;
+      break;
+    }
+  }
+  if (!targetEl) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+  msToggle(targetEl);
+}, true);
+
+// Apply any tbCmd to all multi-selected elements
+const _origTbCmd = tbCmd;
+function tbCmd(cmd, val) {
+  if (_multiSel.size > 1) {
+    _multiSel.forEach(el => {
+      el.focus({ preventScroll: true });
+      const sel2 = window.getSelection();
+      const r = document.createRange();
+      r.selectNodeContents(el);
+      sel2.removeAllRanges();
+      sel2.addRange(r);
+      document.execCommand('styleWithCSS', false, true);
+      document.execCommand(cmd, false, val !== undefined ? val : null);
+    });
+    updateToolbarState();
+    return;
+  }
+  _origTbCmd(cmd, val);
+}
+
+// Clear multi-select when exiting edit mode
+const _origToggle = toggleEditMode;
+function toggleEditMode() {
+  _origToggle();
+  if (!editMode) msClear();
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── FORMAT PAINTER (서식 복사) ────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+let _paintMode   = false;   // waiting for source click?
+let _paintSource = null;    // captured styles { fontSize, fontWeight, fontStyle, color, textDecoration }
+
+function toggleFormatPainter() {
+  const btn = document.getElementById('tb-paint-btn');
+  if (!editMode) return;
+
+  if (_paintMode) {
+    // Cancel paint mode
+    _paintMode = false;
+    _paintSource = null;
+    document.body.classList.remove('paint-mode');
+    if (btn) { btn.classList.remove('paint-active'); btn.textContent = '🖌 서식 복사'; }
+    return;
+  }
+
+  // Activate: capture styles from current focus/selection
+  let srcEl = currentFocus;
+  if (!srcEl && _savedRange) {
+    const c = _savedRange.commonAncestorContainer;
+    srcEl = (c.nodeType === 3 ? c.parentElement : c).closest('[contenteditable="true"]') || c;
+  }
+  if (!srcEl) {
+    showSaveToast('⚠️ 먼저 서식을 복사할 요소를 클릭하세요', '#b45309');
+    return;
+  }
+
+  const cs = window.getComputedStyle(srcEl);
+  _paintSource = {
+    fontSize:       cs.fontSize,
+    fontWeight:     cs.fontWeight,
+    fontStyle:      cs.fontStyle,
+    color:          cs.color,
+    textDecoration: cs.textDecoration,
+    backgroundColor: cs.backgroundColor !== 'rgba(0, 0, 0, 0)' ? cs.backgroundColor : null,
+  };
+  _paintMode = true;
+  document.body.classList.add('paint-mode');
+  if (btn) { btn.classList.add('paint-active'); btn.textContent = '🖌 적용 중… (클릭하여 취소)'; }
+}
+
+// Apply captured format on click when in paint mode
+document.getElementById('content').addEventListener('click', function(e) {
+  if (!editMode || !_paintMode || !_paintSource) return;
+
+  const selectors = EDITABLE_SEL.split(', ');
+  let targetEl = null;
+  for (const sel of selectors) {
+    const match = e.target.closest(sel.trim());
+    if (match && match.getAttribute('contenteditable') === 'true') {
+      targetEl = match;
+      break;
+    }
+  }
+  if (!targetEl) return;
+  e.preventDefault();
+  e.stopPropagation();
+
+  // Select all content of target and apply stored styles
+  targetEl.focus({ preventScroll: true });
+  const range = document.createRange();
+  range.selectNodeContents(targetEl);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+
+  // Apply inline styles via execCommand where possible
+  document.execCommand('styleWithCSS', false, false);
+  document.execCommand('fontSize', false, '7');
+  targetEl.querySelectorAll('font[size="7"]').forEach(f => {
+    const sp = document.createElement('span');
+    sp.style.fontSize       = _paintSource.fontSize;
+    sp.style.fontWeight     = _paintSource.fontWeight;
+    sp.style.fontStyle      = _paintSource.fontStyle;
+    sp.style.color          = _paintSource.color;
+    sp.style.textDecoration = _paintSource.textDecoration;
+    if (_paintSource.backgroundColor) sp.style.backgroundColor = _paintSource.backgroundColor;
+    sp.innerHTML = f.innerHTML;
+    f.parentNode.replaceChild(sp, f);
+  });
+  document.execCommand('styleWithCSS', false, true);
+
+  showSaveToast('✅ 서식 적용 완료', '#166534');
+}, true);
+
 document.addEventListener('dblclick', function(e) {
   if (editMode) return; // already in edit mode — browser handles word-select
   if (e.target.closest('#sidebar, #top-bar, #color-editor, #edit-toolbar, button, a, input, select')) return;
