@@ -8630,7 +8630,9 @@ function switchTab(tab) {
   document.querySelectorAll('.collab-pane').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-btn-' + tab).classList.add('active');
   document.getElementById('pane-' + tab).classList.add('active');
-  if (tab === 'history') loadHistory();
+  if (tab === 'comments') renderComments();
+  else if (tab === 'bookmarks') renderBookmarks();
+  else if (tab === 'history') loadHistory();
 }
 
 function updateCollabBadge() {
