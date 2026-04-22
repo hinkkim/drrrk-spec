@@ -1737,7 +1737,20 @@ function resetTabChecks() {
     if (prog) prog.textContent = '0 / 12 완료';
   });
 }
-// restore from localStorage on load
+function toggleExtra(role) {
+  const btn = document.getElementById('expand-toggle-' + role);
+  const rows = document.querySelectorAll('#rpane-' + role + ' .chk-row');
+  const isExpanded = btn.dataset.expanded === '1';
+  rows.forEach((row, i) => {
+    if (i >= 3) row.style.display = isExpanded ? 'none' : '';
+  });
+  btn.dataset.expanded = isExpanded ? '0' : '1';
+  const color = role === 'uiux' ? '#FFC11F' : role === 'fe' ? '#3b82f6' : '#059669';
+  btn.textContent = isExpanded ? '▼ 펼치기 (9개 더보기)' : '▲ 접기';
+  btn.style.color = isExpanded ? '#64748b' : color;
+  btn.style.borderColor = isExpanded ? '#e2e8f0' : color;
+}
+// restore from localStorage on load + hide extra rows
 (function loadRoleChecks() {
   document.querySelectorAll('.role-chk').forEach(chk => {
     try { if (localStorage.getItem('rtab_' + chk.id) === '1') { chk.checked = true; } } catch(e) {}
@@ -1746,6 +1759,9 @@ function resetTabChecks() {
     const done = document.querySelectorAll('#rpane-' + r + ' .role-chk:checked').length;
     const prog = document.getElementById('prog-' + r);
     if (prog && done > 0) prog.textContent = done + ' / 12 완료';
+    // collapse extra rows (index 3~11) on load
+    const rows = document.querySelectorAll('#rpane-' + r + ' .chk-row');
+    rows.forEach((row, i) => { if (i >= 3) row.style.display = 'none'; });
   });
 })();
 </script>
