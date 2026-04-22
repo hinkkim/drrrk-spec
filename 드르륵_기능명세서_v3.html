@@ -8843,6 +8843,125 @@ function notifyMentions(text, context) {
 // ── Add comment (from selection bubble) ──────────────────────
 let _selRange = null;
 
+// ── Link insertion ────────────────────────────────────────────
+function selAddLink() {
+  if (!window._isOwner()) return;
+  const savedRange = _selRange;
+  hideBubble();
+  const ov = document.createElement('div');
+  ov.style.cssText = 'position:fixed;inset:0;z-index:19999;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;';
+  ov.innerHTML = `
+    <div style="background:white;border-radius:14px;padding:24px 28px;width:380px;box-shadow:0 24px 80px rgba(0,0,0,0.25);display:flex;flex-direction:column;gap:12px;font-family:var(--font-main);">
+      <div style="font-size:15px;font-weight:800;color:#0f172a;">🔗 링크 추가</div>
+      ${savedRange && savedRange.toString().trim() ? `<div style="font-size:11px;color:#64748b;border-left:3px solid #fbbf24;padding-left:8px;font-style:italic;">"${savedRange.toString().trim().slice(0,80)}..."</div>` : ''}
+      <input id="link-url-input" type="url" placeholder="https://..." value="https://" style="padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:var(--font-main);outline:none;">
+      <div style="display:flex;gap:8px;">
+        <button onclick="this.closest('[style]').remove()" style="flex:0;padding:9px 16px;border:1px solid #e2e8f0;border-radius:7px;background:none;font-size:13px;cursor:pointer;color:#64748b;">취소</button>
+        <button id="link-submit" style="flex:1;padding:9px;background:#FFC11F;border:none;border-radius:7px;font-size:13px;font-weight:800;color:#0f172a;cursor:pointer;">링크 삽입</button>
+      </div>
+    </div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); });
+  const inp = ov.querySelector('#link-url-input');
+  setTimeout(() => { inp.focus(); inp.select(); }, 60);
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') ov.querySelector('#link-submit').click(); });
+  ov.querySelector('#link-submit').onclick = () => {
+    const url = inp.value.trim();
+    if (!url || url === 'https://') { inp.focus(); return; }
+    // Ensure edit mode is active for DOM mutation
+    const wasEdit = editMode;
+    if (!wasEdit) toggleEditMode();
+    if (savedRange) {
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(savedRange);
+    }
+    document.execCommand('createLink', false, url);
+    // Style the newly created link
+    if (savedRange) {
+      try {
+        const aEl = savedRange.commonAncestorContainer.parentElement.closest('a') ||
+                    savedRange.startContainer.parentElement.closest('a');
+        if (aEl) { aEl.target = '_blank'; aEl.rel = 'noopener noreferrer'; aEl.className = 'doc-link'; }
+      } catch {}
+    }
+    ov.remove();
+    showSaveToast('🔗 링크 삽입 완료', '#1d4ed8');
+  };
+}
+
+// ── Image insertion ───────────────────────────────────────────
+function selAddImage() {
+  if (!window._isOwner()) return;
+  const savedRange = _selRange;
+  hideBubble();
+  const ov = document.createElement('div');
+  ov.style.cssText = 'position:fixed;inset:0;z-index:19999;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;';
+  ov.innerHTML = `
+    <div style="background:white;border-radius:14px;padding:24px 28px;width:420px;box-shadow:0 24px 80px rgba(0,0,0,0.25);display:flex;flex-direction:column;gap:12px;font-family:var(--font-main);">
+      <div style="font-size:15px;font-weight:800;color:#0f172a;">🖼️ 이미지 삽입</div>
+      <div id="img-paste-zone" tabindex="0" style="border:2px dashed #e2e8f0;border-radius:10px;padding:32px 20px;text-align:center;font-size:13px;color:#64748b;cursor:pointer;outline:none;transition:border-color 0.15s;">
+        <div style="font-size:28px;margin-bottom:8px;">📋</div>
+        여기에 이미지 붙여넣기 <kbd style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:11px;">⌘V</kbd> 또는<br>
+        <span style="color:#FFC11F;font-weight:600;text-decoration:underline;">클릭해서 파일 선택</span>
+        <input type="file" id="img-file-input" accept="image/*" style="display:none">
+      </div>
+      <button onclick="this.closest('[style]').remove()" style="padding:9px;border:1px solid #e2e8f0;border-radius:7px;background:none;font-size:13px;cursor:pointer;color:#64748b;">취소</button>
+    </div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); });
+  const zone = ov.querySelector('#img-paste-zone');
+  const fileInput = ov.querySelector('#img-file-input');
+  zone.addEventListener('click', e => { if (e.target !== fileInput) fileInput.click(); });
+  fileInput.addEventListener('change', () => { if (fileInput.files[0]) _insertImageFile(fileInput.files[0], savedRange, ov); });
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor='#FFC11F'; });
+  zone.addEventListener('dragleave', () => { zone.style.borderColor=''; });
+  zone.addEventListener('drop', e => { e.preventDefault(); zone.style.borderColor=''; if (e.dataTransfer.files[0]) _insertImageFile(e.dataTransfer.files[0], savedRange, ov); });
+  // Paste anywhere in the overlay
+  ov.addEventListener('paste', e => {
+    const items = Array.from(e.clipboardData?.items || []);
+    const imgItem = items.find(i => i.type.startsWith('image/'));
+    if (imgItem) _insertImageFile(imgItem.getAsFile(), savedRange, ov);
+  });
+  // Also listen globally while modal is open
+  const pasteHandler = e => {
+    const items = Array.from(e.clipboardData?.items || []);
+    const imgItem = items.find(i => i.type.startsWith('image/'));
+    if (imgItem) { _insertImageFile(imgItem.getAsFile(), savedRange, ov); }
+  };
+  document.addEventListener('paste', pasteHandler);
+  ov._cleanupPaste = () => document.removeEventListener('paste', pasteHandler);
+  zone.focus();
+}
+
+function _insertImageFile(file, savedRange, ov) {
+  if (!file || !file.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const wasEdit = editMode;
+    if (!wasEdit) toggleEditMode();
+    const img = document.createElement('img');
+    img.src = e.target.result;
+    img.alt = file.name || '이미지';
+    img.style.cssText = 'max-width:100%;border-radius:6px;margin:8px 0;display:block;cursor:pointer;';
+    img.title = '클릭하면 크게 보기';
+    img.onclick = () => { const w=window.open(); w.document.write('<img src="'+img.src+'" style="max-width:100%;height:auto;">'); };
+    if (savedRange) {
+      try {
+        savedRange.collapse(false);
+        savedRange.insertNode(img);
+        savedRange.setStartAfter(img);
+      } catch { if (currentFocus) currentFocus.appendChild(img); }
+    } else if (currentFocus) {
+      currentFocus.appendChild(img);
+    }
+    if (ov._cleanupPaste) ov._cleanupPaste();
+    ov.remove();
+    showSaveToast('🖼️ 이미지 삽입 완료', '#16a34a');
+  };
+  reader.readAsDataURL(file);
+}
+
 function selAddComment() {
   if (!_me) return;
   const quote = _selRange ? _selRange.toString().trim().slice(0, 200) : '';
