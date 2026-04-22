@@ -8589,6 +8589,15 @@ function onLoggedIn() {
   updateCollabBadge();
   // Load history
   loadHistory();
+  // Owner-only UI: show/hide edit button and owner-only sel-bubble buttons
+  const isOwner = window._isOwner();
+  const editBtn = document.getElementById('btn-edit-mode');
+  if (editBtn) editBtn.style.display = isOwner ? '' : 'none';
+  document.querySelectorAll('.sel-owner-only').forEach(el => {
+    el.style.display = isOwner ? '' : 'none';
+  });
+  // Title badge: show role
+  document.getElementById('collab-user-name').title = isOwner ? '편집자' : '뷰어';
 }
 
 document.getElementById('li-name').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('li-email').focus(); });
