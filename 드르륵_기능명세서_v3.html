@@ -8544,7 +8544,11 @@ document.addEventListener('keydown', function(e) {
 // ── USER SESSION ──────────────────────────────────────────────
 // ══════════════════════════════════════════════════════════════
 const USER_KEY = 'drrrk-user-v2';
+const OWNER_EMAILS = ['shenowhere2@gmail.com'];
 let _me = null; // { id, name, email, color }
+
+// Exposed globally so first-script (dblclick handler) can check
+window._isOwner = function() { return _me && OWNER_EMAILS.includes(_me.email); };
 
 const USER_COLORS = [
   '#ef4444','#f97316','#eab308','#22c55e','#14b8a6',
