@@ -8954,12 +8954,13 @@ function _insertImageFile(file, savedRange, ov) {
 
 function selAddComment() {
   if (!_me) return;
-  const quote = _selRange ? _selRange.toString().trim().slice(0, 200) : '';
+  const savedRange = _selRange; // save before hideBubble clears it
+  const quote = savedRange ? savedRange.toString().trim().slice(0, 200) : '';
   hideBubble();
-  openCmtDialog(quote);
+  openCmtDialog(quote, savedRange);
 }
 
-function openCmtDialog(quote) {
+function openCmtDialog(quote, savedRange) {
   const ov = document.createElement('div');
   ov.style.cssText = 'position:fixed;inset:0;z-index:19999;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;';
   ov.innerHTML = `
