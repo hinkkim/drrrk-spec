@@ -9042,7 +9042,8 @@ function saveBookmarks(arr) { localStorage.setItem(BKM_KEY(), JSON.stringify(arr
 
 function selAddBookmark() {
   if (!_me) return;
-  const quote = _selRange ? _selRange.toString().trim().slice(0, 200) : '';
+  const savedRange = _selRange; // save before hideBubble clears it
+  const quote = savedRange ? savedRange.toString().trim().slice(0, 200) : '';
   if (!quote) return;
   const title = prompt('북마크 제목 (선택사항):', quote.slice(0, 30)) || quote.slice(0, 30);
   hideBubble();
@@ -9050,12 +9051,12 @@ function selAddBookmark() {
   const arr = loadBookmarks();
   arr.unshift(bkm);
   saveBookmarks(arr);
-  if (_selRange) {
+  if (savedRange) {
     try {
       const mark = document.createElement('mark');
       mark.className = 'bkm-mark'; mark.dataset.bid = bkm.id;
       mark.title = '🔖 ' + title;
-      _selRange.surroundContents(mark);
+      savedRange.surroundContents(mark);
     } catch {}
   }
   _selRange = null;
