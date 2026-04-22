@@ -7576,42 +7576,10 @@ document.getElementById('content').addEventListener('click', e => {
 // ══════════════════════════════════════════════════════════════
 // ── SELECTION BAR (works in view AND edit mode) ───────────────
 // ══════════════════════════════════════════════════════════════
+// selection-bar replaced by #sel-bubble in collab script
 const selBar = document.getElementById('selection-bar');
+// selBar is kept as a no-op stub to avoid reference errors in old functions
 let selBarTimer;
-
-document.addEventListener('mouseup', () => {
-  clearTimeout(selBarTimer);
-  selBarTimer = setTimeout(() => {
-    const sel = window.getSelection();
-    if (!sel || sel.isCollapsed || !sel.toString().trim()) {
-      selBar.style.display = 'none';
-      return;
-    }
-    // Only show inside #content
-    const range = sel.getRangeAt(0);
-    const contentEl = document.getElementById('content');
-    if (!contentEl.contains(range.commonAncestorContainer)) {
-      selBar.style.display = 'none';
-      return;
-    }
-    // Position above selection
-    const rect = range.getBoundingClientRect();
-    const scrollY = window.scrollY;
-    const barW = 160;
-    let left = rect.left + rect.width / 2;
-    left = Math.max(barW/2 + 8, Math.min(window.innerWidth - barW/2 - 8, left));
-    selBar.style.display = 'flex';
-    selBar.style.top  = (rect.top + scrollY - 48) + 'px';
-    selBar.style.left = left + 'px';
-    selBar.style.transform = 'translateX(-50%)';
-  }, 60);
-});
-
-document.addEventListener('mousedown', e => {
-  if (!selBar.contains(e.target)) {
-    selBar.style.display = 'none';
-  }
-});
 
 function selBarCopy() {
   document.execCommand('copy');
