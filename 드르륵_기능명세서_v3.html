@@ -8473,6 +8473,10 @@ document.addEventListener('keydown', function(e) {
 
 <!-- ── Selection Bubble ────────────────────── -->
 <div id="sel-bubble">
+  <button class="sel-btn sel-owner-only" onclick="selAddLink()" title="링크 추가">🔗 링크</button>
+  <div class="sel-sep sel-owner-only"></div>
+  <button class="sel-btn sel-owner-only" onclick="selAddImage()" title="이미지 삽입">🖼️ 이미지</button>
+  <div class="sel-sep sel-owner-only"></div>
   <button class="sel-btn" onclick="selAddComment()">💬 댓글</button>
   <div class="sel-sep"></div>
   <button class="sel-btn" onclick="selAddBookmark()">🔖 북마크</button>
