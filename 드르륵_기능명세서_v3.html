@@ -1551,135 +1551,151 @@ body.collab-open #wrapper { padding-right: var(--collab-w); }
   </div>
 
   <!-- ── UI/UX 탭 ─────────────────────────────────────────── -->
-  <div id="rpane-uiux" class="role-tab-pane" style="padding:20px 0 4px;">
-    <!-- Section links -->
-    <div style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:0.08em;margin-bottom:10px;">📎 집중해야 할 섹션</div>
-    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:20px;">
-      <div style="display:flex;align-items:baseline;gap:10px;font-size:13px;"><span style="min-width:28px;color:#FFC11F;font-weight:700;">§5</span><span style="color:#64748b;flex:1;">바이어 OS 5대 메뉴 · 화면 기능 요구사항 — 각 화면의 상태·조건·예외 처리</span><a href="#nav-5-기능-요구사항" style="color:#FFC11F;font-weight:700;white-space:nowrap;font-size:12px;">바로가기 →</a></div>
-      <div style="display:flex;align-items:baseline;gap:10px;font-size:13px;"><span style="min-width:28px;color:#FFC11F;font-weight:700;">§6</span><span style="color:#64748b;flex:1;">UX/접근성 기준 — 터치 타겟, 반응속도, 모바일 390px 기준 가이드</span><a href="#nav-64-UX-접근성-기준" style="color:#FFC11F;font-weight:700;white-space:nowrap;font-size:12px;">바로가기 →</a></div>
-      <div style="display:flex;align-items:baseline;gap:10px;font-size:13px;"><span style="min-width:28px;color:#FFC11F;font-weight:700;">§11</span><span style="color:#64748b;flex:1;">IA 개편 — 3-OS 메뉴 체계, 마이페이지 구조 최종안</span><a href="#nav-11-정보-구조IA-개편-및-메뉴-체계" style="color:#FFC11F;font-weight:700;white-space:nowrap;font-size:12px;">바로가기 →</a></div>
-      <div style="display:flex;align-items:baseline;gap:10px;font-size:13px;"><span style="min-width:28px;color:#FFC11F;font-weight:700;">§12</span><span style="color:#64748b;flex:1;">법적 리마인드 UX 3단계 스펙 — 팝업·배너·블로킹 화면 설계 기준</span><a href="#nav-132-리마인드-UX-3단계-스펙" style="color:#FFC11F;font-weight:700;white-space:nowrap;font-size:12px;">바로가기 →</a></div>
-      <div style="display:flex;align-items:baseline;gap:10px;font-size:13px;"><span style="min-width:28px;color:#FFC11F;font-weight:700;">§13</span><span style="color:#64748b;flex:1;">유저 OS 기능 상세 — 담보물 등록 폼, 상환 시뮬레이터, 알림 설정 UX</span><a href="#nav-13-유저-OS-기능-요구사항-상세" style="color:#FFC11F;font-weight:700;white-space:nowrap;font-size:12px;">바로가기 →</a></div>
-      <div style="display:flex;align-items:baseline;gap:10px;font-size:13px;"><span style="min-width:28px;color:#FFC11F;font-weight:700;">§17</span><span style="color:#64748b;flex:1;">상환 UX 분기 — 입금 확인 버튼 구조, 연체 단계별 배너 노출 규칙</span><a href="#nav-186-바이어-입금-확인-UX-버튼-구조-및-분기" style="color:#FFC11F;font-weight:700;white-space:nowrap;font-size:12px;">바로가기 →</a></div>
-      <div style="display:flex;align-items:baseline;gap:10px;font-size:13px;"><span style="min-width:28px;color:#FFC11F;font-weight:700;">WF</span><span style="color:#64748b;flex:1;">모바일 와이어프레임 Part 1~3 — P-01~P-12 전체 화면 설계</span><a href="#nav-14-참조-문서" style="color:#FFC11F;font-weight:700;white-space:nowrap;font-size:12px;">바로가기 →</a></div>
+  <div id="rpane-uiux" class="role-tab-pane" style="padding:18px 0 4px;">
+    <!-- progress -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <span style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:0.08em;">✅ 작업 체크리스트</span>
+      <span id="prog-uiux" style="font-size:11px;font-weight:700;color:#FFC11F;background:#fff8eb;border:1px solid #fde68a;border-radius:20px;padding:2px 10px;">0 / 12 완료</span>
+    </div>
+    <!-- checklist table -->
+    <div style="border:1.5px solid #e2e8f0;border-radius:10px;overflow:hidden;margin-bottom:20px;">
+      <table style="width:100%;border-collapse:collapse;font-size:12.5px;">
+        <thead>
+          <tr style="background:#fafafa;border-bottom:1.5px solid #e2e8f0;">
+            <th style="width:36px;padding:9px 8px;"></th>
+            <th style="padding:9px 12px;text-align:left;color:#94a3b8;font-weight:700;font-size:11px;letter-spacing:0.06em;white-space:nowrap;">작업 영역</th>
+            <th style="padding:9px 12px;text-align:left;color:#94a3b8;font-weight:700;font-size:11px;letter-spacing:0.06em;">확인해야 할 것</th>
+            <th style="width:52px;padding:9px 8px;text-align:center;color:#94a3b8;font-weight:700;font-size:11px;">참고</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-uiux-0" onchange="onChk('uiux')" style="width:15px;height:15px;accent-color:#FFC11F;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">화면 설계</td><td style="padding:9px 12px;color:#0f172a;">각 화면의 빈 상태(Empty state) 디자인 완료</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-5-기능-요구사항" style="color:#FFC11F;font-size:11px;font-weight:700;text-decoration:none;">§5</a></td></tr>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-uiux-1" onchange="onChk('uiux')" style="width:15px;height:15px;accent-color:#FFC11F;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">화면 설계</td><td style="padding:9px 12px;color:#0f172a;">로딩 / 성공 / 에러 3가지 상태 화면 모두 설계</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-5-기능-요구사항" style="color:#FFC11F;font-size:11px;font-weight:700;text-decoration:none;">§5</a></td></tr>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;background:#fffbf0;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-uiux-2" onchange="onChk('uiux')" style="width:15px;height:15px;accent-color:#FFC11F;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">모바일 기준</td><td style="padding:9px 12px;color:#0f172a;">터치 타겟 모두 44×44px 이상인지 확인</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-64-UX-접근성-기준" style="color:#FFC11F;font-size:11px;font-weight:700;text-decoration:none;">§6</a></td></tr>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;background:#fffbf0;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-uiux-3" onchange="onChk('uiux')" style="width:15px;height:15px;accent-color:#FFC11F;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">모바일 기준</td><td style="padding:9px 12px;color:#0f172a;">390px 기준 레이아웃 깨지는 곳 없는지 확인</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-64-UX-접근성-기준" style="color:#FFC11F;font-size:11px;font-weight:700;text-decoration:none;">§6</a></td></tr>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-uiux-4" onchange="onChk('uiux')" style="width:15px;height:15px;accent-color:#FFC11F;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">법적 UI</td><td style="padding:9px 12px;color:#0f172a;">이자율 법정 고지 문구가 화면에 포함됐는지</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-4-법적-요구사항-및-컴플라이언스" style="color:#FFC11F;font-size:11px;font-weight:700;text-decoration:none;">§4</a></td></tr>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-uiux-5" onchange="onChk('uiux')" style="width:15px;height:15px;accent-color:#FFC11F;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">법적 UI</td><td style="padding:9px 12px;color:#0f172a;">철회권 7일 안내 팝업 설계됐는지</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-132-리마인드-UX-3단계-스펙" style="color:#FFC11F;font-size:11px;font-weight:700;text-decoration:none;">§12</a></td></tr>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-uiux-6" onchange="onChk('uiux')" style="width:15px;height:15px;accent-color:#FFC11F;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">법적 UI</td><td style="padding:9px 12px;color:#0f172a;">광고성 레이블 표시 위치 및 문구 확인</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-132-리마인드-UX-3단계-스펙" style="color:#FFC11F;font-size:11px;font-weight:700;text-decoration:none;">§12</a></td></tr>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;background:#fffbf0;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-uiux-7" onchange="onChk('uiux')" style="width:15px;height:15px;accent-color:#FFC11F;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">전자서명</td><td style="padding:9px 12px;color:#0f172a;">동의 팝업 순서 및 필수 문구 포함 여부</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-8-외부-시스템-연동" style="color:#FFC11F;font-size:11px;font-weight:700;text-decoration:none;">§8</a></td></tr>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-uiux-8" onchange="onChk('uiux')" style="width:15px;height:15px;accent-color:#FFC11F;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">연체 UX</td><td style="padding:9px 12px;color:#0f172a;">D+1 / D+7 / D+14 / D+30 단계별 다른 배너 디자인</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-186-바이어-입금-확인-UX-버튼-구조-및-분기" style="color:#FFC11F;font-size:11px;font-weight:700;text-decoration:none;">§17</a></td></tr>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-uiux-9" onchange="onChk('uiux')" style="width:15px;height:15px;accent-color:#FFC11F;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">리마인드 UX</td><td style="padding:9px 12px;color:#0f172a;">팝업 → 배너 → 블로킹 3단계 흐름 설계 완료</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-132-리마인드-UX-3단계-스펙" style="color:#FFC11F;font-size:11px;font-weight:700;text-decoration:none;">§12</a></td></tr>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;background:#fffbf0;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-uiux-10" onchange="onChk('uiux')" style="width:15px;height:15px;accent-color:#FFC11F;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">IA 구조</td><td style="padding:9px 12px;color:#0f172a;">3-OS 메뉴 체계 최종안 화면에 반영됐는지</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-11-정보-구조IA-개편-및-메뉴-체계" style="color:#FFC11F;font-size:11px;font-weight:700;text-decoration:none;">§11</a></td></tr>
+          <tr class="chk-row"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-uiux-11" onchange="onChk('uiux')" style="width:15px;height:15px;accent-color:#FFC11F;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;background:#fffbf0;">IA 구조</td><td style="padding:9px 12px;color:#0f172a;background:#fffbf0;">마이페이지 구조 최종안과 와이어프레임 일치 확인</td><td style="padding:9px 8px;text-align:center;background:#fffbf0;"><a href="#nav-11-정보-구조IA-개편-및-메뉴-체계" style="color:#FFC11F;font-size:11px;font-weight:700;text-decoration:none;">§11</a></td></tr>
+        </tbody>
+      </table>
     </div>
     <!-- Summary cards -->
-    <div style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:0.08em;margin-bottom:10px;">📋 핵심 체크포인트</div>
+    <div style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:0.08em;margin-bottom:10px;">📋 핵심 참고사항</div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
       <div style="background:#fff8eb;border:1.5px solid #fde68a;border-radius:10px;padding:14px 16px;">
         <div style="font-size:12px;font-weight:800;color:#92400e;margin-bottom:6px;">📱 모바일 기준</div>
-        <ul style="font-size:12px;color:#78350f;margin:0;padding-left:16px;line-height:1.7;">
-          <li>390px 기준 (Mobile Web)</li>
-          <li>터치 타겟 최소 44×44px</li>
-          <li>바텀시트 / 풀스크린 전환</li>
-          <li>스켈레톤 UI 필수 (로딩)</li>
-        </ul>
+        <ul style="font-size:12px;color:#78350f;margin:0;padding-left:16px;line-height:1.7;"><li>390px 기준 (Mobile Web)</li><li>터치 타겟 최소 44×44px</li><li>바텀시트 / 풀스크린 전환</li><li>스켈레톤 UI 필수 (로딩)</li></ul>
       </div>
       <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:14px 16px;">
         <div style="font-size:12px;font-weight:800;color:#166534;margin-bottom:6px;">🔄 주요 상태 화면</div>
-        <ul style="font-size:12px;color:#14532d;margin:0;padding-left:16px;line-height:1.7;">
-          <li>빈 상태 (Empty state)</li>
-          <li>로딩 / 에러 / 성공</li>
-          <li>입찰 중 / 낙찰 / 실패</li>
-          <li>연체 D+1~D+30 단계</li>
-        </ul>
+        <ul style="font-size:12px;color:#14532d;margin:0;padding-left:16px;line-height:1.7;"><li>빈 상태 (Empty state)</li><li>로딩 / 에러 / 성공</li><li>입찰 중 / 낙찰 / 실패</li><li>연체 D+1~D+30 단계</li></ul>
       </div>
       <div style="background:#fef3f2;border:1.5px solid #fecaca;border-radius:10px;padding:14px 16px;">
         <div style="font-size:12px;font-weight:800;color:#991b1b;margin-bottom:6px;">⚖️ 법적 UI 필수</div>
-        <ul style="font-size:12px;color:#7f1d1d;margin:0;padding-left:16px;line-height:1.7;">
-          <li>이자율 법정 고지 화면</li>
-          <li>전자서명 동의 팝업</li>
-          <li>철회권 안내 (7일)</li>
-          <li>광고성 레이블 표시</li>
-        </ul>
+        <ul style="font-size:12px;color:#7f1d1d;margin:0;padding-left:16px;line-height:1.7;"><li>이자율 법정 고지 화면</li><li>전자서명 동의 팝업</li><li>철회권 안내 (7일)</li><li>광고성 레이블 표시</li></ul>
       </div>
     </div>
   </div>
 
   <!-- ── 프론트엔드 탭 ─────────────────────────────────────── -->
-  <div id="rpane-fe" class="role-tab-pane" style="padding:20px 0 4px;display:none;">
-    <div style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:0.08em;margin-bottom:10px;">📎 집중해야 할 섹션</div>
-    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:20px;">
-      <div style="display:flex;align-items:baseline;gap:10px;font-size:13px;"><span style="min-width:28px;color:#3b82f6;font-weight:700;">§5</span><span style="color:#64748b;flex:1;">기능 요구사항 — API 호출 시점, 화면 렌더링 조건, 상태값 정의</span><a href="#nav-5-기능-요구사항" style="color:#3b82f6;font-weight:700;white-space:nowrap;font-size:12px;">바로가기 →</a></div>
-      <div style="display:flex;align-items:baseline;gap:10px;font-size:13px;"><span style="min-width:28px;color:#3b82f6;font-weight:700;">§6</span><span style="color:#64748b;flex:1;">성능 요구사항 — 3초 이내 로딩, LCP·FCP 기준, API 응답 timeout</span><a href="#nav-61-성능-요구사항" style="color:#3b82f6;font-weight:700;white-space:nowrap;font-size:12px;">바로가기 →</a></div>
-      <div style="display:flex;align-items:baseline;gap:10px;font-size:13px;"><span style="min-width:28px;color:#3b82f6;font-weight:700;">§7</span><span style="color:#64748b;flex:1;">데이터 모델 — 프론트 바인딩 필드명, 타입, nullable 여부</span><a href="#nav-7-주요-데이터-모델-엔티티-정의" style="color:#3b82f6;font-weight:700;white-space:nowrap;font-size:12px;">바로가기 →</a></div>
-      <div style="display:flex;align-items:baseline;gap:10px;font-size:13px;"><span style="min-width:28px;color:#3b82f6;font-weight:700;">§8</span><span style="color:#64748b;flex:1;">외부 시스템 연동 — 전자서명, 알림톡, 신용조회 API 연동 포인트</span><a href="#nav-8-외부-시스템-연동" style="color:#3b82f6;font-weight:700;white-space:nowrap;font-size:12px;">바로가기 →</a></div>
-      <div style="display:flex;align-items:baseline;gap:10px;font-size:13px;"><span style="min-width:28px;color:#3b82f6;font-weight:700;">§13</span><span style="color:#64748b;flex:1;">유저 OS 상세 — 담보물 폼 필드 유효성, 상환 시뮬레이터 계산식</span><a href="#nav-13-유저-OS-기능-요구사항-상세" style="color:#3b82f6;font-weight:700;white-space:nowrap;font-size:12px;">바로가기 →</a></div>
-      <div style="display:flex;align-items:baseline;gap:10px;font-size:13px;"><span style="min-width:28px;color:#3b82f6;font-weight:700;">§16</span><span style="color:#64748b;flex:1;">Prime 점수 — 프론트 점수 렌더링, 등급 뱃지 조건 분기</span><a href="#nav-16-Prime-바이어-점수-산정-시스템-상세" style="color:#3b82f6;font-weight:700;white-space:nowrap;font-size:12px;">바로가기 →</a></div>
-      <div style="display:flex;align-items:baseline;gap:10px;font-size:13px;"><span style="min-width:28px;color:#3b82f6;font-weight:700;">§17</span><span style="color:#64748b;flex:1;">상환 상태 머신 — 프론트 상태값 열거형, 버튼 활성/비활성 분기</span><a href="#nav-182-상태-정의-State-Definitions" style="color:#3b82f6;font-weight:700;white-space:nowrap;font-size:12px;">바로가기 →</a></div>
+  <div id="rpane-fe" class="role-tab-pane" style="padding:18px 0 4px;display:none;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <span style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:0.08em;">✅ 작업 체크리스트</span>
+      <span id="prog-fe" style="font-size:11px;font-weight:700;color:#3b82f6;background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;padding:2px 10px;">0 / 12 완료</span>
     </div>
-    <div style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:0.08em;margin-bottom:10px;">📋 핵심 체크포인트</div>
+    <div style="border:1.5px solid #e2e8f0;border-radius:10px;overflow:hidden;margin-bottom:20px;">
+      <table style="width:100%;border-collapse:collapse;font-size:12.5px;">
+        <thead>
+          <tr style="background:#fafafa;border-bottom:1.5px solid #e2e8f0;">
+            <th style="width:36px;padding:9px 8px;"></th>
+            <th style="padding:9px 12px;text-align:left;color:#94a3b8;font-weight:700;font-size:11px;letter-spacing:0.06em;white-space:nowrap;">작업 영역</th>
+            <th style="padding:9px 12px;text-align:left;color:#94a3b8;font-weight:700;font-size:11px;letter-spacing:0.06em;">확인해야 할 것</th>
+            <th style="width:52px;padding:9px 8px;text-align:center;color:#94a3b8;font-weight:700;font-size:11px;">참고</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-fe-0" onchange="onChk('fe')" style="width:15px;height:15px;accent-color:#3b82f6;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">상태 관리</td><td style="padding:9px 12px;color:#0f172a;">입찰 상태 7단계 enum 정의했는지</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-5-기능-요구사항" style="color:#3b82f6;font-size:11px;font-weight:700;text-decoration:none;">§5</a></td></tr>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-fe-1" onchange="onChk('fe')" style="width:15px;height:15px;accent-color:#3b82f6;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">상태 관리</td><td style="padding:9px 12px;color:#0f172a;">상환 상태 머신 12종 모두 분기 처리했는지</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-182-상태-정의-State-Definitions" style="color:#3b82f6;font-size:11px;font-weight:700;text-decoration:none;">§17</a></td></tr>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-fe-2" onchange="onChk('fe')" style="width:15px;height:15px;accent-color:#3b82f6;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">상태 관리</td><td style="padding:9px 12px;color:#0f172a;">연체 D+1 / D+7 / D+14 / D+30 배너 조건 분기 구현</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-186-바이어-입금-확인-UX-버튼-구조-및-분기" style="color:#3b82f6;font-size:11px;font-weight:700;text-decoration:none;">§17</a></td></tr>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;background:#f0f6ff;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-fe-3" onchange="onChk('fe')" style="width:15px;height:15px;accent-color:#3b82f6;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">성능</td><td style="padding:9px 12px;color:#0f172a;">초기 로딩 3초 이내 달성 확인 (LCP 기준)</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-61-성능-요구사항" style="color:#3b82f6;font-size:11px;font-weight:700;text-decoration:none;">§6</a></td></tr>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;background:#f0f6ff;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-fe-4" onchange="onChk('fe')" style="width:15px;height:15px;accent-color:#3b82f6;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">성능</td><td style="padding:9px 12px;color:#0f172a;">이미지 lazy-load 적용했는지</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-61-성능-요구사항" style="color:#3b82f6;font-size:11px;font-weight:700;text-decoration:none;">§6</a></td></tr>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;background:#f0f6ff;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-fe-5" onchange="onChk('fe')" style="width:15px;height:15px;accent-color:#3b82f6;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">성능</td><td style="padding:9px 12px;color:#0f172a;">API timeout 10초 초과 시 에러 처리 구현</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-61-성능-요구사항" style="color:#3b82f6;font-size:11px;font-weight:700;text-decoration:none;">§6</a></td></tr>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-fe-6" onchange="onChk('fe')" style="width:15px;height:15px;accent-color:#3b82f6;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">API 연동</td><td style="padding:9px 12px;color:#0f172a;">전자서명 위젯 embed 방식 확인 (서드파티 SDK)</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-8-외부-시스템-연동" style="color:#3b82f6;font-size:11px;font-weight:700;text-decoration:none;">§8</a></td></tr>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-fe-7" onchange="onChk('fe')" style="width:15px;height:15px;accent-color:#3b82f6;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">API 연동</td><td style="padding:9px 12px;color:#0f172a;">알림톡 발송 트리거 시점 FE에서 정의됐는지</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-8-외부-시스템-연동" style="color:#3b82f6;font-size:11px;font-weight:700;text-decoration:none;">§8</a></td></tr>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-fe-8" onchange="onChk('fe')" style="width:15px;height:15px;accent-color:#3b82f6;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">API 연동</td><td style="padding:9px 12px;color:#0f172a;">신용조회 결과 폴링 로직 구현됐는지</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-8-외부-시스템-연동" style="color:#3b82f6;font-size:11px;font-weight:700;text-decoration:none;">§8</a></td></tr>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;background:#f0f6ff;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-fe-9" onchange="onChk('fe')" style="width:15px;height:15px;accent-color:#3b82f6;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">폼 유효성</td><td style="padding:9px 12px;color:#0f172a;">담보물 등록 폼 필드 유효성 검사 구현</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-13-유저-OS-기능-요구사항-상세" style="color:#3b82f6;font-size:11px;font-weight:700;text-decoration:none;">§13</a></td></tr>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;background:#f0f6ff;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-fe-10" onchange="onChk('fe')" style="width:15px;height:15px;accent-color:#3b82f6;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">계산식</td><td style="padding:9px 12px;color:#0f172a;">상환 시뮬레이터 계산식 BE 로직과 일치 확인</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-13-유저-OS-기능-요구사항-상세" style="color:#3b82f6;font-size:11px;font-weight:700;text-decoration:none;">§13</a></td></tr>
+          <tr class="chk-row"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-fe-11" onchange="onChk('fe')" style="width:15px;height:15px;accent-color:#3b82f6;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">점수 렌더링</td><td style="padding:9px 12px;color:#0f172a;">Prime 등급 4단계 뱃지 조건 분기 처리됐는지</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-16-Prime-바이어-점수-산정-시스템-상세" style="color:#3b82f6;font-size:11px;font-weight:700;text-decoration:none;">§16</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:0.08em;margin-bottom:10px;">📋 핵심 참고사항</div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
       <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:10px;padding:14px 16px;">
         <div style="font-size:12px;font-weight:800;color:#1e40af;margin-bottom:6px;">⚡ 성능 기준</div>
-        <ul style="font-size:12px;color:#1e3a8a;margin:0;padding-left:16px;line-height:1.7;">
-          <li>초기 로딩 3초 이내</li>
-          <li>API timeout 10초</li>
-          <li>이미지 lazy-load 필수</li>
-          <li>오프라인 에러 처리</li>
-        </ul>
+        <ul style="font-size:12px;color:#1e3a8a;margin:0;padding-left:16px;line-height:1.7;"><li>초기 로딩 3초 이내</li><li>API timeout 10초</li><li>이미지 lazy-load 필수</li><li>오프라인 에러 처리</li></ul>
       </div>
       <div style="background:#f5f3ff;border:1.5px solid #ddd6fe;border-radius:10px;padding:14px 16px;">
         <div style="font-size:12px;font-weight:800;color:#5b21b6;margin-bottom:6px;">🔌 주요 API 연동</div>
-        <ul style="font-size:12px;color:#4c1d95;margin:0;padding-left:16px;line-height:1.7;">
-          <li>입찰 제출 / 낙찰 조회</li>
-          <li>전자서명 위젯 embed</li>
-          <li>알림톡 발송 트리거</li>
-          <li>신용조회 결과 폴링</li>
-        </ul>
+        <ul style="font-size:12px;color:#4c1d95;margin:0;padding-left:16px;line-height:1.7;"><li>입찰 제출 / 낙찰 조회</li><li>전자서명 위젯 embed</li><li>알림톡 발송 트리거</li><li>신용조회 결과 폴링</li></ul>
       </div>
       <div style="background:#fff7ed;border:1.5px solid #fed7aa;border-radius:10px;padding:14px 16px;">
         <div style="font-size:12px;font-weight:800;color:#9a3412;margin-bottom:6px;">🎯 상태 분기 핵심</div>
-        <ul style="font-size:12px;color:#7c2d12;margin:0;padding-left:16px;line-height:1.7;">
-          <li>입찰 상태 7단계</li>
-          <li>상환 상태 머신 12종</li>
-          <li>연체 단계 D+1/7/14/30</li>
-          <li>Prime 등급 4단계</li>
-        </ul>
+        <ul style="font-size:12px;color:#7c2d12;margin:0;padding-left:16px;line-height:1.7;"><li>입찰 상태 7단계</li><li>상환 상태 머신 12종</li><li>연체 단계 D+1/7/14/30</li><li>Prime 등급 4단계</li></ul>
       </div>
     </div>
   </div>
 
   <!-- ── 백엔드 탭 ──────────────────────────────────────────── -->
-  <div id="rpane-be" class="role-tab-pane" style="padding:20px 0 4px;display:none;">
-    <div style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:0.08em;margin-bottom:10px;">📎 집중해야 할 섹션</div>
-    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:20px;">
-      <div style="display:flex;align-items:baseline;gap:10px;font-size:13px;"><span style="min-width:28px;color:#059669;font-weight:700;">§4</span><span style="color:#64748b;flex:1;">법적 요구사항 — 이자제한법 20%, 대부업법 의무 로그, 개인정보 처리 방침</span><a href="#nav-4-법적-요구사항-및-컴플라이언스" style="color:#059669;font-weight:700;white-space:nowrap;font-size:12px;">바로가기 →</a></div>
-      <div style="display:flex;align-items:baseline;gap:10px;font-size:13px;"><span style="min-width:28px;color:#059669;font-weight:700;">§6</span><span style="color:#64748b;flex:1;">보안 요구사항 — JWT 인증, 암호화 기준, 감사 로그 보존 5년</span><a href="#nav-62-보안-요구사항" style="color:#059669;font-weight:700;white-space:nowrap;font-size:12px;">바로가기 →</a></div>
-      <div style="display:flex;align-items:baseline;gap:10px;font-size:13px;"><span style="min-width:28px;color:#059669;font-weight:700;">§7</span><span style="color:#64748b;flex:1;">데이터 모델 — 엔티티 관계, 핵심 필드 타입, 인덱스 설계 힌트</span><a href="#nav-7-주요-데이터-모델-엔티티-정의" style="color:#059669;font-weight:700;white-space:nowrap;font-size:12px;">바로가기 →</a></div>
-      <div style="display:flex;align-items:baseline;gap:10px;font-size:13px;"><span style="min-width:28px;color:#059669;font-weight:700;">§8</span><span style="color:#64748b;flex:1;">외부 시스템 연동 — 전자서명·알림톡·신용조회 API 명세 및 failover</span><a href="#nav-8-외부-시스템-연동" style="color:#059669;font-weight:700;white-space:nowrap;font-size:12px;">바로가기 →</a></div>
-      <div style="display:flex;align-items:baseline;gap:10px;font-size:13px;"><span style="min-width:28px;color:#059669;font-weight:700;">§14</span><span style="color:#64748b;flex:1;">어드민 백오피스 — 분쟁·제재·정산 처리 로직, 이벤트 소싱 요건</span><a href="#nav-14-관리자어드민-백오피스-요구사항" style="color:#059669;font-weight:700;white-space:nowrap;font-size:12px;">바로가기 →</a></div>
-      <div style="display:flex;align-items:baseline;gap:10px;font-size:13px;"><span style="min-width:28px;color:#059669;font-weight:700;">§17</span><span style="color:#64748b;flex:1;">상환 상태 머신 — actual_received_at vs confirmed_at 필드 설계, Shadow Accrual</span><a href="#nav-17-상환-관리-상태-머신-알림-설계-위험-지표" style="color:#059669;font-weight:700;white-space:nowrap;font-size:12px;">바로가기 →</a></div>
-      <div style="display:flex;align-items:baseline;gap:10px;font-size:13px;"><span style="min-width:28px;color:#059669;font-weight:700;">§19</span><span style="color:#64748b;flex:1;">법적 참고 조항 가이드 — 서버 로그·계약서 보존 의무 법령 근거</span><a href="#nav-19-법적-참고-조항-가이드" style="color:#059669;font-weight:700;white-space:nowrap;font-size:12px;">바로가기 →</a></div>
+  <div id="rpane-be" class="role-tab-pane" style="padding:18px 0 4px;display:none;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <span style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:0.08em;">✅ 작업 체크리스트</span>
+      <span id="prog-be" style="font-size:11px;font-weight:700;color:#059669;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:20px;padding:2px 10px;">0 / 12 완료</span>
     </div>
-    <div style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:0.08em;margin-bottom:10px;">📋 핵심 체크포인트</div>
+    <div style="border:1.5px solid #e2e8f0;border-radius:10px;overflow:hidden;margin-bottom:20px;">
+      <table style="width:100%;border-collapse:collapse;font-size:12.5px;">
+        <thead>
+          <tr style="background:#fafafa;border-bottom:1.5px solid #e2e8f0;">
+            <th style="width:36px;padding:9px 8px;"></th>
+            <th style="padding:9px 12px;text-align:left;color:#94a3b8;font-weight:700;font-size:11px;letter-spacing:0.06em;white-space:nowrap;">작업 영역</th>
+            <th style="padding:9px 12px;text-align:left;color:#94a3b8;font-weight:700;font-size:11px;letter-spacing:0.06em;">확인해야 할 것</th>
+            <th style="width:52px;padding:9px 8px;text-align:center;color:#94a3b8;font-weight:700;font-size:11px;">참고</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-be-0" onchange="onChk('be')" style="width:15px;height:15px;accent-color:#059669;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">법적 의무</td><td style="padding:9px 12px;color:#0f172a;">계약서·전자서명 데이터 5년 보존 로직 구현</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-4-법적-요구사항-및-컴플라이언스" style="color:#059669;font-size:11px;font-weight:700;text-decoration:none;">§4</a></td></tr>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-be-1" onchange="onChk('be')" style="width:15px;height:15px;accent-color:#059669;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">법적 의무</td><td style="padding:9px 12px;color:#0f172a;">이자율 20% 초과 요청 서버에서 차단되는지</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-4-법적-요구사항-및-컴플라이언스" style="color:#059669;font-size:11px;font-weight:700;text-decoration:none;">§4</a></td></tr>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-be-2" onchange="onChk('be')" style="width:15px;height:15px;accent-color:#059669;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">법적 의무</td><td style="padding:9px 12px;color:#0f172a;">개인정보 접근 이력 감사 로그 남기는지</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-62-보안-요구사항" style="color:#059669;font-size:11px;font-weight:700;text-decoration:none;">§6</a></td></tr>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;background:#f0fdf6;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-be-3" onchange="onChk('be')" style="width:15px;height:15px;accent-color:#059669;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">보안</td><td style="padding:9px 12px;color:#0f172a;">JWT + Refresh Token 만료·갱신 처리 구현</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-62-보안-요구사항" style="color:#059669;font-size:11px;font-weight:700;text-decoration:none;">§6</a></td></tr>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;background:#f0fdf6;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-be-4" onchange="onChk('be')" style="width:15px;height:15px;accent-color:#059669;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">보안</td><td style="padding:9px 12px;color:#0f172a;">PII 필드 AES-256 암호화 적용됐는지</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-62-보안-요구사항" style="color:#059669;font-size:11px;font-weight:700;text-decoration:none;">§6</a></td></tr>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;background:#f0fdf6;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-be-5" onchange="onChk('be')" style="width:15px;height:15px;accent-color:#059669;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">보안</td><td style="padding:9px 12px;color:#0f172a;">API Rate limiting 설정됐는지</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-62-보안-요구사항" style="color:#059669;font-size:11px;font-weight:700;text-decoration:none;">§6</a></td></tr>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-be-6" onchange="onChk('be')" style="width:15px;height:15px;accent-color:#059669;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">데이터 모델</td><td style="padding:9px 12px;color:#0f172a;">actual_received_at vs confirmed_at 필드 구분 설계</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-17-상환-관리-상태-머신-알림-설계-위험-지표" style="color:#059669;font-size:11px;font-weight:700;text-decoration:none;">§17</a></td></tr>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-be-7" onchange="onChk('be')" style="width:15px;height:15px;accent-color:#059669;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">데이터 모델</td><td style="padding:9px 12px;color:#0f172a;">Shadow Accrual 이자 계산 로직 구현됐는지</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-17-상환-관리-상태-머신-알림-설계-위험-지표" style="color:#059669;font-size:11px;font-weight:700;text-decoration:none;">§17</a></td></tr>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;background:#f0fdf6;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-be-8" onchange="onChk('be')" style="width:15px;height:15px;accent-color:#059669;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">외부 연동</td><td style="padding:9px 12px;color:#0f172a;">전자서명 API failover 처리 로직 있는지</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-8-외부-시스템-연동" style="color:#059669;font-size:11px;font-weight:700;text-decoration:none;">§8</a></td></tr>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;background:#f0fdf6;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-be-9" onchange="onChk('be')" style="width:15px;height:15px;accent-color:#059669;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">외부 연동</td><td style="padding:9px 12px;color:#0f172a;">알림톡 발송 실패 시 재시도 로직 구현</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-8-외부-시스템-연동" style="color:#059669;font-size:11px;font-weight:700;text-decoration:none;">§8</a></td></tr>
+          <tr class="chk-row" style="border-bottom:1px solid #f1f5f9;"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-be-10" onchange="onChk('be')" style="width:15px;height:15px;accent-color:#059669;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">어드민</td><td style="padding:9px 12px;color:#0f172a;">분쟁·제재 처리 이벤트 소싱 설계됐는지</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-14-관리자어드민-백오피스-요구사항" style="color:#059669;font-size:11px;font-weight:700;text-decoration:none;">§14</a></td></tr>
+          <tr class="chk-row"><td style="padding:9px 8px;text-align:center;"><input type="checkbox" class="role-chk" id="chk-be-11" onchange="onChk('be')" style="width:15px;height:15px;accent-color:#059669;cursor:pointer;"></td><td style="padding:9px 12px;color:#64748b;font-weight:600;white-space:nowrap;">어드민</td><td style="padding:9px 12px;color:#0f172a;">감사 로그 5년 보존 스토리지 설계됐는지</td><td style="padding:9px 8px;text-align:center;"><a href="#nav-19-법적-참고-조항-가이드" style="color:#059669;font-size:11px;font-weight:700;text-decoration:none;">§19</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:#94a3b8;letter-spacing:0.08em;margin-bottom:10px;">📋 핵심 참고사항</div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
       <div style="background:#ecfdf5;border:1.5px solid #a7f3d0;border-radius:10px;padding:14px 16px;">
         <div style="font-size:12px;font-weight:800;color:#065f46;margin-bottom:6px;">⚖️ 법적 의무 로그</div>
-        <ul style="font-size:12px;color:#064e3b;margin:0;padding-left:16px;line-height:1.7;">
-          <li>계약서 5년 보존 (대부업법)</li>
-          <li>이자율 계산 감사 로그</li>
-          <li>개인정보 접근 이력</li>
-          <li>전자서명 타임스탬프</li>
-        </ul>
+        <ul style="font-size:12px;color:#064e3b;margin:0;padding-left:16px;line-height:1.7;"><li>계약서 5년 보존 (대부업법)</li><li>이자율 계산 감사 로그</li><li>개인정보 접근 이력</li><li>전자서명 타임스탬프</li></ul>
       </div>
       <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:14px 16px;">
         <div style="font-size:12px;font-weight:800;color:#166534;margin-bottom:6px;">🗄 핵심 엔티티</div>
-        <ul style="font-size:12px;color:#14532d;margin:0;padding-left:16px;line-height:1.7;">
-          <li>User / Buyer / Collateral</li>
-          <li>Bid / Contract / Repayment</li>
-          <li>Transaction / Dispute</li>
-          <li>PrimeScore / AuditLog</li>
-        </ul>
+        <ul style="font-size:12px;color:#14532d;margin:0;padding-left:16px;line-height:1.7;"><li>User / Buyer / Collateral</li><li>Bid / Contract / Repayment</li><li>Transaction / Dispute</li><li>PrimeScore / AuditLog</li></ul>
       </div>
       <div style="background:#fef2f2;border:1.5px solid #fecaca;border-radius:10px;padding:14px 16px;">
         <div style="font-size:12px;font-weight:800;color:#991b1b;margin-bottom:6px;">🔒 보안 필수</div>
-        <ul style="font-size:12px;color:#7f1d1d;margin:0;padding-left:16px;line-height:1.7;">
-          <li>JWT + Refresh Token</li>
-          <li>PII 암호화 (AES-256)</li>
-          <li>Rate limiting API</li>
-          <li>SQL injection 방어</li>
-        </ul>
+        <ul style="font-size:12px;color:#7f1d1d;margin:0;padding-left:16px;line-height:1.7;"><li>JWT + Refresh Token</li><li>PII 암호화 (AES-256)</li><li>Rate limiting API</li><li>SQL injection 방어</li></ul>
       </div>
     </div>
   </div>
@@ -1693,6 +1709,37 @@ function switchRoleTab(role) {
     btn.style.color = r === role ? '#0f172a' : '#64748b';
   });
 }
+function onChk(role) {
+  const total = 12;
+  const done = document.querySelectorAll('#rpane-' + role + ' .role-chk:checked').length;
+  const prog = document.getElementById('prog-' + role);
+  if (prog) prog.textContent = done + ' / ' + total + ' 완료';
+  // persist
+  document.querySelectorAll('#rpane-' + role + ' .role-chk').forEach(chk => {
+    try { localStorage.setItem('rtab_' + chk.id, chk.checked ? '1' : '0'); } catch(e) {}
+  });
+}
+function resetTabChecks() {
+  document.querySelectorAll('.role-chk').forEach(chk => {
+    chk.checked = false;
+    try { localStorage.removeItem('rtab_' + chk.id); } catch(e) {}
+  });
+  ['uiux','fe','be'].forEach(r => {
+    const prog = document.getElementById('prog-' + r);
+    if (prog) prog.textContent = '0 / 12 완료';
+  });
+}
+// restore from localStorage on load
+(function loadRoleChecks() {
+  document.querySelectorAll('.role-chk').forEach(chk => {
+    try { if (localStorage.getItem('rtab_' + chk.id) === '1') { chk.checked = true; } } catch(e) {}
+  });
+  ['uiux','fe','be'].forEach(r => {
+    const done = document.querySelectorAll('#rpane-' + r + ' .role-chk:checked').length;
+    const prog = document.getElementById('prog-' + r);
+    if (prog && done > 0) prog.textContent = done + ' / 12 완료';
+  });
+})();
 </script>
 
 <section class="doc-section" id="nav-대부중개-플랫폼기능명세서-및-요구사항-정의서">
