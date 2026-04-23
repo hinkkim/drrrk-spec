@@ -9080,8 +9080,14 @@ document.addEventListener('keydown', function(e) {
     </div>
   </div>
   <div id="collab-footer">
-    <button class="cftr-btn" onclick="emailAllComments()">📨 이메일 전송</button>
-    <button class="cftr-btn" onclick="clearAllComments()">🗑 댓글 삭제</button>
+    <button class="cftr-btn" onclick="exportComments()" title="내 댓글을 JSON 파일로 저장해 팀원과 공유">📤 내보내기</button>
+    <button class="cftr-btn" onclick="importComments()" title="팀원에게서 받은 JSON 파일을 불러와 댓글 합치기">📥 가져오기</button>
+    <button class="cftr-btn" onclick="emailAllComments()">📨 이메일</button>
+    <button class="cftr-btn" onclick="clearAllComments()">🗑 삭제</button>
+  </div>
+  <input type="file" id="import-file-input" accept=".json" style="display:none" onchange="handleImportFile(event)">
+  <div id="collab-sync-notice" style="display:none;font-size:11px;color:#64748b;background:#f8fafc;border-top:1px solid #e2e8f0;padding:8px 12px;line-height:1.5;">
+    💡 댓글은 이 브라우저에만 저장돼요.<br>팀원 댓글을 보려면 <b>📥 가져오기</b>를 사용하세요.
   </div>
 </div>
 
