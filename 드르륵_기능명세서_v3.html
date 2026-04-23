@@ -9264,10 +9264,11 @@ function renderComments() {
         </div>
         <div class="cmt-reply-body">${renderMentions(r.text)}</div>
       </div>`).join('');
+    const importedBadge = c._imported ? '<span style="font-size:9px;font-weight:700;color:#6366f1;background:#eef2ff;border:1px solid #c7d2fe;border-radius:4px;padding:1px 5px;margin-left:4px;">가져옴</span>' : '';
     return `<div class="cmt-card ${resolved}" data-cid="${c.id}">
       <div class="cmt-card-head">
         ${av}
-        <span class="cmt-author">${c.author}</span>
+        <span class="cmt-author">${c.author}</span>${importedBadge}
         <span class="cmt-ts">${c.ts}</span>
         <button class="cmt-resolve-btn ${c.resolved?'done':''}" onclick="resolveComment(${c.id})">${resolveLabel}</button>
         <button class="cmt-del-btn" onclick="deleteCmt(${c.id})">✕</button>
