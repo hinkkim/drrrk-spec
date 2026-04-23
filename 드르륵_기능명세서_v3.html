@@ -1722,6 +1722,19 @@ body.collab-open #wrapper { padding-right: var(--collab-w); }
   </div>
 </div>
 <script>
+// ── 다이어그램 패널 토글 ──────────────────────
+function toggleDiag(btn, frameId) {
+  const frame = document.getElementById('diag-' + frameId);
+  const isHidden = frame.style.display === 'none' || frame.style.display === '';
+  frame.style.display = isHidden ? 'block' : 'none';
+  btn.textContent = isHidden ? '▲ 접기' : '▼ 다이어그램 펼치기';
+  btn.classList.toggle('open', isHidden);
+  // lazy-load: src 설정은 처음 펼칠 때만
+  if (isHidden) {
+    const ifr = frame.querySelector('iframe');
+    if (ifr && !ifr.dataset.loaded) { ifr.src = ifr.dataset.src; ifr.dataset.loaded = '1'; }
+  }
+}
 function switchRoleTab(role) {
   ['uiux','fe','be'].forEach(r => {
     document.getElementById('rpane-' + r).style.display = r === role ? 'block' : 'none';
