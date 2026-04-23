@@ -9247,7 +9247,7 @@ function renderComments() {
   const pane = document.getElementById('pane-comments');
   const arr  = loadAllComments();
   if (!arr.length) {
-    pane.innerHTML = '<div class="collab-empty">아직 댓글이 없습니다.<br>텍스트를 드래그하면 💬 버튼이 나타납니다.</div>';
+    pane.innerHTML = '<div class="collab-empty">아직 댓글이 없습니다.<br>텍스트를 드래그하면 💬 버튼이 나타납니다.<br><br><span style="font-size:11px;color:#94a3b8;">팀원 댓글을 받았다면<br>아래 <b>📥 가져오기</b>를 눌러주세요.</span></div>';
     return;
   }
   pane.innerHTML = arr.map(c => {
