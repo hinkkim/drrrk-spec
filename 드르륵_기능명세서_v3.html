@@ -1439,7 +1439,7 @@ body.collab-open #wrapper { padding-right: var(--collab-w); }
   </div>
 
   <!-- Floating mini-toolbar (appears near selected element) -->
-  <div id="float-toolbar" style="display: none; top: 8214.04px; left: 513.942px;">
+  <div id="float-toolbar" style="display: none; top: 9429.61px; left: 542.081px;">
     <button class="ft-btn" onclick="tbCmd('bold')"><b>B</b></button>
     <button class="ft-btn" onclick="tbCmd('italic')"><i>I</i></button>
     <div class="ft-sep"></div>
@@ -1508,7 +1508,7 @@ body.collab-open #wrapper { padding-right: var(--collab-w); }
   <!-- Image/Screen preview panel (right side) -->
   <div id="img-panel" class="">
     <div id="img-panel-header">
-      <span id="img-panel-title">5.1 홈 대시보드 (P-01)</span>
+      <span id="img-panel-title">5.2.2 진행 중 거래 — 딜 클로징 파이프라인 (P-03)</span>
       <button id="img-panel-close" onclick="closeImgPanel()">✕ 닫기</button>
     </div>
     <div id="img-panel-body">
@@ -9032,7 +9032,7 @@ document.addEventListener('keydown', function(e) {
 </div>
 
 <!-- ── Selection Bubble ────────────────────── -->
-<div id="sel-bubble" style="display: none; left: 810.682px; top: 573.668px;">
+<div id="sel-bubble" style="display: none; left: 587.205px; top: 447.474px;">
   <button class="sel-btn sel-owner-only" onclick="selAddLink()" title="링크 추가">🔗 링크</button>
   <div class="sel-sep sel-owner-only"></div>
   <button class="sel-btn sel-owner-only" onclick="selAddImage()" title="이미지 삽입">🖼️ 이미지</button>
@@ -9080,14 +9080,8 @@ document.addEventListener('keydown', function(e) {
     </div>
   </div>
   <div id="collab-footer">
-    <button class="cftr-btn" onclick="exportComments()" title="내 댓글을 JSON 파일로 저장해 팀원과 공유">📤 내보내기</button>
-    <button class="cftr-btn" onclick="importComments()" title="팀원에게서 받은 JSON 파일을 불러와 댓글 합치기">📥 가져오기</button>
-    <button class="cftr-btn" onclick="emailAllComments()">📨 이메일</button>
-    <button class="cftr-btn" onclick="clearAllComments()">🗑 삭제</button>
-  </div>
-  <input type="file" id="import-file-input" accept=".json" style="display:none" onchange="handleImportFile(event)">
-  <div id="collab-sync-notice" style="display:none;font-size:11px;color:#64748b;background:#f8fafc;border-top:1px solid #e2e8f0;padding:8px 12px;line-height:1.5;">
-    💡 댓글은 이 브라우저에만 저장돼요.<br>팀원 댓글을 보려면 <b>📥 가져오기</b>를 사용하세요.
+    <button class="cftr-btn" onclick="emailAllComments()">📨 이메일 전송</button>
+    <button class="cftr-btn" onclick="clearAllComments()">🗑 댓글 삭제</button>
   </div>
 </div>
 
@@ -9247,7 +9241,7 @@ function renderComments() {
   const pane = document.getElementById('pane-comments');
   const arr  = loadAllComments();
   if (!arr.length) {
-    pane.innerHTML = '<div class="collab-empty">아직 댓글이 없습니다.<br>텍스트를 드래그하면 💬 버튼이 나타납니다.<br><br><span style="font-size:11px;color:#94a3b8;">팀원 댓글을 받았다면<br>아래 <b>📥 가져오기</b>를 눌러주세요.</span></div>';
+    pane.innerHTML = '<div class="collab-empty">아직 댓글이 없습니다.<br>텍스트를 드래그하면 💬 버튼이 나타납니다.</div>';
     return;
   }
   pane.innerHTML = arr.map(c => {
@@ -9264,11 +9258,10 @@ function renderComments() {
         </div>
         <div class="cmt-reply-body">${renderMentions(r.text)}</div>
       </div>`).join('');
-    const importedBadge = c._imported ? '<span style="font-size:9px;font-weight:700;color:#6366f1;background:#eef2ff;border:1px solid #c7d2fe;border-radius:4px;padding:1px 5px;margin-left:4px;">가져옴</span>' : '';
     return `<div class="cmt-card ${resolved}" data-cid="${c.id}">
       <div class="cmt-card-head">
         ${av}
-        <span class="cmt-author">${c.author}</span>${importedBadge}
+        <span class="cmt-author">${c.author}</span>
         <span class="cmt-ts">${c.ts}</span>
         <button class="cmt-resolve-btn ${c.resolved?'done':''}" onclick="resolveComment(${c.id})">${resolveLabel}</button>
         <button class="cmt-del-btn" onclick="deleteCmt(${c.id})">✕</button>
@@ -9342,52 +9335,6 @@ function clearAllComments() {
   renderComments();
   updateCollabBadge();
   document.querySelectorAll('.cmt-mark').forEach(m => unwrapMark(m));
-}
-
-// ── 댓글 내보내기 / 가져오기 ──────────────────────────────────
-function exportComments() {
-  const arr = loadAllComments();
-  if (!arr.length) { alert('내보낼 댓글이 없습니다.'); return; }
-  const blob = new Blob([JSON.stringify(arr, null, 2)], { type: 'application/json' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href     = url;
-  a.download = '드르륵_댓글_' + new Date().toISOString().slice(0, 10) + '.json';
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function importComments() {
-  document.getElementById('import-file-input').click();
-}
-
-function handleImportFile(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(ev) {
-    try {
-      const incoming = JSON.parse(ev.target.result);
-      if (!Array.isArray(incoming)) { alert('올바른 댓글 파일이 아닙니다.'); return; }
-      const existing   = loadAllComments();
-      const existingIds = new Set(existing.map(c => c.id));
-      const newCmts    = incoming.filter(c => !existingIds.has(c.id)).map(c => ({...c, _imported: true}));
-      if (!newCmts.length) { alert('새로운 댓글이 없습니다.\n(이미 모두 포함돼 있어요)'); return; }
-      const merged = [...existing, ...newCmts].sort((a, b) => a.id - b.id);
-      saveAllComments(merged);
-      renderComments();
-      updateCollabBadge();
-      switchTab('comments');
-      // show sync notice
-      const notice = document.getElementById('collab-sync-notice');
-      if (notice) { notice.style.display = 'block'; setTimeout(() => { notice.style.display = 'none'; }, 5000); }
-      alert(`✅ 댓글 ${newCmts.length}개를 가져왔습니다.`);
-    } catch(err) {
-      alert('파일을 읽는 중 오류가 발생했습니다:\n' + err.message);
-    }
-    e.target.value = '';
-  };
-  reader.readAsText(file);
 }
 
 // ── @mention dropdown ─────────────────────────────────────────
