@@ -1181,7 +1181,7 @@ body.collab-open #wrapper { padding-right: var(--collab-w); }
 </head>
 <body class="">
 
-<div id="progress-bar" style="transform: scaleX(0.0485018);"></div>
+<div id="progress-bar" style="transform: scaleX(0.0496583);"></div>
 
 <!-- Sidebar -->
 <nav id="sidebar">
@@ -1410,16 +1410,16 @@ body.collab-open #wrapper { padding-right: var(--collab-w); }
     <span>📋</span>
     <span class="breadcrumb" id="breadcrumb">2.3 서비스 아키텍처 (3-OS 구조)</span>
     <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
-      <span id="edit-badge" style="display: inline-flex;">편집 중</span>
+      <span id="edit-badge" style="display: none;">편집 중</span>
       <button id="btn-collab" onclick="toggleCollabPanel()" title="협업 패널 열기/닫기">👥 협업 <span id="collab-badge" style="display:none;background:#ef4444;color:white;border-radius:99px;font-size:10px;padding:1px 6px;margin-left:2px;">0</span></button>
-      <button id="btn-edit-mode" class="active">✅ 편집 완료</button>
+      <button id="btn-edit-mode" class="">✏️ 편집 모드</button>
       <button id="btn-save-html" style="display: inline-flex;">🗑 이미지 삭제 완료</button>
       <span class="version-badge">v3.0</span>
     </div>
   </div>
 
   <!-- Always-visible edit toolbar (shown when edit mode ON) -->
-  <div id="edit-toolbar" style="display: flex;">
+  <div id="edit-toolbar" style="display: none;">
     <span class="tb-label">스타일</span>
     <div class="tb-group">
       <button class="tb-btn" onclick="changeBlockStyle('h1')">H1 대제목</button>
@@ -1430,7 +1430,7 @@ body.collab-open #wrapper { padding-right: var(--collab-w); }
     <div class="tb-sep"></div>
     <span class="tb-label">서식</span>
     <div class="tb-group">
-      <button class="tb-btn tb-active" id="tb-bold" onclick="tbCmd('bold')"><b>B</b></button>
+      <button class="tb-btn" id="tb-bold" onclick="tbCmd('bold')"><b>B</b></button>
       <button class="tb-btn" id="tb-italic" onclick="tbCmd('italic')"><i>I</i></button>
     </div>
     <div class="tb-sep"></div>
@@ -1479,7 +1479,7 @@ body.collab-open #wrapper { padding-right: var(--collab-w); }
   </div>
 
   <!-- Floating mini-toolbar (appears near selected element) -->
-  <div id="float-toolbar" style="display: none; top: 3323.66px; left: 408.452px;">
+  <div id="float-toolbar" style="display: none; top: 3366.48px; left: 531.506px;">
     <button class="ft-btn" onclick="tbCmd('bold')"><b>B</b></button>
     <button class="ft-btn" onclick="tbCmd('italic')"><i>I</i></button>
     <div class="ft-sep"></div>
@@ -1548,14 +1548,14 @@ body.collab-open #wrapper { padding-right: var(--collab-w); }
   <!-- Image/Screen preview panel (right side) -->
   <div id="img-panel" class="">
     <div id="img-panel-header">
-      <span id="img-panel-title">5.2.2 진행 중 거래 — 딜 클로징 파이프라인 (P-03)</span>
+      <span id="img-panel-title">담보물 등록</span>
       <button id="img-panel-close" onclick="closeImgPanel()">✕ 닫기</button>
     </div>
     <div id="img-panel-body">
-      <p id="img-panel-empty" style="display: block;">이 섹션에 연결된 화면이 없습니다.<br><small>편집 모드에서 📎 화면 연결 버튼으로 추가하세요.</small></p>
-      <img id="img-panel-img" src="" alt="화면 미리보기" style="display: none;">
+      <p id="img-panel-empty" style="display: none;">이 섹션에 연결된 화면이 없습니다.<br><small>편집 모드에서 📎 화면 연결 버튼으로 추가하세요.</small></p>
+      <img id="img-panel-img" src="" alt="화면 미리보기" style="display: block;">
       <iframe id="img-panel-iframe" title="화면 미리보기" sandbox="allow-scripts allow-same-origin" src="" style="display: none;"></iframe>
-      <a id="img-panel-link" href="#" target="_blank" style="display: none;">↗ 새 탭에서 열기</a>
+      <a id="img-panel-link" href="#" target="_blank" style="display: flex;">↗ 새 탭에서 열기</a>
     </div>
   </div>
 
