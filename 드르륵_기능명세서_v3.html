@@ -9343,6 +9343,52 @@ function clearAllComments() {
   document.querySelectorAll('.cmt-mark').forEach(m => unwrapMark(m));
 }
 
+// ── 댓글 내보내기 / 가져오기 ──────────────────────────────────
+function exportComments() {
+  const arr = loadAllComments();
+  if (!arr.length) { alert('내보낼 댓글이 없습니다.'); return; }
+  const blob = new Blob([JSON.stringify(arr, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = '드르륵_댓글_' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importComments() {
+  document.getElementById('import-file-input').click();
+}
+
+function handleImportFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const incoming = JSON.parse(ev.target.result);
+      if (!Array.isArray(incoming)) { alert('올바른 댓글 파일이 아닙니다.'); return; }
+      const existing   = loadAllComments();
+      const existingIds = new Set(existing.map(c => c.id));
+      const newCmts    = incoming.filter(c => !existingIds.has(c.id)).map(c => ({...c, _imported: true}));
+      if (!newCmts.length) { alert('새로운 댓글이 없습니다.\n(이미 모두 포함돼 있어요)'); return; }
+      const merged = [...existing, ...newCmts].sort((a, b) => a.id - b.id);
+      saveAllComments(merged);
+      renderComments();
+      updateCollabBadge();
+      switchTab('comments');
+      // show sync notice
+      const notice = document.getElementById('collab-sync-notice');
+      if (notice) { notice.style.display = 'block'; setTimeout(() => { notice.style.display = 'none'; }, 5000); }
+      alert(`✅ 댓글 ${newCmts.length}개를 가져왔습니다.`);
+    } catch(err) {
+      alert('파일을 읽는 중 오류가 발생했습니다:\n' + err.message);
+    }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
 // ── @mention dropdown ─────────────────────────────────────────
 let _mentionEl = null, _mentionCid = null;
 const TEAM_MEMBERS = [
