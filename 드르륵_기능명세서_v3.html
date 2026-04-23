@@ -981,6 +981,19 @@ body.collab-open #wrapper { padding-right: var(--collab-w); }
 }
 #login-submit:hover { background: #f59e0b; }
 
+/* ── 다이어그램 임베드 패널 ──────────────────── */
+.diag-panel { margin:20px 0 28px; border:1.5px solid #e2e8f0; border-radius:10px; overflow:hidden; background:#fff; }
+.diag-panel-header { display:flex; align-items:center; justify-content:space-between; background:#f8fafc; padding:10px 16px; border-bottom:1px solid #e2e8f0; }
+.diag-panel-label { font-size:12px; font-weight:700; color:#475569; display:flex; align-items:center; gap:6px; }
+.diag-panel-label .diag-tag { font-size:10px; font-weight:700; padding:2px 8px; border-radius:4px; color:#fff; }
+.diag-panel-actions { display:flex; gap:8px; align-items:center; }
+.diag-toggle-btn { font-size:11px; font-weight:600; padding:4px 12px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; cursor:pointer; color:#475569; font-family:var(--font-main); transition:all .15s; }
+.diag-toggle-btn:hover, .diag-toggle-btn.open { background:#eef2ff; color:#6366f1; border-color:#a5b4fc; }
+.diag-ext-link { font-size:11px; font-weight:600; padding:4px 12px; border:1px solid #e2e8f0; border-radius:6px; background:#fff; text-decoration:none; color:#6366f1; transition:background .15s; }
+.diag-ext-link:hover { background:#eef2ff; }
+.diag-frame { display:none; height:660px; }
+.diag-frame iframe { width:100%; height:100%; border:none; display:block; }
+
 /* Panel footer action bar */
 #collab-footer {
   padding: 10px 12px; border-top: 1px solid #e2e8f0; flex-shrink: 0;
