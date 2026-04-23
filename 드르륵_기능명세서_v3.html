@@ -9686,27 +9686,53 @@ function selAddImage() {
 function _insertImageFile(file, savedRange, ov) {
   if (!file || !file.type.startsWith('image/')) return;
   const reader = new FileReader();
-  reader.onload = e => {
-    const wasEdit = editMode;
-    if (!wasEdit) toggleEditMode();
-    const img = document.createElement('img');
-    img.src = e.target.result;
-    img.alt = file.name || '이미지';
-    img.style.cssText = 'max-width:100%;border-radius:6px;margin:8px 0;display:block;cursor:pointer;';
-    img.title = '클릭하면 크게 보기';
-    img.onclick = () => { const w=window.open(); w.document.write('<img src="'+img.src+'" style="max-width:100%;height:auto;">'); };
-    if (savedRange) {
+  reader.onload = ev => {
+    const dataUrl = ev.target.result;
+
+    // ── 선택 텍스트를 버튼 라벨로 사용, 없으면 파일명 ──
+    const selectedText = savedRange ? savedRange.toString().trim().slice(0, 60) : '';
+    const label = selectedText || file.name.replace(/\.[^.]+$/, '') || '이미지';
+
+    // ── 인라인 클릭 버튼 생성 (클릭 → 우측 패널에 이미지 표시) ──
+    const btn = document.createElement('span');
+    btn.className = 'inline-img-btn has-panel';
+    btn.dataset.panelSrc = dataUrl;
+    btn.dataset.panelTitle = label;
+    btn.textContent = label;
+    btn.contentEditable = 'false';
+    btn.title = '클릭하면 오른쪽 패널에서 이미지를 확인합니다';
+
+    if (savedRange && selectedText) {
+      // 선택된 텍스트를 버튼으로 교체
       try {
-        savedRange.collapse(false);
-        savedRange.insertNode(img);
-        savedRange.setStartAfter(img);
-      } catch { if (currentFocus) currentFocus.appendChild(img); }
+        savedRange.deleteContents();
+        savedRange.insertNode(btn);
+        // 커서를 버튼 뒤로 이동
+        const sel = window.getSelection();
+        const r = document.createRange();
+        r.setStartAfter(btn);
+        r.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(r);
+      } catch(err) {
+        // 폴백: 현재 포커스 요소에 추가
+        if (currentFocus) currentFocus.appendChild(btn);
+      }
+    } else if (savedRange) {
+      // 선택 없음 — 커서 위치에 삽입
+      try {
+        savedRange.insertNode(btn);
+      } catch(err) {
+        if (currentFocus) currentFocus.appendChild(btn);
+      }
     } else if (currentFocus) {
-      currentFocus.appendChild(img);
+      currentFocus.appendChild(btn);
     }
+
     if (ov._cleanupPaste) ov._cleanupPaste();
     ov.remove();
-    showSaveToast('🖼️ 이미지 삽입 완료', '#16a34a');
+    autoSave();
+    showSaveToast('🖼️ 이미지 버튼 삽입 완료 — 클릭하면 패널에서 열립니다', '#16a34a');
   };
   reader.readAsDataURL(file);
 }
