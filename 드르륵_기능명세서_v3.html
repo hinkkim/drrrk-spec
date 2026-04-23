@@ -5428,6 +5428,19 @@ function toggleExtra(role) {
 </tbody></table></div>
 </section>
 <section class="doc-section" id="nav-17-상환-관리-상태-머신-알림-설계-위험-지표">
+<!-- ── 다이어그램 패널: 상환 Ping-Pong 플로우 ── -->
+<div class="diag-panel">
+  <div class="diag-panel-header">
+    <span class="diag-panel-label"><span class="diag-tag" style="background:#ea580c;">FLOW</span> 상환 Ping-Pong 플로우 — 상태 머신 &amp; 케이스별 흐름</span>
+    <div class="diag-panel-actions">
+      <button class="diag-toggle-btn" onclick="toggleDiag(this,'flow6')">▼ 다이어그램 펼치기</button>
+      <a class="diag-ext-link" href="드르륵_대부중개_거래플로우_다이어그램_v1.html#flow6" target="_blank">↗ 전체 화면</a>
+    </div>
+  </div>
+  <div class="diag-frame" id="diag-flow6">
+    <iframe data-src="드르륵_대부중개_거래플로우_다이어그램_v1.html#flow6" style="width:100%;height:660px;border:none;"></iframe>
+  </div>
+</div>
 <h2 class="sec-h1"><span style="color:#FFC11F;font-size:16pt">17. 상환 관리 — 상태 머신, 알림 설계, 위험 지표</span></h2>
 <p class="sec-body">본 섹션은 유저(채무자)와 바이어(대부업자) 간 직접 송금 구조를 전제로 한 상환 관리 시스템의 상태 머신, 알림 타임라인, 입금 확인 UX, 연체 위험 지표를 정의한다. 플랫폼(드르륵)은 실제 입금을 직접 확인할 수 없으므로, 최종 완료 판정 권한은 바이어에게 있으며 유저의 송금 신고는 보조 신호로만 사용된다.</p>
 <div class="tbl-wrap"><table class="tbl-spec">
