@@ -8304,14 +8304,42 @@ function openImgPanel(src, title) {
   if (isImg) {
     imgPanelImg.src = src;
     imgPanelImg.style.display = 'block';
-    imgPanelLink.href = src;
     imgPanelLink.style.display = 'flex';
+    // data: URL은 Chrome이 새탭 차단 → Blob URL로 변환해서 열기
+    imgPanelLink.onclick = e => {
+      e.preventDefault();
+      if (src.startsWith('data:')) {
+        try {
+          const arr = src.split(',');
+          const mime = arr[0].match(/:(.*?);/)[1];
+          const bstr = atob(arr[1]);
+          let n = bstr.length;
+          const u8 = new Uint8Array(n);
+          while (n--) u8[n] = bstr.charCodeAt(n);
+          const blob = new Blob([u8], { type: mime });
+          const blobUrl = URL.createObjectURL(blob);
+          const win = window.open(blobUrl, '_blank');
+          // 로드 후 Blob URL 해제
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
+          if (!win) {
+            // 팝업 차단 시 같은 탭에 표시
+            const w = window.open('', '_blank');
+            if (w) { w.document.write(`<html><body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh"><img src="${src}" style="max-width:100%;max-height:100vh;object-fit:contain"></body></html>`); w.document.close(); }
+          }
+        } catch(err) {
+          window.open(src, '_blank');
+        }
+      } else {
+        window.open(src, '_blank');
+      }
+    };
   } else if (isUrl) {
-    // Embed as iframe (works for Figma embed URLs, Notion public, etc.)
     imgPanelIframe.src = src;
     imgPanelIframe.style.display = 'block';
-    imgPanelLink.href = src;
     imgPanelLink.style.display = 'flex';
+    imgPanelLink.onclick = null;
+    imgPanelLink.href = src;
+    imgPanelLink.target = '_blank';
   } else {
     imgPanelEmpty.style.display = 'block';
   }
