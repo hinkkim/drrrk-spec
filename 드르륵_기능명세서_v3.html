@@ -8354,6 +8354,38 @@ function closeImgPanel() {
   }, 300);
 }
 
+// ── 편집 모드에서 img 클릭 → 삭제 버튼 표시 ───────────────
+document.getElementById('content').addEventListener('click', e => {
+  const img = e.target.closest('img:not(#img-panel-img)');
+  if (!img || !editMode) return;
+  // 기존 삭제 팁 제거
+  document.querySelectorAll('.img-del-tip').forEach(t => t.remove());
+  const tip = document.createElement('div');
+  tip.className = 'img-del-tip';
+  tip.style.cssText = 'position:fixed;z-index:20000;background:#ef4444;color:#fff;font-size:11px;font-weight:700;padding:5px 12px;border-radius:7px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.25);display:flex;align-items:center;gap:5px;';
+  tip.innerHTML = '🗑 이미지 삭제 <span style="opacity:0.7;font-weight:400;">(클릭 확인)</span>';
+  const rect = img.getBoundingClientRect();
+  tip.style.left = Math.max(4, rect.left + rect.width / 2 - 80) + 'px';
+  tip.style.top  = Math.max(4, rect.top - 42) + 'px';
+  tip.onclick = ev => {
+    ev.stopPropagation();
+    img.remove();
+    tip.remove();
+    autoSave();
+    showSaveToast('🗑 이미지 삭제 완료', '#ef4444');
+  };
+  document.body.appendChild(tip);
+  setTimeout(() => { if (tip.parentNode) tip.remove(); }, 4000);
+  e.stopPropagation();
+}, true);
+
+// 다른 곳 클릭 시 삭제 팁 닫기
+document.addEventListener('click', e => {
+  if (!e.target.closest('.img-del-tip')) {
+    document.querySelectorAll('.img-del-tip').forEach(t => t.remove());
+  }
+});
+
 // Click on heading with .has-panel → open panel
 document.getElementById('content').addEventListener('click', e => {
   const heading = e.target.closest('.has-panel');
