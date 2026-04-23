@@ -8334,7 +8334,8 @@ document.getElementById('content').addEventListener('click', e => {
     || heading.closest('[data-panel-src]')?.dataset.panelSrc;
   if (src) {
     e.stopPropagation();
-    const title = heading.textContent.trim().replace(/\s*🖼️$/, '');
+    const title = heading.dataset.panelTitle
+      || heading.textContent.trim().replace(/\s*🖼️$/, '').replace(/^🖼️\s*/, '');
     openImgPanel(src, title);
   }
 });
