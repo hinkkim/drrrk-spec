@@ -474,6 +474,33 @@ table {
 }
 .has-panel:hover::after { opacity: 1; }
 
+/* 드래그 선택 후 이미지 삽입 → 인라인 버튼 */
+.inline-img-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #f0fdf4;
+  border: 1.5px solid #86efac;
+  border-radius: 6px;
+  padding: 2px 9px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #15803d;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  vertical-align: middle;
+  transition: background 0.12s, border-color 0.12s;
+  font-family: var(--font-main);
+}
+.inline-img-btn:hover {
+  background: #dcfce7;
+  border-color: #4ade80;
+}
+.inline-img-btn::before { content: "🖼️ "; font-size: 11px; }
+/* has-panel::after 중복 방지 */
+.inline-img-btn.has-panel::after { display: none; }
+
 /* ── Selection bar (appears on text drag, no edit mode needed) ── */
 #selection-bar {
   position: absolute;
