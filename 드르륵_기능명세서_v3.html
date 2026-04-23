@@ -6582,17 +6582,17 @@ IT 기기: 최대 70%<br>
 <p class="sec-body">약정 기일 내 이자 미납 시 적용되는 연체 가산 이율 관련 법령이다.</p>
 <div class="tbl-wrap"><table class="tbl-spec">
 <tbody><tr>
-<th style="background:#eff6ff" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 이자제한법 제2조 제3항</span></div>
+<th style="background:#eff6ff;color:#0f172a" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 이자제한법 제2조 제3항</span></div>
 <div>연체이자율은 약정이자율의 1.5배를 초과할 수 없으며, 법정 최고이자율(연 20%)을 절대 초과하지 못함. 두 기준 중 낮은 값 적용.</div></th>
-<td style="background:#f0fdf4" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
+<td style="background:#f0fdf4;color:#0f172a" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
 <div>F-06-05 연체이자 계산: 연체이자율 = Min(약정이자율 × 1.5, 연 20%). 예: 약정 월 1.2%(연 11.4%) → 연체이자율 Max 연 20% 적용. 자동 계산 로직 서버 구현.</div></td>
 </tr>
 </tbody></table></div>
 <div class="tbl-wrap"><table class="tbl-spec">
 <tbody><tr>
-<th style="background:#eff6ff" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 대부업법 제8조 제3항</span></div>
+<th style="background:#eff6ff;color:#0f172a" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 대부업법 제8조 제3항</span></div>
 <div>연체이자 산정 시 기존 이자를 원금에 합산하여 복리로 계산하는 행위(이자의 자본화) 금지. 단리 적용 원칙.</div></th>
-<td style="background:#f0fdf4" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
+<td style="background:#f0fdf4;color:#0f172a" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
 <div>F-06-05 연체이자 계산은 단리만 적용. 연체이자 = 대출 원금 × 연체이자율 × 연체일수 / 365. 원금에 이자 합산 복리 계산 로직 구현 금지.</div></td>
 </tr>
 </tbody></table></div>
@@ -6600,17 +6600,17 @@ IT 기기: 최대 70%<br>
 <p class="sec-body">이자 관련 플랫폼 운영 시 발생할 수 있는 법적 위반 유형 및 주의사항이다.</p>
 <div class="tbl-wrap"><table class="tbl-spec">
 <tbody><tr>
-<th style="background:#eff6ff" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 이자제한법 제4조 (선이자 제한)</span></div>
+<th style="background:#eff6ff;color:#0f172a" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 이자제한법 제4조 (선이자 제한)</span></div>
 <div>선이자(대출 실행 전 이자 공제)를 받은 경우, 그 금액을 원금에서 차감한 금액을 실제 대출원금으로 간주. 공제 이자율 포함 시 연 20% 초과 여부 재산정 필요.</div></th>
-<td style="background:#f0fdf4" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
+<td style="background:#f0fdf4;color:#0f172a" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
 <div>대출 실행 시 선이자 공제 방식 사용 금지. 대출금 전액 지급 후 약정일에 이자 수취하는 후이자 방식만 허용. 계약서 명시.</div></td>
 </tr>
 </tbody></table></div>
 <div class="tbl-wrap"><table class="tbl-spec">
 <tbody><tr>
-<th style="background:#eff6ff" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 대부업법 제11조 (불법 수수료 금지)</span></div>
+<th style="background:#eff6ff;color:#0f172a" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 대부업법 제11조 (불법 수수료 금지)</span></div>
 <div>대부 관련 명목으로 법에 규정되지 않은 수수료·사례금·할인료 등을 받는 행위 금지. 플랫폼 중개 수수료는 대부업법 범위 내 명시적으로 규정되어야 함.</div></th>
-<td style="background:#f0fdf4" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
+<td style="background:#f0fdf4;color:#0f172a" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
 <div>플랫폼 중개 수수료 3%(건별 청구)는 계약서 및 앱 내 명시적으로 별도 항목 표시. 수수료 부과 근거를 이용약관에 명문화. 기타 명목 부가 금지.</div></td>
 </tr>
 </tbody></table></div>
@@ -6618,51 +6618,51 @@ IT 기기: 최대 70%<br>
 <p class="sec-body"><span style="font-weight:600;color:#FFC11F">11.4.1 상환방식</span></p>
 <div class="tbl-wrap"><table class="tbl-spec">
 <tbody><tr>
-<th style="background:#eff6ff" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 민법 제603조 (소비대차의 기간)</span></div>
+<th style="background:#eff6ff;color:#0f172a" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 민법 제603조 (소비대차의 기간)</span></div>
 <div>소비대차(금전대여)에서 당사자는 반환 시기를 자유롭게 약정할 수 있음. 기간 약정이 없는 경우 채권자는 상당한 기간을 정하여 반환 청구 가능.</div></th>
-<td style="background:#f0fdf4" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
+<td style="background:#f0fdf4;color:#0f172a" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
 <div>계약서에 대출 기간(만기일)을 명시적으로 기재. U-13 만기상환 화면에 잔여일 카운트다운 표시. 기간 약정 없는 대출 계약 체결 불가.</div></td>
 </tr>
 </tbody></table></div>
 <div class="tbl-wrap"><table class="tbl-spec">
 <tbody><tr>
-<th style="background:#eff6ff" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 대부업법 제6조 제2항 (계약서면 기재사항)</span></div>
+<th style="background:#eff6ff;color:#0f172a" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 대부업법 제6조 제2항 (계약서면 기재사항)</span></div>
 <div>대부계약 체결 시 서면에 반드시 명시: 대부금액, 대부이자율, 변제기간 및 방법, 연체이자율. 서면 미교부 시 과태료 처분.</div></th>
-<td style="background:#f0fdf4" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
+<td style="background:#f0fdf4;color:#0f172a" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
 <div>F-03-05 전자계약서: 대출금액·이자율·대출기간·만기일·상환방법·연체이자율 전항목 자동 삽입. 서명 전 유저가 주요 조항 확인하는 미리보기 단계 필수.</div></td>
 </tr>
 </tbody></table></div>
 <p class="sec-body"><span style="font-weight:600;color:#FFC11F">11.4.2 상환기간</span></p>
 <div class="tbl-wrap"><table class="tbl-spec">
 <tbody><tr>
-<th style="background:#eff6ff" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 전당포업에 관한 법률 제11조 (전당기간)</span></div>
+<th style="background:#eff6ff;color:#0f172a" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 전당포업에 관한 법률 제11조 (전당기간)</span></div>
 <div>전당기간은 1개월 이상으로 하며, 기간 만료 전 유저(전당인)에게 기간 만료 사실을 통지해야 함. 통지 없이 유질 처분 불가.</div></th>
-<td style="background:#f0fdf4" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
+<td style="background:#f0fdf4;color:#0f172a" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
 <div>최소 대출기간 1개월 설정. U-13 만기상환: D-7/D-3/D-1 앱 푸시 + 이메일 자동 발송. F-06-06 상환 일정 사전 알림 의무화.</div></td>
 </tr>
 </tbody></table></div>
 <h3 class="sec-h2" id="nav-205-이자-납부"><span id="sec20_5"></span><span style="color:#FFC11F">11.5 이자 납부</span><span id="sec20_5"></span></h3>
 <div class="tbl-wrap"><table class="tbl-spec">
 <tbody><tr>
-<th style="background:#eff6ff" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 민법 제379조 (법정이자율)</span></div>
+<th style="background:#eff6ff;color:#0f172a" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 민법 제379조 (법정이자율)</span></div>
 <div>법정이자율은 연 5%. 당사자 약정이 있는 경우 약정이자율 우선 적용. 약정이자가 법정최고이자율 초과 시 초과분 무효 (채무자 초과 이자 반환 청구 가능).</div></th>
-<td style="background:#f0fdf4" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
+<td style="background:#f0fdf4;color:#0f172a" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
 <div>약정이자율이 법정 한도 초과 시 자동 보정 로직 구현. 초과 납부된 이자는 원금 상환에 먼저 충당하는 처리 로직 구현.</div></td>
 </tr>
 </tbody></table></div>
 <div class="tbl-wrap"><table class="tbl-spec">
 <tbody><tr>
-<th style="background:#eff6ff" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 대부업법 제6조 제4항 (이자 영수증 교부 의무)</span></div>
+<th style="background:#eff6ff;color:#0f172a" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 대부업법 제6조 제4항 (이자 영수증 교부 의무)</span></div>
 <div>대부업자는 이자를 받은 경우 이자 영수증(이자 수령 확인서)을 의무적으로 교부해야 함. 미교부 시 과태료.</div></th>
-<td style="background:#f0fdf4" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
+<td style="background:#f0fdf4;color:#0f172a" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
 <div>F-06-03 이자 수령 확인 팝업: 확인 버튼 클릭 시 이자 납부 영수증 자동 생성 및 유저 앱 내 저장. PDF 다운로드 기능 제공. 영수증에 납부일·금액·잔여원금 명시.</div></td>
 </tr>
 </tbody></table></div>
 <div class="tbl-wrap"><table class="tbl-spec">
 <tbody><tr>
-<th style="background:#eff6ff" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 이자제한법 제3조 (이자의 사전 공제 제한)</span></div>
+<th style="background:#eff6ff;color:#0f172a" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 이자제한법 제3조 (이자의 사전 공제 제한)</span></div>
 <div>이자를 사전 공제하는 방식으로 최고이자율을 우회하는 경우 실질 이자율 기준으로 판단. 이자 계산 시 실제 사용 기간 기준으로 적용.</div></th>
-<td style="background:#f0fdf4" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
+<td style="background:#f0fdf4;color:#0f172a" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
 <div>월 이자 납부 방식(후이자)으로 고정 운영. 이자율 계산은 실제 대출 사용 일수 기준. 조기 상환 시 잔여 이자 비례 반환 로직 구현.</div></td>
 </tr>
 </tbody></table></div>
@@ -6671,60 +6671,60 @@ IT 기기: 최대 70%<br>
 <p class="sec-body"><span style="font-weight:600;color:#FFC11F">11.6.1 처분 시기</span></p>
 <div class="tbl-wrap"><table class="tbl-spec">
 <tbody><tr>
-<th style="background:#eff6ff" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 전당포업에 관한 법률 제14조 (전당물의 처분)</span></div>
+<th style="background:#eff6ff;color:#0f172a" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 전당포업에 관한 법률 제14조 (전당물의 처분)</span></div>
 <div>전당기간 만료 후에도 유저(전당인)가 원리금을 상환하지 않는 경우, 전당업자는 전당물을 처분할 수 있음. 단, 처분 전 유저에게 사전 통지 의무.</div></th>
-<td style="background:#f0fdf4" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
+<td style="background:#f0fdf4;color:#0f172a" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
 <div>F-07-06 유질 처분 요건 체크리스트: 만기 경과 확인, 사전 통지 완료, 14일 유예 경과 확인. 3가지 요건 충족 시에만 즉시팔기·맡겨팔기 버튼 활성화.</div></td>
 </tr>
 </tbody></table></div>
 <div class="tbl-wrap"><table class="tbl-spec">
 <tbody><tr>
-<th style="background:#eff6ff" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 민법 제339조 (유질계약)</span></div>
+<th style="background:#eff6ff;color:#0f172a" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 민법 제339조 (유질계약)</span></div>
 <div>민법은 유질계약(채무 불이행 시 질물로 채무를 갈음하는 계약)을 원칙적으로 금지. 단, 상행위(상법 제59조) 및 전당포업법에 따른 전당업에서는 예외 허용.</div></th>
-<td style="background:#f0fdf4" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
+<td style="background:#f0fdf4;color:#0f172a" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
 <div>드르륵은 대부중개 플랫폼(상행위)으로서 상사질권 성격의 유질 처분 가능. 이용약관 및 계약서에 유질 조항 명시 필수. F-03-05 전자계약서 유질 조항 필수 기재.</div></td>
 </tr>
 </tbody></table></div>
 <p class="sec-body"><span style="font-weight:600;color:#FFC11F">11.6.2 처분 절차</span></p>
 <div class="tbl-wrap"><table class="tbl-spec">
 <tbody><tr>
-<th style="background:#eff6ff" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 전당포업에 관한 법률 제14조 제2항 · 제15조</span></div>
+<th style="background:#eff6ff;color:#0f172a" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 전당포업에 관한 법률 제14조 제2항 · 제15조</span></div>
 <div>처분 전 유저에게 내용증명 우편으로 처분 예정 사실 통보 의무. 통보 후 14일 이상 경과 후 처분 가능. 통보 없이 처분 시 민·형사상 책임 발생.</div></th>
-<td style="background:#f0fdf4" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
+<td style="background:#f0fdf4;color:#0f172a" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
 <div>F-07-06 체크리스트 2번째 항목: 내용증명 발송 완료 확인. 3번째 항목: 발송 후 14일 경과 확인. Admin 연체 스케줄러 D+30 알림으로 처분 요건 충족 여부 자동 감지.</div></td>
 </tr>
 </tbody></table></div>
 <div class="tbl-wrap"><table class="tbl-spec">
 <tbody><tr>
-<th style="background:#eff6ff" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 민법 제342조 (질권의 목적물에 관한 채권)</span></div>
+<th style="background:#eff6ff;color:#0f172a" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 민법 제342조 (질권의 목적물에 관한 채권)</span></div>
 <div>질권자(바이어)는 질권 설정자(유저)의 동의 없이 질물을 경매 또는 감정인 감정을 통해 처분 가능. 단 적정가 이하 임의 처분은 손해배상 책임 발생.</div></th>
-<td style="background:#f0fdf4" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
+<td style="background:#f0fdf4;color:#0f172a" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
 <div>F-07-02 즉시팔기: 드르륵 플랫폼 내 공개 경매 방식으로 투명한 가격 형성. F-07-03 맡겨팔기: 위탁 판매 시 최적가 보장 절차 명시. 헐값 처분 방지 로직 구현.</div></td>
 </tr>
 </tbody></table></div>
 <p class="sec-body"><span style="font-weight:600;color:#FFC11F">11.6.3 처분 방식</span></p>
 <div class="tbl-wrap"><table class="tbl-spec">
 <tbody><tr>
-<th style="background:#eff6ff" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 전당포업에 관한 법률 제15조 (처분 방법)</span></div>
+<th style="background:#eff6ff;color:#0f172a" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 전당포업에 관한 법률 제15조 (처분 방법)</span></div>
 <div>전당물 처분 방식: ① 경매법에 의한 경매, ② 금융위원회가 정하는 방법에 의한 매각. 임의 처분 시 시세의 상당가를 초과하지 않는 방식으로 처분해야 함.</div></th>
-<td style="background:#f0fdf4" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
+<td style="background:#f0fdf4;color:#0f172a" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
 <div>F-07-02 즉시팔기: 플랫폼 내 바이어 간 공개 경매(가격 투명성 확보). F-07-03 맡겨팔기: 위탁 판매(평균 7~14일). 처분 방식과 낙찰가를 유저에게 처분 후 통지.</div></td>
 </tr>
 </tbody></table></div>
 <p class="sec-body"><span style="font-weight:600;color:#FFC11F">11.6.4 처분 주의사항</span></p>
 <div class="tbl-wrap"><table class="tbl-spec">
 <tbody><tr>
-<th style="background:#eff6ff" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 민법 제335조 (유질계약 금지 원칙)</span></div>
+<th style="background:#eff6ff;color:#0f172a" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 민법 제335조 (유질계약 금지 원칙)</span></div>
 <div>유질 약정은 채무 변제기 이전에 체결할 수 없음(원칙). 변제기 이전 유질 약정은 무효. 단, 전당포업법 및 상행위에서는 예외 적용.</div></th>
-<td style="background:#f0fdf4" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
+<td style="background:#f0fdf4;color:#0f172a" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
 <div>이용약관 및 전자계약서에 유질 처분 조건(만기 후 연체 발생 시)을 변제기 이후 처분 조건으로 명확히 명시. 법무팀 계약서 검토 필수.</div></td>
 </tr>
 </tbody></table></div>
 <div class="tbl-wrap"><table class="tbl-spec">
 <tbody><tr>
-<th style="background:#eff6ff" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 형법 제323조 (권리행사 방해)</span></div>
+<th style="background:#eff6ff;color:#0f172a" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 형법 제323조 (권리행사 방해)</span></div>
 <div>타인의 재물을 권한 없이 처분하는 경우 권리행사방해죄 성립 가능. 법적 요건 미충족 상태에서 유질 처분 시 형사 리스크 발생.</div></th>
-<td style="background:#f0fdf4" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
+<td style="background:#f0fdf4;color:#0f172a" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
 <div>F-07-06 요건 체크리스트 미충족 시 처분 버튼 비활성화. Admin 승인 워크플로우를 통해 요건 충족 여부 이중 확인 후 처분 진행.</div></td>
 </tr>
 </tbody></table></div>
@@ -6732,51 +6732,51 @@ IT 기기: 최대 70%<br>
 <p class="sec-body"><span style="font-weight:600;color:#FFC11F">11.7.1 잔여금 반환 의무</span></p>
 <div class="tbl-wrap"><table class="tbl-spec">
 <tbody><tr>
-<th style="background:#eff6ff" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 전당포업에 관한 법률 제16조 (잔여금 반환 의무)</span></div>
+<th style="background:#eff6ff;color:#0f172a" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 전당포업에 관한 법률 제16조 (잔여금 반환 의무)</span></div>
 <div>전당물 처분 후 매각 대금에서 대출 원금·이자·비용을 공제한 잔여금은 지체 없이 유저(전당인)에게 반환해야 함. 잔여금 미반환 시 형사 처벌.</div></th>
-<td style="background:#f0fdf4" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
+<td style="background:#f0fdf4;color:#0f172a" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
 <div>F-07-04 잔여금 반환 플로우: 낙찰가 - 대출원금 - 연체이자 - 플랫폼 수수료 = 반환액 자동 계산. 정산 계산서 유저 동의 후 계좌 자동 송금. 반환 완료 영수증 발행.</div></td>
 </tr>
 </tbody></table></div>
 <div class="tbl-wrap"><table class="tbl-spec">
 <tbody><tr>
-<th style="background:#eff6ff" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 민법 제342조 제2항</span></div>
+<th style="background:#eff6ff;color:#0f172a" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 민법 제342조 제2항</span></div>
 <div>질권자가 질물을 경매한 경우 경매대금에서 채권액을 변제하고 남은 금액은 질권 설정자에게 귀속. 잉여금 임의 보유 시 부당이득 반환 의무 발생.</div></th>
-<td style="background:#f0fdf4" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
+<td style="background:#f0fdf4;color:#0f172a" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
 <div>잔여금 계산식 및 정산 내역을 앱 화면에 명시적으로 표시. 바이어가 잔여금을 자의적으로 보유하지 못하도록 플랫폼이 정산금 에스크로 보관 후 유저에게 직접 송금.</div></td>
 </tr>
 </tbody></table></div>
 <p class="sec-body"><span style="font-weight:600;color:#FFC11F">11.7.2 정산 절차</span></p>
 <div class="tbl-wrap"><table class="tbl-spec">
 <tbody><tr>
-<th style="background:#eff6ff" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 전자금융거래법 제15조 (거래내용의 확인)</span></div>
+<th style="background:#eff6ff;color:#0f172a" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 전자금융거래법 제15조 (거래내용의 확인)</span></div>
 <div>전자금융거래의 거래 내용을 서면 또는 전자문서로 유저에게 제공해야 함. 거래 내역 열람 요청 시 5년간 제공 의무.</div></th>
-<td style="background:#f0fdf4" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
+<td style="background:#f0fdf4;color:#0f172a" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
 <div>F-07-04 처분 완료 후 정산 계산서 앱 내 자동 발행(PDF). F-07-05 처분 이력 아카이브 5년 보관. 유저가 언제든 정산 내역 조회 및 다운로드 가능.</div></td>
 </tr>
 </tbody></table></div>
 <div class="tbl-wrap"><table class="tbl-spec">
 <tbody><tr>
-<th style="background:#eff6ff" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 대부업법 제12조 (대부 관련 장부 보존 의무)</span></div>
+<th style="background:#eff6ff;color:#0f172a" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 대부업법 제12조 (대부 관련 장부 보존 의무)</span></div>
 <div>대부업자는 대부 관련 장부 및 서류를 5년간 보존해야 함. 장부 미보존 시 과태료.</div></th>
-<td style="background:#f0fdf4" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
+<td style="background:#f0fdf4;color:#0f172a" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
 <div>모든 대출·이자·정산 데이터 DB 5년 보존 정책 적용. 전자계약서·정산서·영수증 블록체인 타임스탬프 포함하여 불변 보관.</div></td>
 </tr>
 </tbody></table></div>
 <p class="sec-body"><span style="font-weight:600;color:#FFC11F">11.7.3 분쟁 발생 시</span></p>
 <div class="tbl-wrap"><table class="tbl-spec">
 <tbody><tr>
-<th style="background:#eff6ff" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 금융소비자보호법 제36조 (분쟁조정)</span></div>
+<th style="background:#eff6ff;color:#0f172a" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 금융소비자보호법 제36조 (분쟁조정)</span></div>
 <div>금융소비자는 금융위원회 산하 금융감독원에 분쟁조정 신청 가능. 금융회사는 분쟁조정 기간 중 해당 거래 관련 강제 집행 중지 의무.</div></th>
-<td style="background:#f0fdf4" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
+<td style="background:#f0fdf4;color:#0f172a" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
 <div>분쟁 발생 시 플랫폼 내 이의 신청 기능 제공. Admin 분쟁 처리 워크플로우: 접수 → 검토(최장 30일) → 결과 통보. 분쟁 기간 유질 처분 자동 중지 처리.</div></td>
 </tr>
 </tbody></table></div>
 <div class="tbl-wrap"><table class="tbl-spec">
 <tbody><tr>
-<th style="background:#eff6ff" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 민법 제580조 (매도인의 하자담보책임)</span></div>
+<th style="background:#eff6ff;color:#0f172a" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 민법 제580조 (매도인의 하자담보책임)</span></div>
 <div>담보물 처분 시 물건에 하자가 있는 경우 매도인(바이어) 하자담보 책임 발생 가능. 처분 전 하자 고지 의무.</div></th>
-<td style="background:#f0fdf4" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
+<td style="background:#f0fdf4;color:#0f172a" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
 <div>F-07-01 유질물 목록: 처분 전 담보물 상태(컨디션 등급 S/A/B/C) 명시. AI 감정 시 확인된 하자 사항 구매자에게 사전 공지. 분쟁 방지를 위한 처분 전 사진·감정 기록 보존.</div></td>
 </tr>
 </tbody></table></div>
@@ -6784,17 +6784,17 @@ IT 기기: 최대 70%<br>
 <p class="sec-body">유저가 플랫폼 이용 시 알아야 할 권리와 유의사항을 법적 근거와 함께 안내한다. 앱 내 온보딩·FAQ·약관에 반영 권장.</p>
 <div class="tbl-wrap"><table class="tbl-spec">
 <tbody><tr>
-<th style="background:#eff6ff" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 금융소비자보호법 제19조 (청약의 철회)</span></div>
+<th style="background:#eff6ff;color:#0f172a" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 금융소비자보호법 제19조 (청약의 철회)</span></div>
 <div>금융소비자는 대출 계약 체결 후 14일 이내 청약을 철회할 수 있음. 철회 시 수령한 대출금과 이용 기간 이자만 반환하면 됨. 위약금·수수료 청구 불가.</div></th>
-<td style="background:#f0fdf4" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
+<td style="background:#f0fdf4;color:#0f172a" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
 <div>계약 체결 후 14일 이내 "계약 철회" 버튼 제공. 철회 시 대출금 + 이용일수 이자 계산 후 상환 안내. 수수료 환급 처리 로직 구현.</div></td>
 </tr>
 </tbody></table></div>
 <div class="tbl-wrap"><table class="tbl-spec">
 <tbody><tr>
-<th style="background:#eff6ff" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 개인정보보호법 제15조 · 제17조</span></div>
+<th style="background:#eff6ff;color:#0f172a" class=""><div><span style="font-weight:600;color:#FFC11F">⚖️ 개인정보보호법 제15조 · 제17조</span></div>
 <div>개인정보 수집·이용 시 명시적 동의 필수. 목적 외 제3자 제공 금지. 위반 시 5년 이하 징역 또는 5천만원 이하 벌금.</div></th>
-<td style="background:#f0fdf4" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
+<td style="background:#f0fdf4;color:#0f172a" class=""><div><span style="font-weight:600;color:#166534">🔧 드르륵 플랫폼 구현</span></div>
 <div>온보딩 시 개인정보 수집·이용 동의 별도 체크박스 수집. 담보물 정보·계좌정보를 거래 당사자 외 제3자에게 제공하지 않는 정책 운영. 개인정보처리방침 앱 내 상시 열람.</div></td>
 </tr>
 </tbody></table></div>
