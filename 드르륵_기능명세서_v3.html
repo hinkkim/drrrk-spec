@@ -8692,10 +8692,8 @@ document.getElementById('content').addEventListener('click', function(e) {
 }, true);
 
 document.addEventListener('dblclick', function(e) {
-  if (editMode) return; // already in edit mode — browser handles word-select
-  // Only the owner can activate edit mode via double-click
-  if (!window._isOwner || !window._isOwner()) return;
-  if (e.target.closest('#sidebar, #top-bar, #color-editor, #edit-toolbar, button, a, input, select')) return;
+  if (editMode) return; // already in edit mode
+  if (e.target.closest('#sidebar, #top-bar, #color-editor, #edit-toolbar, #collab-panel, button, a, input, select, .diag-panel, .role-tab-btn')) return;
 
   // Find which editable element was double-clicked
   let targetEl = null;
@@ -8706,26 +8704,51 @@ document.addEventListener('dblclick', function(e) {
   }
   if (!targetEl) return;
 
-  // Capture the word-selection the dblclick just created (before DOM changes)
+  // Capture word-selection before DOM changes
   const liveSelection = window.getSelection();
-  const savedRange = (liveSelection && liveSelection.rangeCount > 0)
+  const savedRangeForFocus = (liveSelection && liveSelection.rangeCount > 0)
     ? liveSelection.getRangeAt(0).cloneRange()
     : null;
 
-  // Enter edit mode (makes all elements contenteditable)
-  toggleEditMode();
+  // Focus 복원 함수 — edit mode 진입 후 실행
+  const restoreFocus = () => {
+    requestAnimationFrame(() => {
+      if (!targetEl || targetEl.getAttribute('contenteditable') !== 'true') return;
+      targetEl.focus({ preventScroll: true });
+      if (savedRangeForFocus) {
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(savedRangeForFocus);
+        if (typeof _savedRange !== 'undefined') _savedRange = savedRangeForFocus;
+      }
+    });
+  };
 
-  // After DOM settles: focus the element and restore the word selection
-  requestAnimationFrame(() => {
-    if (targetEl.getAttribute('contenteditable') !== 'true') return;
-    targetEl.focus({ preventScroll: true });
-    if (savedRange) {
-      const sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(savedRange);
-      _savedRange = savedRange; // update saved range for toolbar operations
-    }
-  });
+  if (window._isOwner && window._isOwner()) {
+    // 오너: 바로 편집 모드 진입 + 포커스 복원
+    toggleEditMode();
+    restoreFocus();
+  } else if (window._editModeWithAuth) {
+    // 비로그인/비오너: 비밀번호 모달 → 입력 후 편집 모드
+    // 오버라이드로 restoreFocus 연결
+    const _origAuth = window._editModeWithAuth;
+    window._editModeWithAuth = function() {
+      if (editMode) { toggleEditMode(); return; }
+      if (typeof _pwdVerified !== 'undefined' && (_pwdVerified || (window._isOwner && window._isOwner()))) {
+        toggleEditMode(); restoreFocus(); return;
+      }
+      if (typeof openPwdModal === 'function') {
+        openPwdModal(() => { toggleEditMode(); restoreFocus(); });
+      } else {
+        toggleEditMode(); restoreFocus();
+      }
+    };
+    window._editModeWithAuth();
+    window._editModeWithAuth = _origAuth; // 즉시 복원
+  } else {
+    toggleEditMode();
+    restoreFocus();
+  }
 });
 
 // ── Keyboard shortcuts ─────────────────────────────────────────
