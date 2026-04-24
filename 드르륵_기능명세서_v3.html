@@ -9386,7 +9386,11 @@ function onLoggedIn() {
   // Owner-only UI: show/hide edit button and owner-only sel-bubble buttons
   const isOwner = window._isOwner();
   const editBtn = document.getElementById('btn-edit-mode');
-  if (editBtn) editBtn.style.display = isOwner ? '' : 'none';
+  // 편집 버튼은 항상 표시 — 비로그인/비오너는 클릭 시 비밀번호 요청
+  if (editBtn) {
+    editBtn.style.display = '';
+    editBtn.title = isOwner ? '편집 모드 (오너)' : '편집 모드 (비밀번호 필요)';
+  }
   document.querySelectorAll('.sel-owner-only').forEach(el => {
     el.style.display = isOwner ? '' : 'none';
   });
