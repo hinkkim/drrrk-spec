@@ -7850,6 +7850,15 @@ function toggleEditMode() {
     saveBtn.style.display = 'inline-flex';
     toolbar.style.display = 'flex';
     document.body.classList.add('edit-mode');
+    // 안전장치: 다음 틱에 contenteditable 재확인 (비동기 DOM 업데이트 대응)
+    setTimeout(() => {
+      if (!editMode) return;
+      document.querySelectorAll(EDITABLE_SEL).forEach(el => {
+        if (el.getAttribute('contenteditable') !== 'true') {
+          el.setAttribute('contenteditable', 'true');
+        }
+      });
+    }, 50);
   } else {
     // Disable contenteditable
     els.forEach(el => {
