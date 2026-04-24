@@ -8354,10 +8354,11 @@ function closeImgPanel() {
   }, 300);
 }
 
-// ── 편집 모드에서 img 클릭 → 삭제 버튼 표시 ───────────────
+// ── 편집 모드에서 img 클릭 → 삭제 버튼 표시 (bubble, no stopPropagation) ──
 document.getElementById('content').addEventListener('click', e => {
-  const img = e.target.closest('img:not(#img-panel-img)');
-  if (!img || !editMode) return;
+  if (!editMode) return;
+  const img = e.target.closest('img');
+  if (!img || img.id === 'img-panel-img') return;
   // 기존 삭제 팁 제거
   document.querySelectorAll('.img-del-tip').forEach(t => t.remove());
   const tip = document.createElement('div');
@@ -8376,14 +8377,7 @@ document.getElementById('content').addEventListener('click', e => {
   };
   document.body.appendChild(tip);
   setTimeout(() => { if (tip.parentNode) tip.remove(); }, 4000);
-  e.stopPropagation();
-}, true);
-
-// 다른 곳 클릭 시 삭제 팁 닫기
-document.addEventListener('click', e => {
-  if (!e.target.closest('.img-del-tip')) {
-    document.querySelectorAll('.img-del-tip').forEach(t => t.remove());
-  }
+  // stopPropagation 제거 — 텍스트 편집 이벤트 흐름 보장
 });
 
 // Click on heading with .has-panel → open panel
