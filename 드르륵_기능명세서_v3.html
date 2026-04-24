@@ -8202,7 +8202,12 @@ function saveAsHTML() {
   showSaveToast('⬇️ 다운로드 완료', '#1d4ed8');
 }
 
+// 빠른 연속 클릭으로 두 번 토글되는 현상 방지 (300ms debounce)
+let _editBtnLocked = false;
 editBtn.addEventListener('click', function() {
+  if (_editBtnLocked) return;
+  _editBtnLocked = true;
+  setTimeout(() => { _editBtnLocked = false; }, 300);
   if (window._editModeWithAuth) window._editModeWithAuth();
   else toggleEditMode();
 });
