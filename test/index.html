@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>내가 부자가 될 상인가? | DRRRK Asset</title>
+<meta property="og:title" content="내가 부자가 될 상인가? 🔮">
+<meta property="og:description" content="자산 감수성 테스트 | by DRRRK Asset">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%; height: 100%;
+  background: #111;
+  font-family: -apple-system, 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  overflow: hidden;
+}
+
+#app {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  height: 100svh;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+/* ── SCREEN BASE ── */
+.screen {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.screen.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ── FULL-SCREEN IMAGE ── */
+.fs-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+}
+
+/* ══════════════════════════════
+   INTRO  (Figma 670:341 — 표지1)
+══════════════════════════════ */
+#screen-intro {
+  background: #ffffff;
+}
+
+/* ── golden ambient blobs ── */
+.intro-blob {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(80px);
+  opacity: 0.65;
+  width: 444px; height: 444px;
+}
+.intro-blob-1 {
+  background: radial-gradient(circle, #FDE6A3 0%, #FFD6B6 100%);
+  left: -138px; top: 200px;
+}
+.intro-blob-2 {
+  background: radial-gradient(circle, #FFE8A3 0%, #FFD6B6 100%);
+  opacity: 0.45;
+  left:  73px; top: 316px;
+}
+
+/* ── tag "자산 감수성 테스트" ── */
+.intro-tag {
+  position: absolute;
+  top: 194px;
+  left: 50%; transform: translateX(-50%);
+  font-size: 12px; font-weight: 700;
+  color: #f5be28;
+  background: rgba(245, 190, 40, 0.08);
+  border: 1px solid rgba(245, 190, 40, 0.45);
+  padding: 5px 16px; border-radius: 20px;
+  white-space: nowrap; letter-spacing: 0.06em;
+  z-index: 1;
+}
+
+/* ── main title ── */
+.intro-title {
+  position: absolute;
+  top: 228px;
+  left: 0; right: 0;
+  text-align: center;
+  font-family: 'Black Han Sans', 'SBAggroOTF', 'Noto Sans KR', sans-serif;
+  font-size: 28px; font-weight: 900;
+  color: #1a1209;
+  line-height: 1.45;
+  letter-spacing: -0.02em;
+  z-index: 1;
+}
+
+/* ── scan frame area (Figma: left=105, top=386, w=184.565, h=169) ── */
+.scan-area {
+  position: absolute;
+  left: 105px; top: 386px;
+  width: 184.565px; height: 169px;
+  z-index: 2;
+}
+.scan-corners {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+}
+.scan-line {
+  position: absolute;
+  left: 6px; right: 6px; height: 2px;
+  background: linear-gradient(90deg, transparent, #01C65C 20%, #01C65C 80%, transparent);
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(1,198,92,0.9), 0 0 18px rgba(1,198,92,0.35);
+  top: 12%; opacity: 0;    /* hidden by default — JS activates it */
+  animation: none;
+}
+@keyframes scan-move {
+  0%   { top: 12%; opacity: 0; }
+  6%   { opacity: 1; }
+  50%  { top: 80%; opacity: 1; }
+  60%  { top: 82%; opacity: 0; }
+  100% { top: 82%; opacity: 0; }
+}
+/* Face perspective container — perspective on parent enables child rotateY depth */
+#face-persp {
+  position: absolute;
+  left: 26px; top: 8px;
+  width: 133px; height: 133px;
+  perspective: 500px;
+  perspective-origin: 50% 50%;
+}
+#face-img {
+  width: 100%; height: 100%;
+  object-fit: contain;
+  display: block;
+}
+/* 350° Y-axis spin (applied to #face-img via JS) */
+@keyframes face-spin-350 {
+  from { transform: rotateY(0deg); }
+  to   { transform: rotateY(350deg); }
+}
+
+/* ── floating items (absolute on #screen-intro) ── */
+.intro-gold-bars {
+  position: absolute;
+  left: -11px; top: 339px;
+  width: 125px;
+  z-index: 3;
+}
+.intro-laptop {
+  position: absolute;
+  left: 295px; top: 348px;
+  width: 78px;
+  z-index: 3;
+}
+.intro-ring-box {
+  position: absolute;
+  left: 17px; top: 485px;
+  width: 80px;
+  transform: rotate(-10.18deg);
+  z-index: 3;
+}
+.intro-watch {
+  position: absolute;
+  left: 288px; top: 471px;
+  width: 78px;
+  z-index: 3;
+}
+
+/* ── decorative particles ── */
+.intro-particles {
+  position: absolute;
+  left: 65px; top: 582px;
+  width: 244px; height: 112px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── subtitle ── */
+.intro-subtitle {
+  position: absolute;
+  top: 613px;
+  left: 0; right: 0;
+  text-align: center;
+  font-size: 13px; font-weight: 500;
+  color: #8a7860;
+  letter-spacing: -0.01em;
+  z-index: 1;
+}
+
+/* ── start button (Figma: centered, top=662, w=346, h=55, r=15) ── */
+.intro-start-btn {
+  position: absolute;
+  left: 50%; transform: translateX(-50%);
+  top: 662px;
+  width: min(346px, 88%); height: 55px;
+  background: #f5be28;
+  border: none; border-radius: 15px;
+  font-size: 17px; font-weight: 700;
+  color: #1a1209;
+  cursor: pointer;
+  letter-spacing: -0.01em;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.1s, background 0.1s;
+  z-index: 2;
+}
+.intro-start-btn:active {
+  transform: translateX(-50%) scale(0.97);
+  background: #e6ad1a;
+}
+
+/* ── logo (Figma: left=152, top=745) ── */
+.intro-logo {
+  position: absolute;
+  left: 50%; transform: translateX(-50%);
+  top: 745px;
+  font-size: 11px; font-weight: 700;
+  color: #b8a47a;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+  z-index: 1;
+}
+
+/* ══════════════════════════════
+   LOADING
+══════════════════════════════ */
+#screen-loading {
+  background: #FFF9EB;
+}
+#loading-img {
+  transition: opacity 0.2s ease;
+}
+
+/* ══════════════════════════════
+   QUESTION — full image + transparent overlays
+══════════════════════════════ */
+#screen-question {
+  background: #fff;
+}
+
+/*
+  Transparent overlay buttons positioned over
+  the option and 다음 areas in the question images.
+
+  All question images use a consistent template:
+  Options measured from BOTTOM of screen (852px base):
+    Opt 0 — bottom: 54.6%, height: 6.1%
+    Opt 1 — bottom: 47.0%, height: 6.1%
+    Opt 2 — bottom: 39.3%, height: 6.1%
+    Opt 3 — bottom: 31.7%, height: 6.1%
+    다음   — bottom: 20.2%, height: 7.6%
+*/
+.q-opt-overlay {
+  position: absolute;
+  left: 8%;
+  width: 84%;
+  height: 6.1%;
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.q-opt-overlay[data-i="0"] { bottom: 54.6%; }
+.q-opt-overlay[data-i="1"] { bottom: 47.0%; }
+.q-opt-overlay[data-i="2"] { bottom: 39.3%; }
+.q-opt-overlay[data-i="3"] { bottom: 31.7%; }
+
+.q-opt-overlay.selected {
+  background: rgba(255, 193, 31, 0.22);
+  border-color: #FFC11F;
+}
+
+.q-next-overlay {
+  position: absolute;
+  left: 8%;
+  width: 84%;
+  bottom: 20.2%;
+  height: 7.6%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: 14px;
+  -webkit-tap-highlight-color: transparent;
+}
+.q-next-overlay.shake {
+  animation: shake 0.35s ease;
+}
+
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20%      { transform: translateX(-7px); }
+  40%      { transform: translateX(7px); }
+  60%      { transform: translateX(-4px); }
+  80%      { transform: translateX(4px); }
+}
+
+/* ══════════════════════════════
+   RESULT
+══════════════════════════════ */
+#screen-result {
+  overflow: hidden;
+}
+
+/* Full-screen result type image layer (html2canvas target) */
+#result-card-layer {
+  position: absolute;
+  inset: 0;
+}
+
+/* Score badge — top-right, visible on all 5 result type images */
+.rc-score-badge {
+  position: absolute;
+  top: 3.5%;
+  right: 4%;
+  background: rgba(0, 0, 0, 0.38);
+  color: #fff;
+  padding: 7px 14px;
+  border-radius: 30px;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+.rc-score-badge .pct-val {
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+/* Floating action panel at bottom */
+.result-float-panel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 20px 30px;
+  background: rgba(0, 0, 0, 0.56);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn-save {
+  width: 100%;
+  padding: 14px;
+  background: #fff;
+  color: #1a1209;
+  font-size: 15px;
+  font-weight: 800;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  letter-spacing: -0.01em;
+  transition: transform 0.1s;
+}
+.btn-save:active { transform: scale(0.97); }
+
+.btn-row {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-share, .btn-retry {
+  flex: 1;
+  padding: 13px;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 12px;
+  cursor: pointer;
+  border: none;
+  letter-spacing: -0.01em;
+  transition: transform 0.1s;
+}
+.btn-share:active, .btn-retry:active { transform: scale(0.97); }
+
+.btn-share {
+  background: #FFC11F;
+  color: #1a1209;
+}
+.btn-retry {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.result-cta-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-decoration: none;
+  padding: 4px 0 0;
+}
+.result-cta-text {
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.75);
+}
+.result-cta-arrow {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 14px;
+}
+
+/* ══════════════════════════════
+   TOAST
+══════════════════════════════ */
+.toast {
+  position: fixed;
+  bottom: 140px;
+  left: 50%;
+  transform: translateX(-50%) translateY(14px);
+  background: rgba(0, 0, 0, 0.82);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 0.25s, transform 0.25s;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 999;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ══ INTRO (Figma 670:341 — 표지1) ══ -->
+  <div id="screen-intro" class="screen">
+    <!-- Ambient golden blobs -->
+    <div class="intro-blob intro-blob-1"></div>
+    <div class="intro-blob intro-blob-2"></div>
+
+    <!-- 자산 감수성 테스트 tag -->
+    <div class="intro-tag">자산 감수성 테스트</div>
+
+    <!-- Title -->
+    <h1 class="intro-title">내가 부자가 될 상인가?<br>텅장 될 상인가?</h1>
+
+    <!-- Gold bars (left, z=3) -->
+    <img class="intro-gold-bars" src="images/figma_gold_bars.png" alt="">
+
+    <!-- Laptop (right, z=3) -->
+    <img class="intro-laptop" src="images/figma_laptop.png" alt="">
+
+    <!-- Scan frame with face + animated scan line -->
+    <div class="scan-area">
+      <svg class="scan-corners" viewBox="0 0 184.565 169.077" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M26.3665 2H14.171C11.4095 2 9.17095 4.23858 9.17095 7V19.1955" stroke="#01C65C" stroke-width="4" stroke-linecap="round"/>
+        <path d="M26.3665 167.077H14.171C11.4095 167.077 9.17095 164.839 9.17095 162.077V149.882" stroke="#01C65C" stroke-width="4" stroke-linecap="round"/>
+        <path d="M157.053 2H169.248C172.01 2 174.248 4.23858 174.248 7V19.1955" stroke="#01C65C" stroke-width="4" stroke-linecap="round"/>
+        <path d="M157.053 167.077H169.248C172.01 167.077 174.248 164.839 174.248 162.077V149.882" stroke="#01C65C" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+      <!-- Face perspective wrapper — perspective here enables rotateY 3D effect on #face-img -->
+      <div id="face-persp">
+        <img id="face-img" src="images/figma_face_single.png" alt="">
+      </div>
+      <div class="scan-line" id="scan-line"></div>
+    </div>
+
+    <!-- Ring box (left-bottom, z=3) -->
+    <img class="intro-ring-box" src="images/figma_ring_box.png" alt="">
+
+    <!-- Watch (right-bottom, z=3) -->
+    <img class="intro-watch" src="images/figma_watch.png" alt="">
+
+    <!-- Decorative particles (dots + triangles) -->
+    <div class="intro-particles">
+      <svg viewBox="0 0 243.992 112.365" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+        <circle cx="5.63115" cy="50.6312" r="5.63115" fill="#FDAD43"/>
+        <circle cx="237.107" cy="5.63115" r="5.63115" fill="#FEE096"/>
+        <path d="M30.9035 94.0316C31.4853 93.8194 32.0786 94.3165 31.9715 94.9265L29.8627 106.935C29.7556 107.544 29.0284 107.81 28.5537 107.412L19.2088 99.5817C18.7342 99.184 18.8681 98.4216 19.4498 98.2094L30.9035 94.0316Z" fill="#FDF4A9"/>
+        <path d="M230.196 59.7702C230.328 59.1651 231.066 58.9297 231.524 59.3464L240.542 67.5505C241 67.9672 240.835 68.7235 240.246 68.9119L228.631 72.6201C228.041 72.8084 227.469 72.2875 227.601 71.6825L230.196 59.7702Z" fill="#FEC491"/>
+      </svg>
+    </div>
+
+    <!-- Subtitle -->
+    <p class="intro-subtitle">8문항으로 보는<br>나의 진짜 자산 감수성</p>
+
+    <!-- Start button -->
+    <button class="intro-start-btn" onclick="startTest()">시작하기</button>
+
+    <!-- Logo -->
+    <p class="intro-logo">DRRRK Asset</p>
+  </div>
+
+  <!-- ══ LOADING ══ -->
+  <div id="screen-loading" class="screen">
+    <img class="fs-img" id="loading-img" src="images/로딩.png" alt="">
+  </div>
+
+  <!-- ══ QUESTION ══ -->
+  <div id="screen-question" class="screen">
+    <!-- Design image (full screen visual) -->
+    <img class="fs-img" id="q-bg-img" src="" alt="">
+    <!-- Transparent interactive overlays exactly over each option area -->
+    <button class="q-opt-overlay" data-i="0" onclick="selectOpt(0)" aria-label="선택지 1"></button>
+    <button class="q-opt-overlay" data-i="1" onclick="selectOpt(1)" aria-label="선택지 2"></button>
+    <button class="q-opt-overlay" data-i="2" onclick="selectOpt(2)" aria-label="선택지 3"></button>
+    <button class="q-opt-overlay" data-i="3" onclick="selectOpt(3)" aria-label="선택지 4"></button>
+    <button class="q-next-overlay" id="btn-next" onclick="nextQuestion()" aria-label="다음"></button>
+  </div>
+
+  <!-- ══ RESULT ══ -->
+  <div id="screen-result" class="screen">
+    <!-- Capture target for html2canvas -->
+    <div id="result-card-layer">
+      <img class="fs-img" id="result-type-img" src="" alt="">
+      <div class="rc-score-badge">
+        자산 감수성 지수&nbsp;<span class="pct-val" id="rc-pct">0</span>%
+      </div>
+    </div>
+    <!-- Floating action panel (not captured) -->
+    <div class="result-float-panel">
+      <button class="btn-save" onclick="saveCard()">📷 결과 카드 저장하기</button>
+      <div class="btn-row">
+        <button class="btn-share" onclick="shareLink()">🔗 내 부자상 자랑하기</button>
+        <button class="btn-retry" onclick="restartTest()">↩ 다시 하기</button>
+      </div>
+      <a class="result-cta-link" id="result-cta-link" href="https://drrrk.co" target="_blank">
+        <span class="result-cta-text" id="result-cta-text">장롱 속 자산 확인하기</span>
+        <span class="result-cta-arrow">→</span>
+      </a>
+    </div>
+  </div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ────────── DATA ────────── */
+const QUESTIONS = [
+  {
+    opts: [
+      { t: "일단 사고 싶던 거 하나 결제함", s: 0 },
+      { t: "반은 쓰고 반은 통장에 넣어둠",  s: 5 },
+      { t: "일단 통장에 넣고 뭘 할지 생각해", s: 7 },
+      { t: "이걸 어떻게 굴릴지 바로 찾아봄", s: 10 }
+    ]
+  },
+  {
+    opts: [
+      { t: "없어, 근데 사고 싶긴 해",    s: 2 },
+      { t: "1-2개 있는 것 같아",         s: 5 },
+      { t: "3-5개 있어",                 s: 8 },
+      { t: "많아.. 아마 5개 이상?",       s: 10 }
+    ]
+  },
+  {
+    opts: [
+      { t: "관심 없어서 대충 듣고 넘김",                  s: 2 },
+      { t: "얼마냐고 일단 물어봄",                        s: 5 },
+      { t: "중고 시세 바로 검색",                          s: 8 },
+      { t: "한 곳에 바로 팔지 말고 비교해보라고 함",       s: 10 }
+    ]
+  },
+  {
+    opts: [
+      { t: "전혀 몰라",                      s: 1 },
+      { t: "대충 이 정도 아닐까 싶음",        s: 4 },
+      { t: "자주 쓰는 것들은 가끔 찾아봄",   s: 7 },
+      { t: "주기적으로 시세 체크해",          s: 10 }
+    ]
+  },
+  {
+    opts: [
+      { t: "입는 건 별로 없는데 뭐가 많음",   s: 1 },
+      { t: "필요한 것들만 있어",              s: 5 },
+      { t: "안 쓰는 건 팔거나 정리함",        s: 8 },
+      { t: "뭐가 얼마짜리인지 대충 기억남",   s: 10 }
+    ]
+  },
+  {
+    opts: [
+      { t: "일단 카드로 막고 나중에 생각함",        s: 1 },
+      { t: "가족이나 친구한테 살짝 기대봄",          s: 3 },
+      { t: "안 쓰는 물건 팔 수 있나 떠올림",         s: 8 },
+      { t: "이럴 때 쓰려고 따로 준비해둔 게 있음",   s: 10 }
+    ]
+  },
+  {
+    opts: [
+      { t: "맞아. 그래도 행복이 더 중요함",           s: 1 },
+      { t: "맞긴 한데 없으면 불편하긴 함",             s: 4 },
+      { t: "돈 있으면 선택지가 많아지는 건 맞음",      s: 7 },
+      { t: "전부는 아닌데 대부분의 문제를 해결함",     s: 10 }
+    ]
+  },
+  {
+    opts: [
+      { t: "\"돈 없어\" 하면서 뭔가 계속 생기는 애",              s: 2 },
+      { t: "집에 뭔가 많은데 자꾸 없다는 애",                      s: 5 },
+      { t: "신상 나오면 먼저 써봐야 직성이 풀리는 얼리어답터",     s: 7 },
+      { t: "살 땐 감각파, 팔 땐 실속파",                           s: 10 }
+    ]
+  }
+];
+
+const GRADES = [
+  { min: 90, img: 'images/유형1.png', name: '전생에 워렌버핏 아니셨나?',    cta: '내 자산 더 똑똑하게 굴려보기' },
+  { min: 70, img: 'images/유형2.png', name: '부자 DNA 잠금해제 직전',       cta: '장롱 속 자산 확인하기' },
+  { min: 50, img: 'images/유형3.png', name: '머리는 부자, 손발은 대기 중',  cta: '검색 말고 실제 견적 받아보기' },
+  { min: 30, img: 'images/유형4.png', name: '옷장엔 있는데 통장엔 없음',    cta: '장롱 속 돈 찾아보기' },
+  { min: 0,  img: 'images/유형5.png', name: '욜로 인생 만렙형',             cta: '미래의 나 구하러 가기' }
+];
+
+const LOADING_IMGS = ['images/로딩.png','images/로딩2.png','images/로딩3.png','images/로딩4.png'];
+
+/* ────────── STATE ────────── */
+let currentQ    = 0;
+let answers     = [];
+let selectedOpt = null;
+let pendingPct  = null;
+
+
+/* ────────── INTRO ANIMATION ──────────
+   Sequence (loop, ~5.5s/cycle):
+   1. 표지1 — right-profile face, scan hidden  (1.2s hold)
+   2. SPIN  — rotateY(350°) over 1.2s; swap face at ~300ms (90° mark)
+   3. 표지2 — front face, scan sweeps top→bottom  (2.0s)
+   4. 표지3 — left-profile face, scan fades out   (0.9s)
+──────────────────────────────────────── */
+let introRunning = false;
+
+function startIntroAnim() {
+  introRunning = true;
+  runIntroLoop();
+}
+
+function stopIntroAnim() {
+  introRunning = false;
+}
+
+/* Utility: promisified delay that respects introRunning */
+function iDelay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function runIntroLoop() {
+  const faceImg  = document.getElementById('face-img');
+  const facePersp = document.getElementById('face-persp');
+  const scanLine = document.getElementById('scan-line');
+
+  /* Helper: restart scan sweep animation */
+  function activateScan() {
+    scanLine.style.animation = 'none';
+    scanLine.offsetHeight; // force reflow
+    scanLine.style.animation = 'scan-move 1.8s ease-in-out 1 forwards';
+  }
+  function deactivateScan() {
+    scanLine.style.animation = 'none';
+    scanLine.style.opacity = '0';
+  }
+  /* Helper: reset face to un-rotated, change image + size */
+  function setFace(src, w, h) {
+    faceImg.style.animation = 'none';
+    faceImg.style.transform = '';
+    faceImg.src = src;
+    facePersp.style.width  = w + 'px';
+    facePersp.style.height = h + 'px';
+    // Adjust left so face stays centered in the ~184px-wide scan frame
+    facePersp.style.left = Math.round((184.565 - w) / 2) + 'px';
+  }
+
+  while (introRunning) {
+    /* ── Phase 1: right-profile face (표지1) ── */
+    setFace('images/figma_face_single.png', 129, 131);
+    deactivateScan();
+    await iDelay(1200);
+    if (!introRunning) break;
+
+    /* ── Phase 2: 350° spin to the right ── */
+    faceImg.offsetHeight; // reflow before starting animation
+    faceImg.style.animation = 'face-spin-350 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards';
+
+    // At ~90° mark (~300ms in), swap to front face while edge-on
+    await iDelay(300);
+    if (!introRunning) break;
+    faceImg.src = 'images/figma_face2.png';
+    facePersp.style.width  = '133px';
+    facePersp.style.height = '119px';
+    facePersp.style.left   = Math.round((184.565 - 133) / 2) + 'px';
+
+    // Wait for rest of spin
+    await iDelay(900);
+    if (!introRunning) break;
+
+    /* ── Phase 3: front face (표지2) + scan sweep ── */
+    faceImg.style.animation = 'none';
+    faceImg.style.transform = '';       // snap to un-rotated
+    activateScan();
+
+    await iDelay(2000);
+    if (!introRunning) break;
+
+    /* ── Phase 4: left-profile face (표지3), scan fades ── */
+    faceImg.src = 'images/figma_face3.png';
+    facePersp.style.width  = '136px';
+    facePersp.style.height = '131px';
+    facePersp.style.left   = Math.round((184.565 - 136) / 2) + 'px';
+    deactivateScan();
+
+    await iDelay(900);
+  }
+}
+
+/* ────────── SCREEN ────────── */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+/* ────────── LOADING ────────── */
+function showLoading(duration, callback) {
+  showScreen('screen-loading');
+  const el  = document.getElementById('loading-img');
+  const step = Math.max(220, Math.floor(duration / LOADING_IMGS.length));
+  let i = 1;
+
+  el.src     = LOADING_IMGS[0];
+  el.style.opacity = '1';
+
+  const iv = setInterval(() => {
+    el.style.opacity = '0';
+    setTimeout(() => {
+      el.src = LOADING_IMGS[i % LOADING_IMGS.length];
+      el.style.opacity = '1';
+      i++;
+    }, 180);
+  }, step);
+
+  setTimeout(() => { clearInterval(iv); callback(); }, duration);
+}
+
+/* ────────── START ────────── */
+function startTest() {
+  stopIntroAnim();
+  answers = []; currentQ = 0; selectedOpt = null; pendingPct = null;
+  showLoading(900, () => renderQuestion(0));
+}
+
+/* ────────── QUESTION ────────── */
+function renderQuestion(index) {
+  selectedOpt = null;
+  // Clear any previous selection highlight
+  document.querySelectorAll('.q-opt-overlay').forEach(b => b.classList.remove('selected'));
+  // Swap the background image to the matching question design
+  document.getElementById('q-bg-img').src = `images/질문${index + 1}.png`;
+  showScreen('screen-question');
+}
+
+function selectOpt(i) {
+  selectedOpt = i;
+  document.querySelectorAll('.q-opt-overlay').forEach((b, j) =>
+    b.classList.toggle('selected', j === i)
+  );
+}
+
+function nextQuestion() {
+  if (selectedOpt === null) {
+    const btn = document.getElementById('btn-next');
+    btn.classList.remove('shake');
+    void btn.offsetHeight; // reflow to restart animation
+    btn.classList.add('shake');
+    showToast('먼저 하나 골라봐! 👆');
+    return;
+  }
+
+  answers.push(QUESTIONS[currentQ].opts[selectedOpt].s);
+
+  if (currentQ < QUESTIONS.length - 1) {
+    currentQ++;
+    renderQuestion(currentQ);
+  } else {
+    const total = answers.reduce((a, b) => a + b, 0);
+    const pct   = Math.round((total / 80) * 100);
+    pendingPct  = pct;
+    showLoading(1400, () => showResult(pct));
+  }
+}
+
+/* ────────── RESULT ────────── */
+function getGrade(pct) { return GRADES.find(g => pct >= g.min); }
+
+function showResult(pct) {
+  const grade = getGrade(pct);
+
+  document.getElementById('result-type-img').src        = grade.img;
+  document.getElementById('result-cta-text').textContent = grade.cta;
+
+  // Animated count-up for score
+  const el  = document.getElementById('rc-pct');
+  let count = 0;
+  const inc   = pct / 40;
+  const timer = setInterval(() => {
+    count = Math.min(count + inc, pct);
+    el.textContent = Math.round(count);
+    if (count >= pct) clearInterval(timer);
+  }, 1200 / 40);
+
+  showScreen('screen-result');
+}
+
+/* ────────── SAVE (html2canvas) ────────── */
+function saveCard() {
+  showToast('저장 준비 중...');
+  html2canvas(document.getElementById('result-card-layer'), {
+    scale:           2,
+    useCORS:         true,
+    allowTaint:      true,
+    logging:         false,
+    backgroundColor: null
+  }).then(canvas => {
+    const a      = document.createElement('a');
+    a.download   = 'drrrk_부자될상.png';
+    a.href       = canvas.toDataURL('image/png');
+    a.click();
+    showToast('카드 저장 완료! 📷');
+  }).catch(() => showToast('저장 실패. 스크린샷으로 저장해봐!'));
+}
+
+/* ────────── SHARE ────────── */
+function shareLink() {
+  const pct   = pendingPct ?? (parseInt(document.getElementById('rc-pct').textContent) || 0);
+  const grade = getGrade(pct);
+  const url   = `${location.origin}${location.pathname}?score=${pct}`;
+  const text  = `나 부자 될 상 테스트 해봤는데 ${pct}%나 나옴 😳 (${grade.name}) 너도 해봐`;
+
+  if (navigator.share) {
+    navigator.share({ title: '내가 부자가 될 상인가?', text, url }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(`${text}\n${url}`)
+      .then(() => showToast('링크 복사 완료! 🔗'))
+      .catch(() => showToast('링크 복사 실패'));
+  }
+}
+
+/* ────────── RESTART ────────── */
+function restartTest() {
+  pendingPct = null;
+  showScreen('screen-intro');
+  startIntroAnim();
+}
+
+/* ────────── TOAST ────────── */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+/* ────────── INIT / DEEP-LINK ────────── */
+document.addEventListener('DOMContentLoaded', () => {
+  const sp = new URLSearchParams(location.search).get('score');
+  if (sp !== null) {
+    const pct = Math.min(100, Math.max(0, parseInt(sp) || 0));
+    pendingPct = pct;
+    showResult(pct);
+  } else {
+    showScreen('screen-intro');
+    startIntroAnim();
+  }
+});
+</script>
+</body>
+</html>
