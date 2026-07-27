@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>*,*::before,*::after{box-sizing:border-box}body{margin:0}</style>
+<title>드르륵 홈 화면 개선안 v1 — 와이어프레임 & FAQ 카피</title>
+
+<style>
+  :root {
+    --paper:      #FFFFFF;
+    --paper-sunk: #F4F4F2;
+    --ink:        #14161A;
+    --ink-soft:   #4C5058;
+    --ink-faint:  #878B93;
+    --rule:       #E2E2DE;
+    --rule-hard:  #C8C8C3;
+    --accent:     #F5B301;
+    --accent-ink: #7A5300;
+    --accent-wash:#FEF6DE;
+    --good:       #15795A;
+    --good-wash:  #E4F2EC;
+    --warn:       #A8540B;
+    --warn-wash:  #FBEEE0;
+    --bad:        #A82B21;
+    --bad-wash:   #F8E7E5;
+
+    --sans: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', -apple-system, BlinkMacSystemFont, sans-serif;
+    --mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, 'Cascadia Mono', 'D2Coding', monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper:      #111316;
+      --paper-sunk: #191C20;
+      --ink:        #E9EAEC;
+      --ink-soft:   #A5A9B0;
+      --ink-faint:  #71757C;
+      --rule:       #2A2E33;
+      --rule-hard:  #3C4147;
+      --accent:     #FFC529;
+      --accent-ink: #FFD35C;
+      --accent-wash:#332807;
+      --good:       #5FC9A2;
+      --good-wash:  #10281F;
+      --warn:       #E0954E;
+      --warn-wash:  #2C1D0D;
+      --bad:        #EE8079;
+      --bad-wash:   #2E1512;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:      #111316;
+    --paper-sunk: #191C20;
+    --ink:        #E9EAEC;
+    --ink-soft:   #A5A9B0;
+    --ink-faint:  #71757C;
+    --rule:       #2A2E33;
+    --rule-hard:  #3C4147;
+    --accent:     #FFC529;
+    --accent-ink: #FFD35C;
+    --accent-wash:#332807;
+    --good:       #5FC9A2;
+    --good-wash:  #10281F;
+    --warn:       #E0954E;
+    --warn-wash:  #2C1D0D;
+    --bad:        #EE8079;
+    --bad-wash:   #2E1512;
+  }
+
+  :root[data-theme="light"] {
+    --paper:      #FFFFFF;
+    --paper-sunk: #F4F4F2;
+    --ink:        #14161A;
+    --ink-soft:   #4C5058;
+    --ink-faint:  #878B93;
+    --rule:       #E2E2DE;
+    --rule-hard:  #C8C8C3;
+    --accent:     #F5B301;
+    --accent-ink: #7A5300;
+    --accent-wash:#FEF6DE;
+    --good:       #15795A;
+    --good-wash:  #E4F2EC;
+    --warn:       #A8540B;
+    --warn-wash:  #FBEEE0;
+    --bad:        #A82B21;
+    --bad-wash:   #F8E7E5;
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    word-break: keep-all;
+  }
+
+  .doc {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 56px 24px 120px;
+    display: flex;
+    flex-direction: column;
+    gap: 72px;
+  }
+
+  /* ─────────── masthead ─────────── */
+
+  .masthead { display: flex; flex-direction: column; gap: 18px; }
+
+  .brandline {
+    display: flex; align-items: center; gap: 12px;
+    font-family: var(--mono);
+    font-size: 12px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .brandline::after {
+    content: ""; flex: 1; height: 1px; background: var(--rule);
+  }
+
+  .masthead h1 {
+    font-size: clamp(30px, 4.6vw, 46px);
+    line-height: 1.22;
+    font-weight: 800;
+    letter-spacing: -.03em;
+    text-wrap: balance;
+    margin: 0;
+  }
+  .masthead .standfirst {
+    font-size: 17px;
+    color: var(--ink-soft);
+    max-width: 62ch;
+    margin: 0;
+  }
+  .metabar {
+    display: flex; flex-wrap: wrap; gap: 8px 20px;
+    font-family: var(--mono); font-size: 12px;
+    color: var(--ink-faint);
+    padding-top: 8px;
+    border-top: 1px solid var(--rule);
+  }
+
+  /* ─────────── section scaffolding ─────────── */
+
+  section { display: flex; flex-direction: column; gap: 26px; }
+
+  .sec-head { display: flex; flex-direction: column; gap: 8px; }
+  .sec-num {
+    font-family: var(--mono); font-size: 12px;
+    letter-spacing: .14em; color: var(--accent-ink);
+    font-weight: 600;
+  }
+  .sec-head h2 {
+    font-size: clamp(22px, 2.8vw, 29px);
+    font-weight: 750;
+    letter-spacing: -.022em;
+    line-height: 1.3;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .sec-head p {
+    margin: 0; color: var(--ink-soft); max-width: 64ch; font-size: 15.5px;
+  }
+
+  h3.sub {
+    font-size: 17px; font-weight: 700; margin: 0;
+    letter-spacing: -.012em;
+  }
+
+  /* ─────────── verdict callout ─────────── */
+
+  .verdict {
+    border: 1px solid var(--rule-hard);
+    border-left: 4px solid var(--accent);
+    background: var(--paper-sunk);
+    padding: 24px 26px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .verdict .vhead {
+    font-size: 19px; font-weight: 750; letter-spacing: -.018em;
+  }
+  .verdict ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 9px; }
+  .verdict li { color: var(--ink-soft); font-size: 15px; }
+  .verdict li b { color: var(--ink); font-weight: 650; }
+
+  /* ─────────── tables ─────────── */
+
+  .tablewrap { overflow-x: auto; border: 1px solid var(--rule); }
+  table { border-collapse: collapse; width: 100%; min-width: 620px; font-size: 14.5px; }
+  th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  thead th {
+    background: var(--paper-sunk);
+    font-family: var(--mono); font-size: 11.5px; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink-faint); font-weight: 600;
+  }
+  tbody tr:last-child td { border-bottom: 0; }
+  td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .pill {
+    display: inline-block; padding: 2px 9px; border-radius: 999px;
+    font-size: 11.5px; font-weight: 650; white-space: nowrap;
+    font-family: var(--mono); letter-spacing: .02em;
+  }
+  .pill.keep { background: var(--good-wash); color: var(--good); }
+  .pill.move { background: var(--warn-wash); color: var(--warn); }
+  .pill.kill { background: var(--bad-wash);  color: var(--bad); }
+  .pill.new  { background: var(--accent-wash); color: var(--accent-ink); }
+
+  /* ─────────── wireframe layout ─────────── */
+
+  .wf-grid {
+    display: grid;
+    grid-template-columns: 360px minmax(0, 1fr);
+    gap: 44px;
+    align-items: start;
+  }
+  @media (max-width: 860px) {
+    .wf-grid { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+  }
+
+  .phone {
+    border: 1px solid var(--rule-hard);
+    background: var(--paper-sunk);
+    padding: 10px;
+    display: flex; flex-direction: column; gap: 7px;
+    position: sticky; top: 20px;
+  }
+  @media (max-width: 860px) { .phone { position: static; } }
+
+  .phone-chrome {
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--mono); font-size: 10px; color: var(--ink-faint);
+    padding: 2px 4px 6px; border-bottom: 1px dashed var(--rule-hard);
+    letter-spacing: .08em;
+  }
+
+  .blk {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 11px 13px;
+    display: flex; flex-direction: column; gap: 4px;
+    position: relative;
+  }
+  .blk .bt { font-size: 13.5px; font-weight: 680; letter-spacing: -.01em; line-height: 1.4; }
+  .blk .bs { font-size: 11.5px; color: var(--ink-faint); line-height: 1.5; }
+
+  .blk .tag {
+    position: absolute; top: -9px; right: 8px;
+    font-family: var(--mono); font-size: 9.5px; font-weight: 700;
+    padding: 1px 6px; letter-spacing: .04em;
+    border: 1px solid currentColor; background: var(--paper);
+  }
+  .tag.t-new { color: var(--accent-ink); }
+  .tag.t-mov { color: var(--warn); }
+
+  .mark {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 19px; height: 19px; flex: 0 0 19px;
+    background: var(--ink); color: var(--paper);
+    font-family: var(--mono); font-size: 11px; font-weight: 700;
+    border-radius: 50%;
+  }
+  .blk .mark { position: absolute; top: 10px; left: -9px; }
+  .blk { margin-left: 9px; }
+
+  .blk.cta {
+    background: var(--accent); border-color: var(--accent);
+    color: #241900; align-items: center; padding: 14px;
+  }
+  .blk.cta .bt { color: #241900; font-weight: 780; font-size: 14.5px; }
+  .blk.cta.ghost {
+    background: transparent; border: 1.5px solid var(--rule-hard); color: var(--ink);
+  }
+  .blk.cta.ghost .bt { color: var(--ink); }
+
+  .blk.link {
+    background: transparent; border: 0; border-bottom: 1px dashed var(--rule-hard);
+    align-items: center; padding: 7px;
+  }
+  .blk.link .bt { font-size: 12px; color: var(--accent-ink); font-weight: 600; }
+
+  .iconrow { display: flex; gap: 5px; flex-wrap: wrap; }
+  .iconrow span {
+    width: 30px; height: 30px; border: 1px solid var(--rule);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; background: var(--paper-sunk);
+  }
+
+  .trustbar {
+    display: flex; gap: 6px; justify-content: space-between;
+    font-family: var(--mono); font-size: 10px; color: var(--ink-soft);
+    text-align: center;
+  }
+  .trustbar div { flex: 1; padding: 5px 2px; background: var(--paper-sunk); border: 1px solid var(--rule); }
+  .trustbar b { display: block; font-size: 12px; color: var(--ink); font-family: var(--sans); }
+
+  .faqstub { display: flex; flex-direction: column; gap: 4px; }
+  .faqstub i {
+    font-style: normal; font-size: 11px; color: var(--ink-soft);
+    padding: 5px 8px; background: var(--paper-sunk); border: 1px solid var(--rule);
+    display: flex; justify-content: space-between;
+  }
+  .faqstub i::after { content: "+"; color: var(--ink-faint); }
+
+  /* annotations */
+  .annos { display: flex; flex-direction: column; gap: 0; }
+  .anno {
+    display: grid; grid-template-columns: 19px minmax(0, 1fr);
+    gap: 14px; padding: 15px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .anno:first-child { padding-top: 0; }
+  .anno-body { display: flex; flex-direction: column; gap: 5px; }
+  .anno-body .at { font-size: 15.5px; font-weight: 700; letter-spacing: -.014em; }
+  .anno-body .ar { font-size: 14.5px; color: var(--ink-soft); }
+  .anno-body .aw {
+    font-size: 13px; color: var(--ink-faint); font-family: var(--mono);
+    padding-top: 2px;
+  }
+
+  /* ─────────── faq copy deck ─────────── */
+
+  .faqdeck { display: flex; flex-direction: column; gap: 0; border-top: 1px solid var(--rule-hard); }
+  .faqitem {
+    display: grid; grid-template-columns: 34px minmax(0, 1fr);
+    gap: 16px; padding: 20px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .faqitem .fq-n {
+    font-family: var(--mono); font-size: 13px; font-weight: 700;
+    color: var(--ink-faint); font-variant-numeric: tabular-nums;
+    padding-top: 3px;
+  }
+  .fq-body { display: flex; flex-direction: column; gap: 9px; }
+  .fq-q { font-size: 17px; font-weight: 730; letter-spacing: -.018em; line-height: 1.4; }
+  .fq-a { font-size: 15.5px; color: var(--ink-soft); max-width: 68ch; margin: 0; }
+  .fq-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding-top: 2px; }
+  .fq-len {
+    font-family: var(--mono); font-size: 11.5px; color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+  }
+  .fq-kw {
+    font-family: var(--mono); font-size: 11.5px; color: var(--good);
+    background: var(--good-wash); padding: 2px 8px;
+  }
+  .fq-flag {
+    font-family: var(--mono); font-size: 11.5px; font-weight: 650;
+    color: var(--bad); background: var(--bad-wash); padding: 2px 8px;
+  }
+
+  /* ─────────── code ─────────── */
+
+  pre {
+    background: var(--paper-sunk);
+    border: 1px solid var(--rule);
+    padding: 18px 20px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.65;
+    margin: 0;
+    color: var(--ink);
+    tab-size: 2;
+  }
+  code { font-family: var(--mono); font-size: .92em; }
+  p code, li code, td code {
+    background: var(--paper-sunk); padding: 1px 5px; border: 1px solid var(--rule);
+  }
+
+  /* ─────────── checklist ─────────── */
+
+  .checks { display: flex; flex-direction: column; gap: 0; border-top: 1px solid var(--rule-hard); }
+  .check {
+    display: grid; grid-template-columns: 74px minmax(0, 1fr) auto;
+    gap: 16px; align-items: baseline;
+    padding: 13px 0; border-bottom: 1px solid var(--rule);
+  }
+  @media (max-width: 620px) {
+    .check { grid-template-columns: minmax(0, 1fr); gap: 5px; }
+  }
+  .check .pri {
+    font-family: var(--mono); font-size: 11px; font-weight: 700;
+    letter-spacing: .06em; padding: 2px 8px; text-align: center;
+  }
+  .pri.p0 { background: var(--bad-wash); color: var(--bad); }
+  .pri.p1 { background: var(--warn-wash); color: var(--warn); }
+  .pri.p2 { background: var(--paper-sunk); color: var(--ink-soft); }
+  .check .ct { font-size: 15px; }
+  .check .cw { font-family: var(--mono); font-size: 12px; color: var(--ink-faint); white-space: nowrap; }
+
+  .note {
+    font-size: 14px; color: var(--ink-soft);
+    border-left: 3px solid var(--rule-hard); padding: 4px 0 4px 16px;
+    margin: 0;
+  }
+  .note b { color: var(--ink); }
+
+  footer.doc-foot {
+    border-top: 1px solid var(--rule); padding-top: 22px;
+    font-family: var(--mono); font-size: 12px; color: var(--ink-faint);
+    display: flex; flex-direction: column; gap: 6px;
+  }
+
+  a { color: var(--accent-ink); }
+  a:focus-visible, [tabindex]:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 3px;
+  }
+</style>
+
+</head>
+<body>
+<div class="doc">
+
+  <header class="masthead">
+    <div class="brandline">DRRRK · 홈 화면 개선안 v1</div>
+    <h1>진입점을 4개에서 2개로 줄이고,<br>가장 센 문장을 위로 올립니다</h1>
+    <p class="standfirst">
+      현재 홈은 같은 행동으로 가는 문이 네 개이고, 가장 강한 설득 문장(“최저·최고 80만 원 차이”)이
+      스크롤 최하단에 있습니다. 이 문서는 섹션 순서 재배치안, 와이어프레임, 그리고 SEO 콘텐츠 점수를
+      실제로 움직이는 FAQ 카피 8건의 전문을 담습니다.
+    </p>
+    <div class="metabar">
+      <span>대상 / 모바일 웹 홈 390px</span>
+      <span>작성 / 2026-07-27</span>
+      <span>상태 / 검토 요청</span>
+    </div>
+  </header>
+
+  <!-- ══════════ 0. 쉬운 가이드 판정 ══════════ -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-num">판정</div>
+      <h2>“쉬운 가이드 → FAQ” 는 살립니다. 단, 위치를 바꿔서.</h2>
+    </div>
+
+    <div class="verdict">
+      <div class="vhead">의도는 맞습니다 — 실행 위치가 어긋났을 뿐입니다</div>
+      <ul>
+        <li><b>타이밍.</b> 사용자는 진입 직후에 가이드를 찾지 않습니다. 가이드를 찾는 건 CTA를 누르기 직전, 불안이 최고조일 때입니다. 지금은 불안이 생기기도 전인 히어로 바로 아래에 있습니다.</li>
+        <li><b>무게.</b> 2×2 그리드에서 “쉬운 가이드”가 “시세 확인”과 같은 크기입니다. FAQ는 이탈 방어용 보조 경로이지 주 동선이 아닙니다. 같은 크기로 그리면 주 CTA의 힘을 나눠 갖습니다.</li>
+        <li><b>이동 방식.</b> 별도 FAQ 페이지로 라우팅하면 거기서 이탈합니다. 돌아올 이유가 없기 때문입니다. 같은 페이지 하단 <b>앵커 스크롤 또는 바텀시트</b>가 맞습니다.</li>
+        <li><b>SEO.</b> FAQ를 별도 페이지로만 빼면 홈의 콘텐츠 점수는 그대로입니다. <b>홈 하단에 FAQ 텍스트를 실재시키고</b> 동시에 <code>/faq</code> 전용 페이지도 운영해 양쪽을 모두 확보합니다.</li>
+      </ul>
+      <p class="note">
+        <b>수정안 —</b> 라벨을 “쉬운 가이드”에서 <b>“처음이신가요?”</b> 로 교체하고, 2×2 그리드에서 빼내
+        주 CTA 바로 아래 텍스트 링크로 강등합니다. 클릭 시 같은 페이지 하단 FAQ 섹션(<code>#faq</code>)으로
+        부드럽게 스크롤합니다.
+      </p>
+    </div>
+  </section>
+
+  <!-- ══════════ 1. 진입점 정리 ══════════ -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-num">01 / 진입점</div>
+      <h2>같은 행동으로 가는 문 4개를 2개로</h2>
+      <p>
+        선택지가 늘수록 결정 시간은 로그함수로 증가하고, 일정 수를 넘으면 아무것도 누르지 않고 이탈합니다.
+        현재 홈은 시세 조회로 가는 경로가 상단 탭·2×2 그리드·히어로 CTA·하단 CTA로 네 겹입니다.
+      </p>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>현재 요소</th><th>처리</th><th>이유</th><th>이동 후 위치</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>상단 탭 <code>AI 시세조회 / 판매하기</code></td>
+            <td><span class="pill keep">유지</span></td>
+            <td>모드 전환은 명확한 정보구조. 중복이 아니라 분기입니다.</td>
+            <td class="num">그대로</td>
+          </tr>
+          <tr>
+            <td>그리드 · <code>시세 확인</code></td>
+            <td><span class="pill kill">삭제</span></td>
+            <td>주 CTA “시세 조회하기”와 완전 중복.</td>
+            <td class="num">—</td>
+          </tr>
+          <tr>
+            <td>그리드 · <code>쉬운 가이드</code></td>
+            <td><span class="pill move">강등</span></td>
+            <td>보조 경로를 주 동선 크기로 그리면 CTA 힘이 분산됩니다.</td>
+            <td class="num">⑤ 아래 텍스트 링크</td>
+          </tr>
+          <tr>
+            <td>그리드 · <code>견적 신청</code></td>
+            <td><span class="pill move">이동</span></td>
+            <td>비교 설득을 읽은 뒤에 눌러야 전환됩니다. 읽기 전엔 의미 없음.</td>
+            <td class="num">⑦ 보조 CTA</td>
+          </tr>
+          <tr>
+            <td>그리드 · 라벨 없는 아이콘 셀</td>
+            <td><span class="pill kill">삭제</span></td>
+            <td>돋보기+반짝임만 있고 라벨이 없어 어포던스가 불명확합니다.</td>
+            <td class="num">—</td>
+          </tr>
+          <tr>
+            <td>“최저·최고 80만 원 차이”</td>
+            <td><span class="pill move">상단 이동</span></td>
+            <td>손실 회피는 획득 욕구보다 약 2배 강한 동기입니다. 가장 센 카드를 맨 밑에 묻어뒀습니다.</td>
+            <td class="num">② 히어로 부제</td>
+          </tr>
+          <tr>
+            <td>판매자 리뷰</td>
+            <td><span class="pill move">CTA 앞으로</span></td>
+            <td>사회적 증명은 행동 요청보다 먼저 와야 작동합니다. 지금은 CTA 뒤에 있습니다.</td>
+            <td class="num">③ 신뢰 바 + ⑧</td>
+          </tr>
+          <tr>
+            <td>FAQ 텍스트</td>
+            <td><span class="pill new">신규</span></td>
+            <td>크롤러가 읽는 본문 900자 이상을 확보하는 가장 빠른 수단입니다.</td>
+            <td class="num">⑨ 홈 하단</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ══════════ 2. 와이어프레임 ══════════ -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-num">02 / 와이어프레임</div>
+      <h2>개선 후 홈 — 스크롤 순서</h2>
+      <p>
+        번호는 스크롤 순서입니다. 순서 자체가 설득 시퀀스이므로 임의로 섞을 수 없습니다.
+        정보 욕구 → 신뢰 → 행동 → 비교 설득 → 재행동 → 불안 해소 순으로 흐릅니다.
+      </p>
+    </div>
+
+    <div class="wf-grid">
+
+      <div class="phone" role="img" aria-label="개선 후 드르륵 홈 화면 와이어프레임, 390px 모바일 기준 10개 블록 구성">
+        <div class="phone-chrome"><span>DRRRK</span><span>390 × SCROLL</span></div>
+
+        <div class="blk">
+          <span class="mark">1</span>
+          <span class="bt">헤더 — 로고 · 알림</span>
+          <span class="bs">탭: AI 시세조회 / 판매하기</span>
+        </div>
+
+        <div class="blk">
+          <span class="mark">2</span>
+          <span class="tag t-mov">MOVED</span>
+          <span class="bt">H1 · 내 자산, 지금 팔면 얼마일까요?</span>
+          <span class="bs">부제 → 같은 가방인데 바이어마다 <b>80만 원</b>까지 차이 납니다</span>
+        </div>
+
+        <div class="blk">
+          <span class="mark">3</span>
+          <span class="tag t-mov">MOVED</span>
+          <div class="trustbar">
+            <div><b>12,483</b>누적거래</div>
+            <div><b>★4.8</b>평균평점</div>
+            <div><b>당일</b>검수후입금</div>
+          </div>
+        </div>
+
+        <div class="blk">
+          <span class="mark">4</span>
+          <span class="bt">취급 카테고리</span>
+          <div class="iconrow">
+            <span>👜</span><span>⌚</span><span>👟</span><span>📷</span>
+            <span>🎧</span><span>💻</span><span>📱</span><span>💍</span>
+          </div>
+          <span class="bs">각 아이콘에 alt 필수 — 카테고리 키워드 8개</span>
+        </div>
+
+        <div class="blk">
+          <span class="mark">5</span>
+          <span class="bt">시세 미리보기 카드</span>
+          <span class="bs">예시 · 샤넬 클래식 미디움<br>900 ~ 1,000만 원 · 최근 3개월 추이</span>
+        </div>
+
+        <div class="blk cta">
+          <span class="mark">6</span>
+          <span class="bt">✨ 무료로 시세 조회하기</span>
+        </div>
+
+        <div class="blk link">
+          <span class="tag t-new">NEW</span>
+          <span class="bt">처음이신가요? 자주 묻는 질문 →</span>
+        </div>
+
+        <div class="blk">
+          <span class="mark">7</span>
+          <span class="bt">첫 견적이 정답은 아닙니다</span>
+          <span class="bs">본문 3줄 → 12줄 확장<br>바이어 A·B·C 비교 카드 · 마감 상태 명시</span>
+        </div>
+
+        <div class="blk cta ghost">
+          <span class="mark">8</span>
+          <span class="bt">내 자산 비교 견적 받아보기</span>
+        </div>
+
+        <div class="blk">
+          <span class="mark">9</span>
+          <span class="bt">판매자 후기</span>
+          <span class="bs">3건 이상 노출 + 전체 후기 아카이브 링크</span>
+        </div>
+
+        <div class="blk">
+          <span class="mark">10</span>
+          <span class="tag t-new">NEW</span>
+          <span class="bt">자주 묻는 질문 <code>#faq</code></span>
+          <div class="faqstub">
+            <i>중고 명품 시세는 어떻게 정해지나요?</i>
+            <i>바이어마다 견적이 다른 이유는?</i>
+            <i>견적을 받으면 꼭 팔아야 하나요?</i>
+          </div>
+          <span class="bs">아코디언 접어도 DOM에는 텍스트로 실재</span>
+        </div>
+
+        <div class="blk">
+          <span class="bt">푸터</span>
+          <span class="bs">사업자 정보 · 품목별 시세 페이지 내부 링크</span>
+        </div>
+      </div>
+
+      <div class="annos">
+        <div class="anno">
+          <span class="mark">1</span>
+          <div class="anno-body">
+            <span class="at">헤더 · 모드 탭</span>
+            <span class="ar">탭은 유지합니다. 시세 조회와 판매하기는 목적이 다른 분기라 중복이 아닙니다.</span>
+          </div>
+        </div>
+
+        <div class="anno">
+          <span class="mark">2</span>
+          <div class="anno-body">
+            <span class="at">히어로 — 손실 회피를 부제로 끌어올림</span>
+            <span class="ar">기존 히어로는 “얼마일까요?”라는 정보 욕구만 자극합니다. 여기에 “80만 원 차이”를 부제로 붙이면 정보 욕구 위에 손실 회피가 얹힙니다. 전망이론상 손실 회피는 같은 크기 이득보다 약 2배 강하게 작동합니다.</span>
+            <span class="aw">H1 1개만 · 나머지는 H2</span>
+          </div>
+        </div>
+
+        <div class="anno">
+          <span class="mark">3</span>
+          <div class="anno-body">
+            <span class="at">신뢰 바 — 첫 CTA보다 앞으로</span>
+            <span class="ar">별점 5.0짜리 리뷰 1건은 오히려 조작 의심을 부릅니다. 신뢰를 만드는 건 점수가 아니라 <b>모수</b>입니다. 누적 거래 건수를 앞세우세요.</span>
+            <span class="aw">숫자는 실제 데이터로 교체 필요</span>
+          </div>
+        </div>
+
+        <div class="anno">
+          <span class="mark">4</span>
+          <div class="anno-body">
+            <span class="at">카테고리 아이콘 — 공짜 키워드 8개</span>
+            <span class="ar">지금 이미지 안에 갇혀 있는 카테고리명을 alt로 꺼내면 크롤러가 읽는 키워드가 8개 늘어납니다. <code>alt="명품 가방 시세 조회"</code> 형태로 검색어를 담으세요.</span>
+          </div>
+        </div>
+
+        <div class="anno">
+          <span class="mark">5</span>
+          <div class="anno-body">
+            <span class="at">시세 카드 — 자산명 라벨 추가</span>
+            <span class="ar">“900~1,000만 원”만 있고 무엇의 시세인지 없으면 신뢰가 깎입니다. “예시 · 샤넬 클래식 미디움”을 명시하세요. 또 <b>“전월 대비 +0.9%”는 삭제</b>합니다. 1% 미만 변동은 심리적으로 “변화 없음”으로 인지돼 행동 유인이 없습니다. 기간을 늘려 최근 3개월 누적 변동으로 프레이밍하세요.</span>
+            <span class="aw">숫자는 텍스트 노드로 — 이미지·canvas 금지</span>
+          </div>
+        </div>
+
+        <div class="anno">
+          <span class="mark">6</span>
+          <div class="anno-body">
+            <span class="at">주 CTA — 화면에 하나뿐인 노란 버튼</span>
+            <span class="ar">“무료로”를 넣어 심리적 진입 비용을 0으로 만듭니다. 이 화면에서 채도 높은 노란색은 여기 하나여야 합니다. 바로 아래 “처음이신가요?”를 회색 텍스트 링크로 붙여, 불안한 사용자만 <code>#faq</code>로 앵커 이동시킵니다.</span>
+            <span class="aw">페이지 이동 ✕ · 앵커 스크롤 또는 바텀시트 ○</span>
+          </div>
+        </div>
+
+        <div class="anno">
+          <span class="mark">7</span>
+          <div class="anno-body">
+            <span class="at">비교 설득 — 3줄을 12줄로</span>
+            <span class="ar">현재 홈에서 유일하게 SEO 가치가 있는 산문입니다. 앵커링 편향을 정면으로 깨는 좋은 기획이니 분량을 키우세요. 바이어 C의 회색 처리는 의미가 불명확하므로 <b>“마감됨” 배지</b>를 명시해야 손실 회피가 작동합니다.</span>
+            <span class="aw">본문 400자 이상 목표</span>
+          </div>
+        </div>
+
+        <div class="anno">
+          <span class="mark">8</span>
+          <div class="anno-body">
+            <span class="at">보조 CTA — 고스트 스타일</span>
+            <span class="ar">비교 설득을 읽고 내려온 사용자를 받는 두 번째 문입니다. 주 CTA와 시각적 무게가 같으면 안 되므로 테두리만 있는 고스트 버튼으로 처리합니다.</span>
+          </div>
+        </div>
+
+        <div class="anno">
+          <span class="mark">9</span>
+          <div class="anno-body">
+            <span class="at">후기 — 최소 3건 + 아카이브</span>
+            <span class="ar">사용자 작성 콘텐츠는 SEO 가성비 1위 자산입니다. 카드 안에 1건만 가둬두면 자산화가 안 됩니다. <code>/reviews</code> 아카이브로 링크를 빼서 내부 링크 구조를 만드세요.</span>
+          </div>
+        </div>
+
+        <div class="anno">
+          <span class="mark">10</span>
+          <div class="anno-body">
+            <span class="at">FAQ — 콘텐츠 점수의 본체</span>
+            <span class="ar">아래 8개 문항을 그대로 넣으면 본문 약 1,100자가 확보됩니다. 아코디언으로 접되 <code>display:none</code>은 금지 — 크롤러가 읽을 수 있도록 DOM에 텍스트로 존재해야 합니다. <code>max-height</code>와 <code>overflow:hidden</code>으로 접으세요.</span>
+            <span class="aw">FAQPage JSON-LD 동시 삽입</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 3. FAQ 카피 ══════════ -->
+  <section id="faq">
+    <div class="sec-head">
+      <div class="sec-num">03 / 카피</div>
+      <h2>FAQ 8문항 전문</h2>
+      <p>
+        각 답변은 100~150자로 맞췄고, 실제 검색어가 문장 안에 자연스럽게 들어가도록 썼습니다.
+        8건 합계 약 1,100자로, 홈 본문 분량 기준선을 한 번에 넘깁니다.
+      </p>
+    </div>
+
+    <p class="note">
+      <b>주의 —</b> <span style="color:var(--bad);font-weight:650">확인 필요</span> 표시가 붙은 항목은
+      제가 자연스러운 카피를 위해 임시로 채워 넣은 <b>수치·정책 값</b>입니다. 실제 운영 정책과 대조해
+      확정한 뒤 게시하세요. 검증되지 않은 입금 기한이나 반송 비용 문구는 표시광고법상 리스크가 됩니다.
+    </p>
+
+    <div class="faqdeck">
+
+      <div class="faqitem">
+        <span class="fq-n">01</span>
+        <div class="fq-body">
+          <div class="fq-q">중고 명품 시세는 어떻게 정해지나요?</div>
+          <p class="fq-a">브랜드·모델·연식·상태 등급이 기본이고, 여기에 최근 실거래가와 바이어별 재고 상황이 반영됩니다. 드르륵은 최근 거래 데이터를 학습한 AI가 예상 시세 범위를 산출하고, 실제 매입가는 바이어 견적 단계에서 확정됩니다.</p>
+          <div class="fq-meta">
+            <span class="fq-len">124자</span>
+            <span class="fq-kw">중고 명품 시세</span>
+            <span class="fq-kw">실거래가</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="faqitem">
+        <span class="fq-n">02</span>
+        <div class="fq-body">
+          <div class="fq-q">사진 한 장만으로 정확한 시세를 알 수 있나요?</div>
+          <p class="fq-a">사진으로 나오는 값은 예상 시세 범위입니다. 모델과 대략적인 상태를 판별해 범위를 좁혀드리지만 스크래치·변색·구성품 유무는 실물 검수에서 최종 확인됩니다. 정확한 금액은 바이어 견적에서 확정된다고 보시면 됩니다.</p>
+          <div class="fq-meta">
+            <span class="fq-len">126자</span>
+            <span class="fq-kw">사진으로 시세 조회</span>
+            <span class="fq-kw">실물 검수</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="faqitem">
+        <span class="fq-n">03</span>
+        <div class="fq-body">
+          <div class="fq-q">바이어마다 견적이 다른 이유는 무엇인가요?</div>
+          <p class="fq-a">바이어마다 보유 재고와 주력 카테고리, 판매 채널이 다르기 때문입니다. 같은 가방이라도 해당 모델 재고가 없는 바이어는 더 높은 금액을 제시합니다. 드르륵에서는 최저 제안과 최고 제안이 수십만 원 이상 벌어지는 경우가 흔합니다.</p>
+          <div class="fq-meta">
+            <span class="fq-len">131자</span>
+            <span class="fq-kw">매입 가격 비교</span>
+            <span class="fq-kw">바이어 견적</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="faqitem">
+        <span class="fq-n">04</span>
+        <div class="fq-body">
+          <div class="fq-q">견적을 받으면 반드시 판매해야 하나요?</div>
+          <p class="fq-a">아닙니다. 시세 조회와 견적 확인은 무료이며 판매 의무도 없습니다. 여러 바이어의 제안을 모두 확인한 뒤 원하는 조건이 없으면 그대로 종료하시면 됩니다. 판매는 회원님이 특정 바이어에게 판매 요청을 보낸 시점부터 시작됩니다.</p>
+          <div class="fq-meta">
+            <span class="fq-len">128자</span>
+            <span class="fq-kw">무료 견적</span>
+            <span class="fq-flag">확인 필요 · 무료 범위</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="faqitem">
+        <span class="fq-n">05</span>
+        <div class="fq-body">
+          <div class="fq-q">정품 감정과 상태 검수는 어떻게 진행되나요?</div>
+          <p class="fq-a">자산이 바이어에게 도착하면 전문 검수 인력이 정품 여부와 상태 등급을 확인합니다. 검수 결과가 최초 견적 조건과 다를 경우 조정 금액을 다시 안내드리며, 조정안에 동의하지 않으시면 자산은 그대로 반송됩니다.</p>
+          <div class="fq-meta">
+            <span class="fq-len">119자</span>
+            <span class="fq-kw">명품 정품 감정</span>
+            <span class="fq-flag">확인 필요 · 반송 비용 부담 주체</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="faqitem">
+        <span class="fq-n">06</span>
+        <div class="fq-body">
+          <div class="fq-q">판매를 결정하면 입금까지 얼마나 걸리나요?</div>
+          <p class="fq-a">검수가 끝나면 영업일 기준 당일 정산이 원칙입니다. 오전에 자산이 도착한 경우 대부분 같은 날 입금이 마무리됩니다. 택배 배송 기간까지 포함하면 판매 요청부터 입금까지 보통 2~3일이 걸립니다.</p>
+          <div class="fq-meta">
+            <span class="fq-len">113자</span>
+            <span class="fq-kw">중고 명품 판매 입금</span>
+            <span class="fq-flag">확인 필요 · 당일 정산 · 2~3일</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="faqitem">
+        <span class="fq-n">07</span>
+        <div class="fq-body">
+          <div class="fq-q">보증서나 구성품이 없어도 판매할 수 있나요?</div>
+          <p class="fq-a">가능합니다. 다만 보증서·더스트백·정품 박스 같은 구성품이 갖춰져 있으면 매입가가 올라가는 경우가 많습니다. 구성품 유무를 견적 요청 단계에서 미리 입력해두시면 실제 매입가에 더 가까운 제안을 받으실 수 있습니다.</p>
+          <div class="fq-meta">
+            <span class="fq-len">127자</span>
+            <span class="fq-kw">보증서 없는 명품 판매</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="faqitem">
+        <span class="fq-n">08</span>
+        <div class="fq-body">
+          <div class="fq-q">매입과 담보 대출 중 어떤 게 유리한가요?</div>
+          <p class="fq-a">자산을 다시 찾을 계획이 없다면 매입이 유리합니다. 반대로 일시적으로 자금만 필요하고 자산은 계속 보유하고 싶다면 담보 대출을 검토해보세요. 드르륵은 두 가지 제안을 함께 비교할 수 있어 상황에 맞게 선택하실 수 있습니다.</p>
+          <div class="fq-meta">
+            <span class="fq-len">126자</span>
+            <span class="fq-kw">명품 담보 대출</span>
+            <span class="fq-flag">확인 필요 · 대출 비교 제공 여부</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <p class="note">
+      합계 <b>약 1,094자</b> — 여기에 비교 설득 섹션 확장분 400자, 후기 3건 200자를 더하면
+      홈 본문이 <b>1,700자대</b>가 됩니다. 콘텐츠 분량 기준선을 넘기는 데는 이 조합만으로 충분합니다.
+    </p>
+  </section>
+
+  <!-- ══════════ 4. 마크업 ══════════ -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-num">04 / 마크업</div>
+      <h2>헤드 태그와 구조화 데이터</h2>
+      <p>
+        아래 두 블록을 그대로 넣되, <b>서버 렌더링 결과에 포함되어야</b> 의미가 있습니다.
+        <code>view-source</code>에 본문 텍스트가 안 보이면 이 작업은 전부 무효입니다.
+      </p>
+    </div>
+
+    <h3 class="sub">메타 · 헤딩 계층</h3>
+<pre>&lt;title&gt;중고 명품·전자기기 시세 조회 | 바이어 견적 비교 - 드르륵&lt;/title&gt;
+&lt;meta name="description" content="샤넬·롤렉스·아이폰까지 사진 한 장으로 AI 시세 조회.
+여러 전문 바이어의 매입 견적을 한눈에 비교하고 가장 높은 가격에 판매하세요."&gt;
+
+&lt;h1&gt;내 자산 시세 조회부터 바이어 비교 견적까지, 드르륵&lt;/h1&gt;
+  &lt;h2&gt;사진 한 장으로 확인하는 AI 실시간 시세&lt;/h2&gt;
+  &lt;h2&gt;첫 견적이 정답은 아닙니다 — 여러 바이어를 비교하세요&lt;/h2&gt;
+  &lt;h2&gt;드르륵을 이용한 판매자들의 실제 후기&lt;/h2&gt;
+  &lt;h2 id="faq"&gt;자주 묻는 질문&lt;/h2&gt;</pre>
+
+    <h3 class="sub">FAQPage 구조화 데이터</h3>
+<pre>&lt;script type="application/ld+json"&gt;
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "중고 명품 시세는 어떻게 정해지나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "브랜드·모델·연식·상태 등급이 기본이고, 여기에 최근 실거래가와
+                 바이어별 재고 상황이 반영됩니다. …"
+      }
+    }
+    /* 나머지 7문항 동일 구조로 반복 */
+  ]
+}
+&lt;/script&gt;</pre>
+
+    <p class="note">
+      <b>AggregateRating은 넣지 마세요.</b> 실제 수집된 리뷰 데이터와 노출 수치가 1:1로 일치하지 않으면
+      구조화 데이터 정책 위반으로 리치 결과에서 제외될 수 있습니다. 후기 시스템이 정식 운영된 뒤에 추가하는 게 안전합니다.
+    </p>
+  </section>
+
+  <!-- ══════════ 5. 체크리스트 ══════════ -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-num">05 / 실행</div>
+      <h2>우선순위 체크리스트</h2>
+      <p>위에서부터 순서대로 처리하세요. P0가 실패하면 그 아래는 전부 의미가 없습니다.</p>
+    </div>
+
+    <div class="checks">
+      <div class="check">
+        <span class="pri p0">P0</span>
+        <span class="ct"><code>view-source</code>에서 히어로 문구가 검색되는지 확인</span>
+        <span class="cw">30분</span>
+      </div>
+      <div class="check">
+        <span class="pri p0">P0</span>
+        <span class="ct">위가 실패하면 SSR / SSG / prerender 적용 — 콘텐츠 점수의 전제조건</span>
+        <span class="cw">3~5일</span>
+      </div>
+      <div class="check">
+        <span class="pri p1">P1</span>
+        <span class="ct">FAQ 8문항 홈 하단 삽입 + <code>#faq</code> 앵커 연결</span>
+        <span class="cw">1일</span>
+      </div>
+      <div class="check">
+        <span class="pri p1">P1</span>
+        <span class="ct">진입점 정리 — 2×2 그리드 해체, 주 CTA 단일화</span>
+        <span class="cw">1일</span>
+      </div>
+      <div class="check">
+        <span class="pri p1">P1</span>
+        <span class="ct">“80만 원 차이” 히어로 부제로 이동, 신뢰 바 CTA 앞으로</span>
+        <span class="cw">0.5일</span>
+      </div>
+      <div class="check">
+        <span class="pri p1">P1</span>
+        <span class="ct"><code>h1</code> 정확히 1개 배치 + <code>title</code> / <code>description</code> 교체</span>
+        <span class="cw">0.5일</span>
+      </div>
+      <div class="check">
+        <span class="pri p2">P2</span>
+        <span class="ct">이미지 <code>alt</code> 전량 — 카테고리 아이콘 8개 우선</span>
+        <span class="cw">0.5일</span>
+      </div>
+      <div class="check">
+        <span class="pri p2">P2</span>
+        <span class="ct"><code>FAQPage</code> · <code>Organization</code> · <code>Service</code> JSON-LD</span>
+        <span class="cw">0.5일</span>
+      </div>
+      <div class="check">
+        <span class="pri p2">P2</span>
+        <span class="ct"><code>sitemap.xml</code> / <code>robots.txt</code> 정비</span>
+        <span class="cw">0.5일</span>
+      </div>
+      <div class="check">
+        <span class="pri p2">P2</span>
+        <span class="ct">품목별 시세 페이지 파일럿 20개 — <code>/price/샤넬-클래식-미디움</code></span>
+        <span class="cw">2주</span>
+      </div>
+    </div>
+
+    <p class="note">
+      마지막 항목이 중장기 유입의 본체입니다. <b>“드르륵” 검색량보다 “샤넬 클래식 미디움 중고 시세” 검색량이
+      훨씬 큽니다.</b> 브랜드명으로 싸우지 말고 자산명으로 이기는 게 이 비즈니스에 맞는 전략입니다.
+      시세 데이터를 이미 보유하고 계시니 템플릿 하나로 페이지 수백~수천 개를 생산할 수 있습니다.
+    </p>
+  </section>
+
+  <footer class="doc-foot">
+    <span>드르륵 홈 화면 개선안 v1 · 2026-07-27</span>
+    <span>미확인 항목 — 실사이트 및 감사 리포트 직접 확인 불가(네트워크 차단). 렌더링 방식은 view-source 확인 후 확정 필요.</span>
+  </footer>
+
+</div>
+
+</body>
+</html>
