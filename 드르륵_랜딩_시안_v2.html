@@ -1,0 +1,694 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>*,*::before,*::after{box-sizing:border-box}body{margin:0}</style>
+<title>드르륵 — 지금 시세부터 검색하세요</title>
+
+<style>
+  .v2 {
+    /* palette — ui-ux-pro-max: Luxury/Premium Brand */
+    --stone-900: #1C1917;
+    --stone-800: #292524;
+    --stone-700: #44403C;
+    --stone-600: #57534E;
+    --stone-400: #A8A29E;
+    --stone-300: #D6D3D1;
+    --stone-200: #E7E5E4;
+    --stone-50:  #FAFAF9;
+    --ink:       #0C0A09;
+    --gold:      #CA8A04;
+    --gold-lift: #EAB308;
+    --gold-wash: #FEF9E7;
+    --verified:  #15803D;
+    --verify-bg: #ECFDF3;
+    --down:      #B91C1C;
+
+    /* z-index scale — 10 / 20 / 30 / 50 */
+    --z-blob: 10;
+    --z-body: 20;
+    --z-nav:  30;
+    --z-dock: 50;
+
+    --serif: 'Bodoni 72', 'Bodoni MT', Didot, 'Didot LT STD', 'Playfair Display',
+             Georgia, 'Times New Roman', serif;
+    --sans:  'Jost', 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR',
+             'Malgun Gothic', -apple-system, BlinkMacSystemFont, sans-serif;
+
+    font-family: var(--sans);
+    background: var(--stone-50);
+    color: var(--ink);
+    font-size: 16px;
+    line-height: 1.65;
+    word-break: keep-all;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  .v2 *, .v2 *::before, .v2 *::after { box-sizing: border-box; }
+
+  .v2 .shell { max-width: 1180px; margin: 0 auto; padding-inline: 16px; }
+  @media (min-width: 640px) { .v2 .shell { padding-inline: 24px; } }
+  @media (min-width: 1024px) { .v2 .shell { padding-inline: 32px; } }
+
+  /* numerals carry the auction-catalogue voice */
+  .v2 .fig {
+    font-family: var(--serif);
+    font-variant-numeric: lining-nums tabular-nums;
+    letter-spacing: -.01em;
+  }
+
+  .v2 .label {
+    font-size: 11px; font-weight: 600; letter-spacing: .13em;
+    text-transform: uppercase; color: var(--gold); margin: 0;
+  }
+
+  .v2 .h2 {
+    font-size: clamp(26px, 3.6vw, 40px); font-weight: 600;
+    letter-spacing: -.035em; line-height: 1.22; margin: 0;
+    text-wrap: balance;
+  }
+  .v2 .lede {
+    font-size: 15.5px; color: var(--stone-600); margin: 0; max-width: 52ch;
+  }
+
+  .v2 a, .v2 button, .v2 summary, .v2 [role="button"] { cursor: pointer; }
+  .v2 :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 2px; }
+
+  /* ── buttons — 44px min touch target ───────────── */
+  .v2 .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 44px; padding: 0 22px;
+    font-family: var(--sans); font-size: 15px; font-weight: 600;
+    letter-spacing: -.01em; border: 0; border-radius: 3px;
+    text-decoration: none; white-space: nowrap;
+    transition: background-color .2s ease-out, color .2s ease-out, border-color .2s ease-out;
+  }
+  .v2 .btn-gold { background: var(--gold); color: var(--ink); }
+  .v2 .btn-gold:hover { background: var(--gold-lift); }
+  .v2 .btn-ink { background: var(--ink); color: var(--stone-50); }
+  .v2 .btn-ink:hover { background: var(--stone-700); }
+  .v2 .btn-line {
+    background: transparent; color: var(--ink);
+    border: 1px solid var(--stone-300);
+  }
+  .v2 .btn-line:hover { border-color: var(--ink); background: #fff; }
+  .v2 .btn-lg { min-height: 52px; padding: 0 30px; font-size: 16px; }
+
+  /* ── floating nav — spaced off the edges ───────── */
+  .v2 .nav {
+    position: sticky; top: 0; z-index: var(--z-nav);
+    padding: 12px 0 0;
+  }
+  .v2 .nav-inner {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    background: rgba(250,250,249,.86);
+    backdrop-filter: blur(18px) saturate(1.5);
+    -webkit-backdrop-filter: blur(18px) saturate(1.5);
+    border: 1px solid var(--stone-200);
+    border-radius: 4px;
+    padding: 9px 10px 9px 18px;
+  }
+  .v2 .wordmark {
+    font-family: var(--serif); font-size: 21px; font-weight: 700;
+    letter-spacing: .12em; color: var(--ink); text-decoration: none;
+    display: inline-flex; align-items: center; min-height: 44px;
+  }
+  .v2 .nav-links { display: flex; align-items: center; gap: 4px; }
+  .v2 .nav-links a.t {
+    min-height: 44px; display: inline-flex; align-items: center; padding: 0 13px;
+    font-size: 14px; color: var(--stone-600); text-decoration: none;
+    transition: color .2s ease-out;
+  }
+  .v2 .nav-links a.t:hover { color: var(--ink); }
+  @media (max-width: 700px) { .v2 .nav-links a.t { display: none; } }
+
+  /* ── ACT · hero, search is the CTA ─────────────── */
+  .v2 .hero {
+    position: relative; isolation: isolate;
+    background: var(--stone-900);
+    border-radius: 4px;
+    margin-top: 14px;
+    padding: clamp(46px, 7vw, 86px) clamp(18px, 4vw, 60px) clamp(40px, 5.5vw, 62px);
+    overflow: hidden;
+  }
+  /* the single ambient motion on this view */
+  .v2 .hero::before {
+    content: ""; position: absolute; z-index: var(--z-blob);
+    inset: -40% -10% auto -10%; height: 150%;
+    background:
+      radial-gradient(48% 42% at 22% 30%, rgba(202,138,4,.30), transparent 68%),
+      radial-gradient(40% 38% at 78% 62%, rgba(234,179,8,.16), transparent 70%);
+    filter: blur(28px);
+    animation: v2drift 26s ease-in-out infinite alternate;
+  }
+  @keyframes v2drift {
+    from { transform: translate3d(-3%, -2%, 0) scale(1); }
+    to   { transform: translate3d(4%, 3%, 0) scale(1.12); }
+  }
+  .v2 .hero > * { position: relative; z-index: var(--z-body); }
+
+  /* copy left, movers board right; search spans the full width beneath */
+  .v2 .hero-top { display: grid; grid-template-columns: minmax(0, 1fr); gap: 34px; align-items: start; }
+  @media (min-width: 1024px) { .v2 .hero-top { grid-template-columns: minmax(0, 1fr) 320px; gap: 56px; } }
+
+  .v2 .hero h1 {
+    font-size: clamp(28px, 5.2vw, 56px);
+    font-weight: 600; letter-spacing: -.032em; line-height: 1.2;
+    margin: 14px 0 0; color: #FDFCFB;
+  }
+  /* Korean never takes the didone face — no faux italic, no fallback collisions.
+     The <br> is load-bearing: word-break:keep-all cannot split "부터검색해보세요". */
+  .v2 .hero h1 .em { color: var(--gold-lift); white-space: nowrap; }
+  .v2 .hero .sub {
+    margin: 16px 0 0; color: var(--stone-400);
+    font-size: clamp(14.5px, 1.5vw, 16.5px); max-width: 40ch;
+  }
+  .v2 .hero .label { color: var(--gold-lift); }
+
+  /* glass movers panel — where the didone numerals belong */
+  .v2 .movers {
+    background: rgba(255,255,255,.07);
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    border: 1px solid rgba(255,255,255,.16);
+    border-radius: 5px; padding: 16px 18px;
+    display: none; flex-direction: column; gap: 12px;
+  }
+  @media (min-width: 1024px) { .v2 .movers { display: flex; } }
+  .v2 .movers .mh {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 11px; font-weight: 600; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--gold-lift);
+    padding-bottom: 11px; border-bottom: 1px solid rgba(255,255,255,.14);
+  }
+  .v2 .movers .mrow {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  }
+  .v2 .movers .mn { font-size: 13.5px; color: #E7E0CF; min-width: 0; }
+  .v2 .movers .mv {
+    font-family: var(--serif); font-size: 17px; font-weight: 700;
+    font-variant-numeric: tabular-nums; color: #6EE7A8; white-space: nowrap;
+  }
+  .v2 .movers .mnote { font-size: 11.5px; color: var(--stone-400); margin: 0; }
+
+  /* glass search slab — opacity kept high enough to stay legible */
+  .v2 .search {
+    margin-top: clamp(26px, 3.6vw, 38px);
+    background: rgba(255,255,255,.94);
+    backdrop-filter: blur(22px) saturate(1.6);
+    -webkit-backdrop-filter: blur(22px) saturate(1.6);
+    border: 1px solid rgba(255,255,255,.55);
+    border-radius: 5px;
+    box-shadow: 0 26px 60px -26px rgba(0,0,0,.6);
+    padding: 9px;
+    display: flex; gap: 9px; align-items: stretch;
+    transition: box-shadow .45s cubic-bezier(.22,.7,.3,1), transform .45s cubic-bezier(.22,.7,.3,1);
+  }
+  .v2 .search:focus-within {
+    box-shadow: 0 34px 70px -26px rgba(0,0,0,.7), 0 0 0 3px rgba(234,179,8,.42);
+    transform: translateY(-2px);
+  }
+  .v2 .search .field { flex: 1; display: flex; align-items: center; gap: 11px; padding-left: 13px; min-width: 0; }
+  .v2 .search svg { flex: 0 0 20px; color: var(--stone-600); }
+  .v2 .search input {
+    flex: 1; min-width: 0; border: 0; outline: 0; background: transparent;
+    font-family: var(--sans); font-size: 16px; color: var(--ink);
+    min-height: 44px; padding: 0;
+  }
+  .v2 .search input::placeholder { color: var(--stone-400); }
+
+  /* below 480px the input needs the whole row to stay typeable.
+     Declared after the base rules so it wins on equal specificity. */
+  @media (max-width: 480px) {
+    .v2 .search { flex-direction: column; gap: 8px; }
+    .v2 .search .field { padding: 0 12px 2px; border-bottom: 1px solid var(--stone-200); }
+    .v2 .search .btn { width: 100%; }
+  }
+  .v2 .vh {
+    position: absolute; width: 1px; height: 1px; margin: -1px;
+    overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+
+  .v2 .pops { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 15px; align-items: center; }
+  .v2 .pops .pl { font-size: 12px; color: var(--stone-400); margin-right: 3px; }
+  .v2 .pops a {
+    font-size: 12.5px; color: #E7E0CF; text-decoration: none;
+    border: 1px solid rgba(255,255,255,.2); border-radius: 999px;
+    padding: 0 14px; min-height: 44px;
+    display: inline-flex; align-items: center;
+    transition: background-color .2s ease-out, border-color .2s ease-out;
+  }
+  .v2 .pops a:hover { background: rgba(255,255,255,.13); border-color: rgba(234,179,8,.6); }
+
+  .v2 .hero-foot {
+    display: flex; flex-wrap: wrap; gap: 10px 26px;
+    margin-top: clamp(26px, 3.4vw, 38px);
+    padding-top: 20px; border-top: 1px solid rgba(255,255,255,.13);
+  }
+  .v2 .hero-foot div { display: flex; align-items: baseline; gap: 8px; }
+  .v2 .hero-foot b { font-family: var(--serif); font-size: 22px; font-weight: 700; color: #FDFCFB; font-variant-numeric: tabular-nums; }
+  .v2 .hero-foot span { font-size: 12px; color: var(--stone-400); letter-spacing: .02em; }
+
+  /* ── sections ──────────────────────────────────── */
+  .v2 .sec { padding: clamp(52px, 7vw, 90px) 0; }
+  .v2 .sec-head {
+    display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between;
+    gap: 16px; margin-bottom: clamp(24px, 3.4vw, 38px);
+  }
+  .v2 .sec-head .txt { display: flex; flex-direction: column; gap: 9px; }
+
+  /* categories — SVG icons, never emoji */
+  .v2 .cats {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;
+  }
+  @media (min-width: 560px)  { .v2 .cats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  @media (min-width: 1024px) { .v2 .cats { grid-template-columns: repeat(8, minmax(0, 1fr)); } }
+
+  .v2 .cat {
+    display: flex; flex-direction: column; align-items: center; gap: 9px;
+    min-height: 96px; padding: 18px 8px;
+    background: #fff; border: 1px solid var(--stone-200); border-radius: 4px;
+    text-decoration: none; color: var(--ink);
+    transition: border-color .2s ease-out, background-color .2s ease-out;
+  }
+  .v2 .cat:hover { border-color: var(--gold); background: var(--gold-wash); }
+  .v2 .cat svg { color: var(--stone-700); }
+  .v2 .cat span { font-size: 13px; font-weight: 500; letter-spacing: -.01em; }
+
+  /* featured listings — the marketplace's actual content */
+  .v2 .lists { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  @media (min-width: 720px)  { .v2 .lists { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 1080px) { .v2 .lists { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+  .v2 .card {
+    background: #fff; border: 1px solid var(--stone-200); border-radius: 4px;
+    padding: 18px; display: flex; flex-direction: column; gap: 13px;
+    text-decoration: none; color: var(--ink);
+    transition: border-color .2s ease-out, box-shadow .2s ease-out;
+  }
+  .v2 .card:hover { border-color: var(--stone-400); box-shadow: 0 10px 26px -18px rgba(12,10,9,.5); }
+  .v2 .card .brand { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--stone-400); }
+  .v2 .card h3 { margin: 0; font-size: 15.5px; font-weight: 600; letter-spacing: -.022em; line-height: 1.4; }
+  .v2 .card .range {
+    font-family: var(--serif); font-size: 24px; font-weight: 700;
+    font-variant-numeric: lining-nums tabular-nums; letter-spacing: -.02em;
+  }
+  .v2 .card .range small { font-family: var(--sans); font-size: 12.5px; font-weight: 500; color: var(--stone-600); letter-spacing: 0; }
+  .v2 .card .foot {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    border-top: 1px solid var(--stone-200); padding-top: 12px;
+    margin-top: auto; /* pin to the bottom of equal-height grid rows */
+  }
+  .v2 .card .cnt { font-size: 12px; color: var(--stone-600); }
+  .v2 .delta { display: inline-flex; align-items: center; gap: 4px; font-size: 12.5px; font-weight: 600; }
+  .v2 .delta.up   { color: var(--verified); }
+  .v2 .delta.down { color: var(--down); }
+  .v2 .spark { display: block; }
+
+  /* trust & safety */
+  .v2 .trustsec { background: #fff; border-block: 1px solid var(--stone-200); }
+  .v2 .trusts { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; background: var(--stone-200); border: 1px solid var(--stone-200); border-radius: 4px; overflow: hidden; }
+  @media (min-width: 640px)  { .v2 .trusts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 1024px) { .v2 .trusts { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .v2 .trust { background: #fff; padding: 24px 20px; display: flex; flex-direction: column; gap: 10px; }
+  .v2 .trust .ic {
+    width: 38px; height: 38px; border-radius: 3px;
+    background: var(--verify-bg); color: var(--verified);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .v2 .trust h3 { margin: 0; font-size: 15.5px; font-weight: 600; letter-spacing: -.024em; }
+  .v2 .trust p { margin: 0; font-size: 13.5px; color: var(--stone-600); }
+
+  /* closing */
+  .v2 .close {
+    background: var(--stone-900); border-radius: 4px;
+    padding: clamp(46px, 7vw, 82px) clamp(20px, 4vw, 56px);
+    text-align: center; color: var(--stone-400);
+    margin-bottom: clamp(52px, 7vw, 90px);
+  }
+  .v2 .close h2 {
+    font-size: clamp(26px, 4.4vw, 44px); font-weight: 600; letter-spacing: -.04em;
+    line-height: 1.18; margin: 0 0 14px; color: #FDFCFB; text-wrap: balance;
+  }
+  .v2 .close p { margin: 0 auto 26px; max-width: 40ch; font-size: 15.5px; }
+
+  .v2 .foot { border-top: 1px solid var(--stone-200); padding: 14px 0 40px; }
+  .v2 .foot .r {
+    display: flex; flex-wrap: wrap; gap: 4px 22px; align-items: center;
+    justify-content: space-between; font-size: 12.5px; color: var(--stone-600);
+  }
+  .v2 .foot nav { display: flex; flex-wrap: wrap; gap: 0 6px; }
+  .v2 .foot a {
+    color: var(--stone-600); text-decoration: none;
+    display: inline-flex; align-items: center; min-height: 44px; padding-inline: 8px;
+    transition: color .2s ease-out;
+  }
+  .v2 .foot a:hover { color: var(--ink); text-decoration: underline; }
+
+  /* mobile dock */
+  .v2 .dock {
+    position: fixed; inset: auto 0 0 0; z-index: var(--z-dock);
+    background: rgba(250,250,249,.94);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-top: 1px solid var(--stone-200);
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    display: none; gap: 12px; align-items: center;
+    transform: translateY(102%);
+    transition: transform .45s cubic-bezier(.22,.7,.3,1);
+  }
+  .v2 .dock.on { transform: translateY(0); }
+  .v2 .dock .btn { flex: 1; }
+  @media (max-width: 720px) { .v2 .dock { display: flex; } }
+
+  /* reveal — opt-in via JS so no-JS still shows everything */
+  .v2.rdy .rv { opacity: 0; transform: translateY(14px); transition: opacity .5s ease-out, transform .5s ease-out; }
+  .v2.rdy .rv.seen { opacity: 1; transform: none; }
+
+  /* never let a reveal hide content from print or a capture that can't scroll */
+  @media print {
+    .v2.rdy .rv { opacity: 1; transform: none; }
+    .v2 .dock { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .v2 *, .v2 *::before, .v2 *::after { animation: none !important; transition: none !important; }
+    .v2.rdy .rv { opacity: 1; transform: none; }
+    .v2 .dock { transform: translateY(0); }
+  }
+</style>
+
+</head>
+<body>
+<div class="v2" id="v2">
+
+  <!-- nav -->
+  <nav class="nav">
+    <div class="shell">
+      <div class="nav-inner">
+        <a href="#v2" class="wordmark">DRRRK</a>
+        <div class="nav-links">
+          <a href="#board" class="t">실시간 시세</a>
+          <a href="#trust" class="t">안전 거래</a>
+          <a href="#sell" class="btn btn-ink">판매 시작</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- hero — the search bar is the CTA -->
+  <div class="shell">
+    <header class="hero">
+      <div class="hero-top">
+        <div>
+          <p class="label">감정료 없음 · 판매 의무 없음</p>
+
+          <h1>내 자산, <span class="em">오늘 시세</span>부터<br>검색해보세요</h1>
+
+          <p class="sub">
+            모델명을 넣으면 최근 실거래 기준 시세 범위가 나옵니다.
+            마음에 들면 그대로 바이어 견적까지 이어집니다.
+          </p>
+        </div>
+
+        <aside class="movers" aria-label="이번 주 상승 자산">
+          <span class="mh">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 17 10 11l4 4 6-6"/><path d="M15 9h5v5"/>
+            </svg>
+            이번 주 상승
+          </span>
+          <span class="mrow"><span class="mn">샤넬 클래식 미디움</span><span class="mv">+2.4%</span></span>
+          <span class="mrow"><span class="mn">까르띠에 러브 링</span><span class="mv">+1.6%</span></span>
+          <span class="mrow"><span class="mn">에르메스 가든파티</span><span class="mv">+0.8%</span></span>
+          <p class="mnote">최근 90일 실거래 기준 · 매일 갱신</p>
+        </aside>
+      </div>
+
+      <form class="search" action="#board" role="search">
+        <label for="v2q" class="vh">자산 모델명 검색</label>
+        <span class="field">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.6-3.6"></path>
+          </svg>
+          <input id="v2q" type="search" name="q" placeholder="샤넬 클래식 플랩 미디움" autocomplete="off">
+        </span>
+        <button type="submit" class="btn btn-gold">시세 검색</button>
+      </form>
+
+      <div class="pops">
+        <span class="pl">인기 검색</span>
+        <a href="#board">롤렉스 서브마리너</a>
+        <a href="#board">루이비통 네버풀</a>
+        <a href="#board">맥북 프로 M3</a>
+        <a href="#board">까르띠에 러브링</a>
+        <a href="#board">아이폰 15 프로</a>
+      </div>
+
+      <div class="hero-foot">
+        <div><b class="fig">12,483</b><span>누적 거래</span></div>
+        <div><b class="fig">68</b><span>검증 바이어</span></div>
+        <div><b class="fig">4.8</b><span>평균 평점</span></div>
+      </div>
+    </header>
+  </div>
+
+  <!-- categories -->
+  <section class="sec" aria-labelledby="cath">
+    <div class="shell">
+      <div class="sec-head rv">
+        <div class="txt">
+          <p class="label">카테고리</p>
+          <h2 class="h2" id="cath">무엇을 팔아볼까요</h2>
+        </div>
+      </div>
+
+      <div class="cats rv">
+        <a class="cat" href="#board">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h16l-1 12H5L4 8Z"/><path d="M8.5 8V6a3.5 3.5 0 0 1 7 0v2"/></svg>
+          <span>명품 가방</span>
+        </a>
+        <a class="cat" href="#board">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5.5"/><path d="M12 9.5V12l1.8 1.1"/><path d="M9.4 6.7 9.8 3h4.4l.4 3.7M9.4 17.3 9.8 21h4.4l.4-3.7"/></svg>
+          <span>시계</span>
+        </a>
+        <a class="cat" href="#board">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="14.5" r="5.5"/><path d="m8.6 9.6 1.6-5.6h3.6l1.6 5.6"/></svg>
+          <span>주얼리</span>
+        </a>
+        <a class="cat" href="#board">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h3.5l1.6-2.4h7.8L17.5 8H21v11H3V8Z"/><circle cx="12" cy="13.2" r="3.4"/></svg>
+          <span>카메라</span>
+        </a>
+        <a class="cat" href="#board">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="11" rx="1.4"/><path d="M2 19h20"/></svg>
+          <span>노트북</span>
+        </a>
+        <a class="cat" href="#board">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18.6h2"/></svg>
+          <span>스마트폰</span>
+        </a>
+        <a class="cat" href="#board">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="2.6" y="13.6" width="4.4" height="6.4" rx="2.2"/><rect x="17" y="13.6" width="4.4" height="6.4" rx="2.2"/></svg>
+          <span>이어폰</span>
+        </a>
+        <a class="cat" href="#board">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 16.5h13.5c2.5 0 4.5-.9 4.5-2.6 0-1.6-1.8-2.2-3.6-2.8L13 9.2 9.6 6.2 6 7v9.5Z"/><path d="M3 19.5h18"/></svg>
+          <span>스니커즈</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- featured listings -->
+  <section class="sec" id="board" aria-labelledby="bh" style="padding-top:0">
+    <div class="shell">
+      <div class="sec-head rv">
+        <div class="txt">
+          <p class="label">실시간 시세</p>
+          <h2 class="h2" id="bh">이번 주 많이 찾은 자산</h2>
+          <p class="lede">최근 90일 실거래를 기준으로 한 범위입니다. 실제 매입가는 바이어 견적에서 확정됩니다.</p>
+        </div>
+        <a href="#sell" class="btn btn-line">전체 시세 보기</a>
+      </div>
+
+      <div class="lists rv">
+
+        <a class="card" href="#sell">
+          <span class="brand">CHANEL</span>
+          <h3>클래식 플랩 미디움 · 캐비어</h3>
+          <span class="range">830 – 1,010<small> 만원</small></span>
+          <svg class="spark" width="100%" height="30" viewBox="0 0 200 30" preserveAspectRatio="none" aria-hidden="true">
+            <polyline points="0,22 25,20 50,23 75,17 100,18 125,13 150,14 175,9 200,7" fill="none" stroke="#15803D" stroke-width="1.6"/>
+          </svg>
+          <span class="foot">
+            <span class="cnt">최근 90일 <span class="fig">342</span>건</span>
+            <span class="delta up">▲ 2.4%</span>
+          </span>
+        </a>
+
+        <a class="card" href="#sell">
+          <span class="brand">ROLEX</span>
+          <h3>서브마리너 데이트 126610LN</h3>
+          <span class="range">1,420 – 1,580<small> 만원</small></span>
+          <svg class="spark" width="100%" height="30" viewBox="0 0 200 30" preserveAspectRatio="none" aria-hidden="true">
+            <polyline points="0,8 25,11 50,9 75,14 100,13 125,17 150,16 175,19 200,21" fill="none" stroke="#B91C1C" stroke-width="1.6"/>
+          </svg>
+          <span class="foot">
+            <span class="cnt">최근 90일 <span class="fig">118</span>건</span>
+            <span class="delta down">▼ 1.1%</span>
+          </span>
+        </a>
+
+        <a class="card" href="#sell">
+          <span class="brand">HERMÈS</span>
+          <h3>가든파티 36 · 네고다</h3>
+          <span class="range">290 – 360<small> 만원</small></span>
+          <svg class="spark" width="100%" height="30" viewBox="0 0 200 30" preserveAspectRatio="none" aria-hidden="true">
+            <polyline points="0,18 25,17 50,19 75,15 100,16 125,14 150,15 175,12 200,13" fill="none" stroke="#15803D" stroke-width="1.6"/>
+          </svg>
+          <span class="foot">
+            <span class="cnt">최근 90일 <span class="fig">87</span>건</span>
+            <span class="delta up">▲ 0.8%</span>
+          </span>
+        </a>
+
+        <a class="card" href="#sell">
+          <span class="brand">LOUIS VUITTON</span>
+          <h3>네버풀 MM · 모노그램</h3>
+          <span class="range">145 – 190<small> 만원</small></span>
+          <svg class="spark" width="100%" height="30" viewBox="0 0 200 30" preserveAspectRatio="none" aria-hidden="true">
+            <polyline points="0,13 25,14 50,12 75,15 100,16 125,15 150,17 175,16 200,18" fill="none" stroke="#B91C1C" stroke-width="1.6"/>
+          </svg>
+          <span class="foot">
+            <span class="cnt">최근 90일 <span class="fig">264</span>건</span>
+            <span class="delta down">▼ 0.4%</span>
+          </span>
+        </a>
+
+        <a class="card" href="#sell">
+          <span class="brand">APPLE</span>
+          <h3>맥북 프로 14 M3 Pro · 512GB</h3>
+          <span class="range">168 – 212<small> 만원</small></span>
+          <svg class="spark" width="100%" height="30" viewBox="0 0 200 30" preserveAspectRatio="none" aria-hidden="true">
+            <polyline points="0,6 25,9 50,8 75,13 100,15 125,18 150,20 175,22 200,24" fill="none" stroke="#B91C1C" stroke-width="1.6"/>
+          </svg>
+          <span class="foot">
+            <span class="cnt">최근 90일 <span class="fig">431</span>건</span>
+            <span class="delta down">▼ 3.2%</span>
+          </span>
+        </a>
+
+        <a class="card" href="#sell">
+          <span class="brand">CARTIER</span>
+          <h3>러브 링 · 18K 옐로우골드</h3>
+          <span class="range">210 – 265<small> 만원</small></span>
+          <svg class="spark" width="100%" height="30" viewBox="0 0 200 30" preserveAspectRatio="none" aria-hidden="true">
+            <polyline points="0,20 25,19 50,21 75,16 100,17 125,15 150,13 175,14 200,11" fill="none" stroke="#15803D" stroke-width="1.6"/>
+          </svg>
+          <span class="foot">
+            <span class="cnt">최근 90일 <span class="fig">96</span>건</span>
+            <span class="delta up">▲ 1.6%</span>
+          </span>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- trust & safety -->
+  <section class="sec trustsec" id="trust" aria-labelledby="th">
+    <div class="shell">
+      <div class="sec-head rv">
+        <div class="txt">
+          <p class="label">안전 거래</p>
+          <h2 class="h2" id="th">넘기기 전에 확인하는 것들</h2>
+        </div>
+      </div>
+
+      <div class="trusts rv">
+        <div class="trust">
+          <span class="ic" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5.5c0 4.3 2.9 7.6 7 9.5 4.1-1.9 7-5.2 7-9.5V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg>
+          </span>
+          <h3>등록 바이어만 참여</h3>
+          <p>사업자 등록과 거래 이력을 확인한 바이어만 견적을 제시할 수 있습니다.</p>
+        </div>
+        <div class="trust">
+          <span class="ic" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-3.4-3.4"/><path d="M11 8.5v5M8.5 11h5"/></svg>
+          </span>
+          <h3>전문 인력 정품 검수</h3>
+          <p>도착 즉시 정품 여부와 상태 등급을 확인하고 결과를 사진으로 남깁니다.</p>
+        </div>
+        <div class="trust">
+          <span class="ic" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/><path d="M7 14.5h3"/></svg>
+          </span>
+          <h3>검수 후 정산</h3>
+          <p>검수가 끝난 뒤 등록하신 계좌로 입금됩니다. 중간에 수수료를 떼지 않습니다.</p>
+        </div>
+        <div class="trust">
+          <span class="ic" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12a8.5 8.5 0 1 1 2.6 6.1"/><path d="M3.5 19v-5h5"/></svg>
+          </span>
+          <h3>동의하지 않으면 반송</h3>
+          <p>검수 결과가 처음 견적과 다르면 조정안을 먼저 안내합니다. 거절하시면 되돌려 보냅니다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- closing -->
+  <div class="shell">
+    <section class="close rv" id="sell">
+      <h2>서랍 속 그 가방,<br>오늘 값부터 확인하세요</h2>
+      <p>모델명만 넣으면 됩니다. 감정료도, 판매 의무도 없습니다.</p>
+      <a href="#v2" class="btn btn-gold btn-lg">시세 검색하기</a>
+    </section>
+  </div>
+
+  <footer class="foot">
+    <div class="shell r">
+      <span>DRRRK · 드르륵</span>
+      <nav aria-label="푸터">
+        <a href="#board">실시간 시세</a>
+        <a href="#trust">안전 거래</a>
+        <a href="#sell">판매 시작</a>
+      </nav>
+      <span>본 화면은 디자인 시안이며 수치는 예시입니다</span>
+    </div>
+  </footer>
+
+  <div class="dock" id="v2dock">
+    <a href="#v2" class="btn btn-gold">시세 검색하기</a>
+  </div>
+
+</div>
+
+<script>
+  (function () {
+    var root = document.getElementById('v2');
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (!reduce) {
+      root.classList.add('rdy');
+      var io = new IntersectionObserver(function (es) {
+        es.forEach(function (e) {
+          if (e.isIntersecting) { e.target.classList.add('seen'); io.unobserve(e.target); }
+        });
+      }, { rootMargin: '0px 0px -10% 0px', threshold: 0.05 });
+      root.querySelectorAll('.rv').forEach(function (el) { io.observe(el); });
+    }
+
+    var dock = document.getElementById('v2dock');
+    new IntersectionObserver(function (es) {
+      dock.classList.toggle('on', !es[0].isIntersecting);
+    }, { threshold: 0 }).observe(root.querySelector('.hero'));
+
+    root.querySelector('.search').addEventListener('submit', function (e) {
+      e.preventDefault();
+      document.getElementById('board').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+    });
+  })();
+</script>
+
+</body></html>
