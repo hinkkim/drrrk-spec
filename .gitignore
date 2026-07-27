@@ -2,3 +2,5 @@
 .DS_Store
 *.log
 .vercel
+__pycache__/
+*.pyc
