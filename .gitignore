@@ -4,3 +4,4 @@
 .vercel
 __pycache__/
 *.pyc
+price-pages/dist/
