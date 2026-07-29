@@ -240,6 +240,12 @@
     background: var(--fill); color: var(--ink-2);
     display: flex; align-items: center; justify-content: center;
   }
+  /* A안: 활성 카드는 실물 썸네일, 오픈예정은 아이콘 유지 — 사진 = 지금 거래 가능 */
+  .d3 .cat .ph {
+    width: 88px; height: 88px; border-radius: 16px; overflow: hidden;
+    background: var(--fill);
+  }
+  .d3 .cat .ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .d3 .cat .cn { font-size: 14px; font-weight: 800; letter-spacing: -.02em; }
   .d3 .cat .cb { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
   .d3 .cat .cl { font-size: 12px; font-weight: 700; color: var(--lav-ink); margin-top: 2px; }
@@ -541,63 +547,49 @@
 
         <div class="cats rv">
           <a class="cat" href="/price">
-            <span class="circ" aria-hidden="true">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 8.5h15l-1 11h-13l-1-11Z"/><path d="M9 8.5V6.5a3 3 0 0 1 6 0v2"/></svg>
-            </span>
+            <span class="ph"><img src="data:image/webp;base64,UklGRpYGAABXRUJQVlA4IIoGAAAQIwCdASqwALAAPpVKn0wlpKKiIrmZyLASiWlu3V/vwVRVdjtaiWd+2Xzwo44/8j4nXk3nv9HvQX9a+wZ0ofRjGl1MqPB1LW0w5g0/g1M+5YNN95qvmz+G4AC/UKFzRYGqqHR4zVyfqHmi72Mazsb7qlduoQLwka4Q6aw3Qfhe2+uQDTPMfdEfDYKjhw+Gu0+AKz5CVMkQoLlItxCX3/lZhdI5VYb9m42OuA+DbrV6WKsMQBgcCNCvE2MXmml8PiAtj+p9AGwCXewcozs7wfhYGzYc2Ffk+aNO/V2D/BvxtO/Rj3Q+hecDjFDIKTIENRLSw4CMpwHQ6STNOLn77Nn5Rw4bU15tleOFX6/8ZgoHa2C8o+aIJiSZvD9uyoLY8gzQAP70scdp/LxKcrWUr5E2D56B9UUC9JPeNGqcl1kNBOC0TG04zPPn7LRGUY0pa7xMSl/Xp7SZHrVdMsfqTd1W4/SWGZyxutqLn6qv28/OZ47eUKiWnybLoqeM1HXEPuY2NZSRHOYudtO0L3UE5RNqotr8a8cFPNDq0Gt6C8j/q+jwR7Suc5uronehqfHOifdNzxHk6r4kGpCab3c8X/5bL1AqFX/fOBnq+VB2rfEfxeQDj4Et+9xD+f5TF/IXuHtsu/iqYFEY9S+FvaFCn4P6YOvGFZM95FmkbmmmqipdwpAG04gTzpoHPGudkSGnozjTPOSQJW8JuCUm5ibKcM8ffuenJl/k/YtkuaZPDW7zE1pY8oe2bf0g5iO+VDrqjKI0Ml2iWtbe6id6KAkELZBNs5xfGFqq1BYancA/G2hgVx0VEyeXeAAx33TrWBTgH9CaJRYOXECA9DOycZsO8n6Q4GGGV6A5lk6SA8rbx3+J/XGHd17/xhxVXLJ9IuZqhGdf7r0KDxZwzMTASTJY8JkuzS2HDM9xm2VZVdhEUDjizNZRgzcWcGLBGeLd4G+kvOZVh1djs5tcQvZqloEv5ZCnB+GSMQZrWWF7RyY83HIrSBtigvM3H9mqIgA5QDrgH+oWpmOcElAVgvFVVCBxz+9Nimid02cXU5m2FgfEgKK0XJxszvLSXvG0+ljxgRwSw+S8opeL6Vb3lpWuUaqMWXoNuasx8T46mja1YOlVrwQJNbHdt4E9avtxqtGKBEGmmwUXH2yXYKuNhO5zcQ/Lo/icpt8tp+HYWJ0Ff6aHpBm8H7Y6vM4KetxtVTpY6UmB1S2QQdvSrFrEQp/cRW6ioh9RVtQztLE2CW+Y5K42yPyqR2J+IMG+mcnukwnVj6Nv3lRVkzSuhsQSyyUP8shtBPqI8TsW9EnYLc8sD2ke3UEcKAXOns9QV4+3oszZ+2aTMUEFxbkZjhW6xP9sR27IwVivW+6zjDHXVvbpaf1VDmQlgavYxvByLatrRkoyhuBWGsOmySKTzbIiXkQye00J1yGlfim/K89EHa/S7FNlfXhwkqw0sav2idQXvkTtAVIjrMDhhpy2C37H0OJfJZGqDck5LhgQLGnT280FHrfDN3IndLVBbQV24jQ+X37pczm8dfjGVPIJsysSH9P2c4uKA0DTjciN2Dd7t7hlvUZAB71wOtINBFQnhOyPvI2NH6dEhcEEvf01A9kPA7xHnnnlyVEQWiH4vIzdNQ6FxMoHI76q017d4KfBS5HlElhp6hiuOKbN5a5dILsQJOnwDi/U5mPNfAh+MJCbrAVc6wZ980kyqpn9rG1yKW9glLm2WkbP5zOjy8n9uMxwd3hxvmH2QUrNrM7uVKlvClwdMbIILds9pJMjnEOPor/PH9qbMkI9qOkc//URWDLhtFgSi7MXawkDLBoTqBQm2X+QRjb4SPB5QgZSFXc/pppUpyNzTMBPdUjQfs6Z8BuemFGzkFFK62jGKccAhrKaWhCQoarFFNfcUqOm4y0w1QKT9gPK0EITIU4x/hHWzHZLphqzBmk88KWkBduzd2v6KELcb2CBs70Zeo9f6yGL5eMPA2VWi8MF8rKtOFf9x3xUEpYu658AHHAEr/KOr+heR7iQis6eHUA7YG3EcDsfnNt+44fxLvx6Uh9vynZXQMbzYuJv/LuRFRjgEIwPjX9OcDNpUrcpiiSaMhmA0PL6lHwPKT2RH3Iqf7Vo7pHfGHFrhhbzo1RzdG/wXTrYRZgaw/MD4jDsAiXhugobwEuMSDJEzMFuW3kRghqy7Z5mxfauaHGZqzLkDfT+WWPc1DBIvKnAw4E/3WROxwfZRJ5MkAiRgAA=" alt="명품 가방 예시 이미지" width="88" height="88" loading="lazy"></span>
             <span class="cn">가방</span>
             <span class="cb">샤넬 · 루이비통 · 에르메스</span>
             <span class="cl">시세 보기 →</span>
           </a>
 
           <a class="cat" href="/price">
-            <span class="circ" aria-hidden="true">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 9.6V12l1.6 1"/><path d="M9.7 7.2 10 4h4l.3 3.2M9.7 16.8 10 20h4l.3-3.2"/></svg>
-            </span>
+            <span class="ph"><img src="data:image/webp;base64,UklGRlAIAABXRUJQVlA4IEQIAAAwKgCdASqwALAAPpVKnkulpCKipJWqOLASiWlu3Qj17Gn0H/LZZhLHin4B/IjUCet0X+JLSg/vnqAeLHoOetPYM6ZhExurnOna/v1WnYvGVOhKcBBaQqg97eDYyTkG1Y6SeZ0iSqVLDwWI7lHIY7m/1f1/b8QZhHL//rXbXKd84isUfFBNwnlMeE5CAAa1LmKFRB8bAKetSWgfUUeq+FUdthhYUXC/uxc4jJTCW7Dr9BJmS+POAC7E39NHVzF44wXd6InCi+3OIxx+tGLkTtp1sFS/lvCz9QCQH3BGCTTq3rgYvi+hCY9qOl/qccIv0vCBkul03bhUaz9mVwA5xxJdSAYptiG4B1Aysp2/1o1iJNH/yLSAJqvQQyWwHlt1zMvZyyh1Xv+deOz7ke1m/g8Ya2B+sCPy1YM3TWwNNBhH+0x6Hv/uqSYYXRt2oiyjokXGuGuAIq1/454AAP71PF3JSGQeJXFCwZQq43mH/F8DNdkRN6ZlL8ctXupp8Z9Zt9YWxSJypjQOEfCiIKyHe8ee31oV3Z9HPGYVJ/3WcwWLokTEaPqlQRCEkC88eGDq6iMSD++uXTzaWNOp+SDPqhjxq1TxcNQ2ADxc/UTjOT/rdkkgOrB+l1vFMuiUVDe3MI6VZM3o6dtIDWGuEUneTyKJ0UNR19ZY9g7opj2RK4n1gW/uEkyizmYbz9Vw2Y51w1tYB4nHhUsROFglRzFjt7ZuDhe63xg+8jtfT3WFVf3iJqFldOEseytVuNyhQGioQsqG/UfKZJDLH6ECd8F8SIuhxJhdbUDUyl4Vt0ixRUytX/FhPmRH5A2rdckNBLyHRFNR+l10sduDeSukLGvT9DY60AiAy1kWGKkizmsepTpJXCrJUCGpehRa2Zt1dW6al2hnCH8Uy27dLRSgvGIpAjrSSi6qVhI0cuz09At25uVB6kUQ33DjQYbs+2B6siMmNsfrqgOUYf02ajSXjcm6yd7/NyP5iHbViRlQ2TTsAT6UGyYSvmPSpGuUyTXuPrIjrwXJ29ErbBQsFpMm8lOlmJ/iG849UKoAYGWVRCnfyfQEehgc9Nzs6rwT93jKyQjGAiNX5sO2oe6ne/Ila1onC1JVCZ3NV97jD9j3/3uKXEPsQq8a1rxZFxXRBp9p1wzz/2qRO16XfEaTn6BoWx8N2EPizoETvi5YnvSnavpv1tKWtyrHHIas+FnMCcNU+U1zfIdrWHt5a9+UcXRHXcQ8gkSs8P1qXqXtEqMfpvKXUXVJVE9thlSd9ViBQ+59fw29i72lpaRXA5/fD5N33iK1oYUWJQsirBfR7iuuYK9vNGuiKgN+a6Xtq6sCqXq7YaUJ67zebXHixaM1YkpWXeztSHDxL7osNF0JD58jGD/IfJC2MxsnlNg3uQ6gkg16ZhSSSFsoba5coIUSZ0g7cOi5cMiEiJt9ynMm5uGJ6qeF36OPp/f8UVEEZuXjWz64TzEcBFkouCNIFLTXfvDI/H9gG8bZA3JlvBG+57/koZZGBxQz/BVyCNzyfWZxDDf1AEzWnyeyoqlHr7Jdt6j+a3FynwLZcaJN4qFS0Sr8IlVrl1js3kHT8k8m7FVlMHZF25cZK3M8wSi9hCLNQK7KbutycRZGA+/V/VZReQbGjNP9wJWuXB+yJRN8MTr3F5JAfmFiDJwYZpL9okXRnPniUlbzNkkwv8vnBRkAmo3ZWW0V3Y/HUDCJQvgmO+gP37EYcft+rovu9h4Abk+SDOii4kyG543lLRfk4myWIRbxchhoGLgLsQstxEQNsT/aLDJ3Sjj58OHIp9RyFLtMVsrqHfNuh/VJvGm/WXpkpac6Tl17ywv6HrMeKxTgiQ0xjbtPD3QWLnIXDaXr3lfBkNoudFwWSz8AR6nALUtixxld7q32fPJ8FxgpgniJJKbtEfE3QTHZTCFNH4u6Rro15J4rjsHxmEfkDr8aQ2CcLBtBTJ/CnPF4K73A/muQtdD1d4iF+IqOpE97clC6K8LdHgrLOofSftV5JdgLJluBSBxBIGmV/88sGfvdvNlTYlanuaY2sZL7HghPV77XLrWiHf3En99S3OWcd3IXVY6jsD3/3fYGpqabyV96LSDKlcGyRPiMaNFQcnd6UNdzNHyIaHIGdLETQnd8nZPNJeXCICvKVqagazwWWG3Sl5KufOrnLC4p+V8gZAyAB2kHmhzuV8fm/xWc1PdVSuIUgPlZJMXgGcv8xuPHxZx4WOlQSIfHxVde9ES8d4lkCPYsLD5+EUaJlMZgJPKqhZ2dfvPm1bfivBKMvEac0YRvza16wmwbBZwlxdtUIjDZ13cOBC9ZLQzKjUb7hG55ZTDncHGCBGWn0tf8VdAy43unfym2Opi7xQqZwjnBhjPf/1djPNc3Js8P8Y9oRUHjnTLpEXjLhN2km9/CdqM5r0NOJnEiE5L9EV8Yi4Y/hKouU6kfvpHT4mayKDDJy/qrNBxPqxWaXikB04V04JJkCMRqt6efV9l+1ZI0bjIEgtSuZyTJbCtcJDlmcV30mU2h/qRchexmyry9rl0MKVahDnohHw/wIMHNnDMLoLtbjKdVdZV9gqhER5B79zMHh2mXR8klHTXXCjPq2T3TjuBDOu86zA3eSLa34Ae60XGH7qENcH8pII9yLCh5CQQ1mEAOFQPtoBnH4HymkIPrIK9FAN+RH+4bhZ+MgW8895P6vlBr5eErLquZYaOUwj3oZLzGKl2B/sXKIxIsFJqgT1/sTNnXZ7VLOpiM1jN1ZE5eJG9aqExHPrPOcomNKOBYPDD9Q34H6aXp+CQSX9WHRzTJsSRE1WGg1tRdVrCr4qO7z3r+N4AA" alt="명품 시계 예시 이미지" width="88" height="88" loading="lazy"></span>
             <span class="cn">시계</span>
             <span class="cb">롤렉스 · 오메가 · 까르띠에</span>
             <span class="cl">시세 보기 →</span>
           </a>
 
           <a class="cat" href="/price">
-            <span class="circ" aria-hidden="true">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="14.5" r="5"/><path d="m9 10 1.4-5h3.2L15 10"/></svg>
-            </span>
+            <span class="ph"><img src="data:image/webp;base64,UklGRpQCAABXRUJQVlA4IIgCAADwFQCdASqwALAAPpVKokylpCMiIrTYqLASiWdu3fWMcb/peFEUA2/99UsZf5GSCutu1cstdPn8GuRbBSnfytJs/ZA8U6XDP4uLKE9orHGQPLf+FzgOoZa5nsc8x7hW9bdofhV1wlPVER4G/0EvLV23tP4x+sgWH7NLXG7ZVFUnWF7klek1FKAdEOUCXUPJj1R3OkHcLBFhcYA7nyXdnmI+WVu6OFIjw28S0KRHojbVsmjPWVp15wAAAP7xfWdhcTjNyEUzch4GI58bUlSLMMNJLUJYFp2YrwgBsZI3W4sxxLzJxpaMbmPRqieI/huSbMIVaCF6679EY2JPJzFUyS5384QFRaoVWTgIUdX2Np6+6EcqsGsC+DshKMEkbZ7RtvrVIu/k/vEukcvk+k63+Yvnpw7BMFIyBTVMcfD9sRT6AXBYdLk8MR1VVbbzNdnJ0E/lgH4hBZtH8ESK6SanmP7K6w4lUWkBv0RVuLzjuC14RgpM0zt340VNFp21ucxGiQ4Gf+Q7HQcbqGFJlI0rW3YY1/3KRzG74P6Sad1qFDp3fCFo4i62hOvqtJoUr8593UFDDSV2DEizMykMKez8vMIABL/IxYSXWBU5L+REnfM2DJVj7zXvt3smeF2NCxKXjy93wWGvarHNFnGLwzrPas3OnNZ4LBhQX2JIzZ++RCgkA6WPpgz5rko2Ekf/4ryglMnKFDYBjVrcLBjTY5TxiNgYB6ZCe4NOOoUbbqnrHzytymC63OyupzVPVKo4NK+EzCzljJXxoZgUVAeuQ2iGtuVW+h0mhjqkeWTWR7lp3ouZmrsz5yQEelVXVmBES4RY+noGOLzwr3qtvLycSiXXjUMLEuMZEt4AAAA=" alt="주얼리 예시 이미지" width="88" height="88" loading="lazy"></span>
             <span class="cn">주얼리</span>
             <span class="cb">까르띠에 · 티파니 · 불가리</span>
             <span class="cl">시세 보기 →</span>
           </a>
 
           <a class="cat" href="/price">
-            <span class="circ" aria-hidden="true">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 4 4.5 6.5l1.5 3 2-1V20h8V8.5l2 1 1.5-3L15.5 4c-1 .9-2.1 1.4-3.5 1.4S9.5 4.9 8.5 4Z"/></svg>
-            </span>
+            <span class="ph"><img src="data:image/webp;base64,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" alt="명품 의류 예시 이미지" width="88" height="88" loading="lazy"></span>
             <span class="cn">의류</span>
             <span class="cb">샤넬 · 구찌 · 몽클레르</span>
             <span class="cl">시세 보기 →</span>
           </a>
 
           <a class="cat" href="/price">
-            <span class="circ" aria-hidden="true">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 16.5h12c2.3 0 4-.8 4-2.3 0-1.4-1.6-2-3.2-2.5l-3.9-1.5-3-2.7-3.4.7-2.5 8.3Z"/><path d="M3.5 19.5h17"/></svg>
-            </span>
+            <span class="ph"><img src="data:image/webp;base64,UklGRtACAABXRUJQVlA4IMQCAACQGQCdASqwALAAPpVIoEylpCMiI9EpSLASiWlu3WBoJzYmqZcsa3+hE0PCyxA1LXAVPUF14P4BkePSzPqLA05dtXz4EAGCaRDVsq/Fo3L2P9MQ9jwkaomWmXy3noK/H0vEvEviL3yu7g3Fuw91gHMpPcB1QcY8I9ULNYJ2BBktT0e66VxqtuBs6zYwGN1OdDdDFPq9g31w9Ze2bgz+JDEgrfDsjhDUJbywuKf7zIKl9DnGjRSTAQtEk1ecCLKKJ+UyKTK67LlksNCETwabdxEfg+YsmkAA/vDSkjGp0J9KwB7+s56SrsrTjXzYI720MVDYU+X5ik8Qum+qIFnH5pcqRN/gtf5SflieMrDRFnkCf7TfK3ywVglbpULwiwFg8bPleooZUtQzGRBgQrx5VEiJCrSOVFfmAi7axxIr3Xpx+I5s/Va970vbkq+pjwRDfjFbTgEVlRWIKS54vdXU5BEiKS6XtNh/ZObzg5qTWPfoqZ29Kvef1k5vmWtHTfD+hVA/JrMdm5ju84gzXcrWgv1lvXU3aXmzqRYB1/P8bQXbB/D71jig1ehHjrWdgf9pyZuJkBFJljGm9Yh/tCl8yEEbSTaWzIJsOyIG/k+4vXgXaFRZREffjWLPEc1g5PSRWEe153Z3xvsg9KM+xFEhZRLuGOyq3cC83r14TpRZ4dccvSt1Yw3/4lBMmtGcijjJh4s9S3uti2ThPlhz5tyA1M5a0p3woTgQu2QdAtYUBDKAULTHYegCcv5nUGo0npaxzPvgXKm/g0EvVPsBH8jeLdA1uBQIvL+wGToAsqZb7DSsB88dmmJ5XCVxWMP/3AfpnFNh3ZjvqtrtksvV5Hi1ed7063CPYudsckZ1UcouJkLbfPMHzPxNvwPZvwXzR99GbT/K7ixZLgd5NG15nuMZIai0iDBH81QV1OjqHYRbEDLkChI2AAA=" alt="패션잡화 예시 이미지" width="88" height="88" loading="lazy"></span>
             <span class="cn">패션잡화</span>
             <span class="cb">스니커즈 · 지갑 · 스카프</span>
             <span class="cl">시세 보기 →</span>
           </a>
 
           <a class="cat" href="/price">
-            <span class="circ" aria-hidden="true">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5.5" width="16" height="11" rx="1.5"/><path d="M2.5 19.5h19"/></svg>
-            </span>
+            <span class="ph"><img src="data:image/webp;base64,UklGRogCAABXRUJQVlA4IHwCAABwFACdASqwALAAPpVKoUylpCqoIbVZUVASiWlu3V8/hsIAXASyHvzKeeyp2+40P2zAVdzXBuD46LlD0IlKQx9orkYyH6hRQkg36xKi08ZFfNHds0aW7fNVP3fhMIQEDfbMI+Ct8OW9BjkdikoZGfb6Z4eRCqEap/Srs0xADh7l5dJ8f34QkPCIyI4XFOtmBs0azh74AwUE1oAmQJZlN/BaV0QBuTDPuxM1jyNAAP7ymSgMIhQ3R5MxkUyV3NUoh+T5fGE7lN+/5/u8ZR6/XwiaPi7/UKoMo6Pndc4hCntHZaCzAykMEYhKTNmICMhD5ifXB49OQbvGJHraPVkD7ZjH7R2KOnjyFpBjfhjziQ9V4TcK7ieP/jH1bQD9I4U7WVou4R9W/4DWgcUCy2CsUz/hXKK0Yu2vVEzledDdBvMqNr7AiNP2LauTohoDAJqLmgaOQoyNxf3bTgKx/njhb1SOQhn7aGZ5yw3rgSJEt4eOXid3z6qRs4syoiW9czX6XjiSGD19DX9rkKPQPlWXDJ1rI+EJoTC1FMiVIL38kmMoDZew9Zki5T77ReaLo0BfkVzWVaHENP+W19nr+TGAjYV09vcwn+g++o3oKc3gqsUlfLWDxWha4jvbjU+BH7r4Ck3rfim5gZuPzoinePsDyxwLqjrFZsvQEjNMVBhkdDYBFoGcigkUahf8CNQFzW0+bl+E1hkXLtBUONcWlpsN3DVco1oWPLMJ1b01gSjXZpa0RHPo14qaupln9PI81dMGu2/pA5Huz+S8GX8IOIwlBszQEsmjSq5/R2iTNpBaeZotSF7hzxrgGHNDu6RZBSDbpxhCBzwT+xeMTyAAAAA=" alt="전자기기 예시 이미지" width="88" height="88" loading="lazy"></span>
             <span class="cn">전자기기</span>
             <span class="cb">아이폰 · 맥북 · 카메라</span>
             <span class="cl">시세 보기 →</span>
           </a>
 
           <a class="cat" href="/price">
-            <span class="circ" aria-hidden="true">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15h6l-1.2 4H6.2L5 15Z"/><path d="M13 15h6l-1.2 4h-3.6L13 15Z"/><path d="M9 9h6l-1.2 4H10.2L9 9Z"/></svg>
-            </span>
+            <span class="ph"><img src="data:image/webp;base64,UklGRqQCAABXRUJQVlA4IJgCAACwEwCdASqwALAAPpVKoU0lpCMiIbK4wLASiWdu3V9XK5lSZIOZWbzceai7ZkHrCt45JatyGWgTmuzrZypfr8uciD987AyIw2PENZijuCgwqi/69aT5u32Jbrxma3De8wo9oLiO4QnnnzW579uiiAQQXt/dOjDFKvcFe9+mST2f6Y3znp0digQb7Z/3HUpKXq6VBYQFk3/usIjG2NM2hEAqou2ZVHAAAP7yx8SAu6wqdMlxdqE4jz0CzwGyg453x2pA2bJE+etWUH/S9oQR9/w/59zKxvNrip+xABVlVR5iHtJJA1y7XV8Kov8fXbuNkBPGSbz0S6iAAOLDKgYhnpWn8JaHhLkFPq/+50PPJwlYMLwn5cdcGLQrVE1XD4R9aVmBh5MlphgQFjdaxVap/53RhlpXRHIdtat86kHhRULPGWUdUlzqAvuhGKtoLGXQFbVaUyVVtKVkBjMGrqBG41ND53hrUfDISb7ncGLw8oHRyQ76IQGhuV3EmtvjOuZtltWpkxrSMIbnZOa7YD61q7d+ulw0O9Zad073s9cq58Ht7msckRiH/E+rqX3iTF/KET8KPn3EEn42laE6Tymo/gvkJpBgtF75F4qrCouWVNUCyJQq9IbblXCwlqFRI4QAttjRH/4kbtK5EGrGkeGfQmz4M6yGupU7EZwcz8UJ52reDCniLAnqdRq3ZN7PpgrBtomQYRNEVrLEr2EIOFsysXoFKVM8ISh0kfRcuKqv69DmRZ1zBU/v0CZ1sfg4C1jfKM33l8XwnwHDHu/ECY9l03PMx9I7SL312dcKVIsAKtUMXTpRiaqdgtzcu2aFQyR0QG2WC4DWHco1KOPNJo5zGjwW8hiqJICkc6x42YYrGcQQBwvlbontBwAA" alt="귀금속 예시 이미지" width="88" height="88" loading="lazy"></span>
             <span class="cn">귀금속</span>
             <span class="cb">순금 · 골드바 · 돌반지</span>
             <span class="cl">시세 보기 →</span>
