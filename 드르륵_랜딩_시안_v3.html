@@ -221,11 +221,10 @@
   /* ── category section ───────────────────────── */
   .d3 section { scroll-margin-top: 70px; }
 
+  /* 활성 7 + 오픈예정 3 = 10칸: 2열·5열에서 빈칸 없이 떨어진다 */
   .d3 .cats { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin-top: 18px; }
   @media (min-width: 560px) { .d3 .cats { grid-template-columns: repeat(3, minmax(0,1fr)); } }
-  @media (min-width: 900px) { .d3 .cats { grid-template-columns: repeat(6, minmax(0,1fr)); } }
-  .d3 .cats.soonrow { margin-top: 10px; }
-  @media (min-width: 900px) { .d3 .cats.soonrow { grid-template-columns: repeat(4, minmax(0,1fr)); max-width: 66%; } }
+  @media (min-width: 900px) { .d3 .cats { grid-template-columns: repeat(5, minmax(0,1fr)); } }
 
   .d3 .cat {
     border: 1px solid var(--line); border-radius: var(--r-card);
@@ -254,7 +253,6 @@
     background: var(--white);
   }
   .d3 .cat.soon .cl { color: var(--muted); }
-  .d3 .soonlbl { font-size: 13px; font-weight: 700; color: var(--muted); margin: 22px 0 0; }
 
   /* ── section rhythm ─────────────────────────── */
   .d3 .gap { height: 12px; background: var(--page); }
@@ -539,7 +537,7 @@
     <section class="sec" id="cats">
       <div class="pad">
         <h2 class="h2 rv">무엇을 팔아볼까요?</h2>
-        <p class="sub rv">명품 가방부터 시계, 주얼리, 전자기기까지 — 사진 한 장이면 시세를 확인할 수 있어요. 취급 자산은 계속 늘어나고 있어요.</p>
+        <p class="sub rv">명품 가방부터 시계, 주얼리, 귀금속, 전자기기까지 — 사진 한 장이면 시세를 확인할 수 있어요. 취급 자산은 계속 늘어나고 있어요.</p>
 
         <div class="cats rv">
           <a class="cat" href="/price">
@@ -595,18 +593,15 @@
             <span class="cb">아이폰 · 맥북 · 카메라</span>
             <span class="cl">시세 보기 →</span>
           </a>
-        </div>
 
-        <p class="soonlbl rv">오픈 준비 중 — 열리면 가장 먼저 알려드릴게요</p>
-        <div class="cats soonrow rv">
-          <button type="button" class="cat soon">
+          <a class="cat" href="/price">
             <span class="circ" aria-hidden="true">
               <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15h6l-1.2 4H6.2L5 15Z"/><path d="M13 15h6l-1.2 4h-3.6L13 15Z"/><path d="M9 9h6l-1.2 4H10.2L9 9Z"/></svg>
             </span>
             <span class="cn">귀금속</span>
-            <span class="chip-soon">오픈 예정</span>
-            <span class="cl">오픈 알림 받기</span>
-          </button>
+            <span class="cb">순금 · 골드바 · 돌반지</span>
+            <span class="cl">시세 보기 →</span>
+          </a>
 
           <button type="button" class="cat soon">
             <span class="circ" aria-hidden="true">
