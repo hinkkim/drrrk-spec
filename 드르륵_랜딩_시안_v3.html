@@ -149,6 +149,11 @@
     font-size: 13.5px; font-weight: 700; color: var(--ink); letter-spacing: -.02em;
     margin: 26px 0 10px;
   }
+  .d3 .eg {
+    font-size: 10.5px; font-weight: 700; color: var(--muted);
+    border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px;
+    background: var(--white); margin-left: 4px; vertical-align: 2px;
+  }
   @media (min-width: 900px) { .d3 .lbl { margin-top: 0; } }
 
   .d3 .quote {
@@ -199,8 +204,12 @@
   @media (min-width: 900px) { .d3 .btn { width: auto; padding-inline: 34px; } }
 
   .d3 .cta-block { margin-top: 16px; }
+  .d3 .reassure {
+    margin: 9px 0 0; text-align: center;
+    font-size: 12.5px; color: var(--muted); letter-spacing: -.01em;
+  }
   .d3 .helper {
-    display: flex; justify-content: center; margin-top: 4px;
+    display: flex; justify-content: center; margin-top: 2px;
   }
   .d3 .helper a {
     min-height: 44px; display: inline-flex; align-items: center; gap: 4px;
@@ -403,8 +412,6 @@
   }
 </style>
 
-</head>
-<body>
 <div class="d3" id="d3">
   <div class="app">
 
@@ -467,18 +474,18 @@
           </a>
         </div>
 
-        <p class="say">사진 한 장으로 시세를 확인하고, 원할 때 여러 바이어 견적까지 비교하세요.</p>
+        <p class="say">가입 없이 사진 한 장으로 시세를 확인하고, 원할 때 여러 바이어 견적까지 비교하세요.</p>
 
-        <!-- 규모가 아닌 정책을 근거로 쓴다 — 거래량이 쌓이기 전에도 전부 참인 값 -->
+        <!-- 규모가 아닌 정책을 근거로 쓴다 — 세 값 모두 확정된 정책 (시세조회는 무가입·사진 1장) -->
         <div class="trust">
-          <div><b>0원</b><span>시세 조회·감정료</span></div>
-          <div><b>없음</b><span>판매 의무</span></div>
-          <div><b>당일</b><span>검수 후 입금</span></div>
+          <div><b>0원</b><span>시세 조회 비용</span></div>
+          <div><b>1장</b><span>사진이면 충분</span></div>
+          <div><b>가입 없이</b><span>바로 확인</span></div>
         </div>
       </div>
 
       <div>
-        <p class="lbl">시세 조회 결과 미리보기</p>
+        <p class="lbl">시세 조회 결과 미리보기<span class="eg">예시 화면</span></p>
 
         <div class="quote">
           <div class="qtop">
@@ -516,6 +523,7 @@
             <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3l1.7 4.8L18.5 9.5l-4.8 1.7L12 16l-1.7-4.8L5.5 9.5l4.8-1.7L12 3Z"/></svg>
             시세 조회 하기
           </a>
+          <p class="reassure">가입도 전화번호도 필요 없어요 — 사진만 올리면 바로 나와요</p>
           <div class="helper">
             <a href="#faq">처음이신가요? 자주 묻는 질문
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
@@ -640,7 +648,7 @@
 
         <div class="lotbar rv">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3l1.7 4.8L18.5 9.5l-4.8 1.7L12 16l-1.7-4.8L5.5 9.5l4.8-1.7L12 3Z"/></svg>
-          샤넬 클래식 미디움 · 비교견적 진행 중
+          샤넬 클래식 미디움 · 견적 접수 중 · <span class="num">22시간</span> 남음
         </div>
 
         <div class="bids rv">
@@ -680,11 +688,19 @@
 
         <div class="spread rv">
           <div class="t">최저 제안과 최고 제안, <b>80만 원</b> 차이</div>
-          <div class="d">견적 마감 후 원하는 제안을 직접 선택할 수 있어요.</div>
+          <div class="d">견적이 들어오는 중에도, 마감 후에도 원하는 제안을 직접 선택할 수 있어요.</div>
+        </div>
+
+        <!-- 시간 압박 제거 — "언제까지 결정해야 하나"에 대한 답. 세 값 모두 확정 정책 -->
+        <div class="trust rv">
+          <div><b>48시간</b><span>견적 접수 기간</span></div>
+          <div><b>+3일</b><span>마감 후에도 선택 가능</span></div>
+          <div><b>5회</b><span>재신청으로 재견적</span></div>
         </div>
 
         <div class="cta-block rv">
           <a href="#start" class="btn btn-o">내 자산 비교견적 받아보기</a>
+          <p class="reassure">휴대폰 번호만 입력하면 가입까지 한 번에 — 견적은 알림톡으로 도착해요</p>
         </div>
       </div>
     </section>
@@ -759,8 +775,20 @@
             <p class="a">사진으로 나오는 값은 예상 시세 범위입니다. 모델과 대략적인 상태를 판별해 범위를 좁혀드리지만 스크래치·변색·구성품 유무는 실물 검수에서 최종 확인됩니다. 정확한 금액은 바이어 견적에서 확정된다고 보시면 됩니다.</p>
           </details>
           <details>
+            <summary>가입하지 않아도 이용할 수 있나요?</summary>
+            <p class="a">시세 조회는 가입 없이 사진 한 장만 올리면 바로 확인할 수 있습니다. 바이어 비교견적을 받으실 때는 견적 내용을 알림톡으로 보내드리기 위해 휴대폰 번호 입력이 필요하고, 번호를 입력하면 별도 절차 없이 가입까지 한 번에 완료됩니다.</p>
+          </details>
+          <details>
             <summary>바이어마다 견적이 다른 이유는 무엇인가요?</summary>
             <p class="a">바이어마다 보유 재고와 주력 카테고리, 판매 채널이 다르기 때문입니다. 같은 가방이라도 해당 모델 재고가 없는 바이어는 더 높은 금액을 제시합니다. 드르륵에서는 최저 제안과 최고 제안이 수십만 원 이상 벌어지는 경우가 흔합니다.</p>
+          </details>
+          <details>
+            <summary>견적은 얼마나 기다려야 하나요?</summary>
+            <p class="a">견적 요청 후 48시간 동안 바이어들의 견적이 도착하고, 새 견적이 들어올 때마다 알림톡으로 알려드립니다. 48시간을 다 기다릴 필요는 없어요. 견적이 들어오는 중이라도 마음에 드는 제안이 있으면 바로 판매 요청을 보낼 수 있습니다.</p>
+          </details>
+          <details>
+            <summary>견적 기간을 놓치면 어떻게 되나요?</summary>
+            <p class="a">마감 후에도 3일 동안은 받아둔 견적으로 판매 요청을 보낼 수 있습니다. 3일이 지났다면 재신청하기로 같은 자산에 대해 다시 견적을 받을 수 있고, 재신청은 자산당 최대 5회까지 가능합니다. 지금 결정하지 않아도 기회가 사라지지 않아요.</p>
           </details>
           <details>
             <summary>견적을 받으면 반드시 판매해야 하나요?</summary>
@@ -783,7 +811,7 @@
     <!-- closing -->
     <section class="end" id="start">
       <h2 class="h2 rv">서랍 속 그 자산,<br>지금 얼마인지부터</h2>
-      <p class="sub rv">사진 한 장이면 됩니다. 감정료도, 판매 의무도 없어요.</p>
+      <p class="sub rv">가입 없이 사진 한 장이면 됩니다. 확인만 하고 끝내도 괜찮아요.</p>
       <a href="#d3" class="btn btn-y rv">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3l1.7 4.8L18.5 9.5l-4.8 1.7L12 16l-1.7-4.8L5.5 9.5l4.8-1.7L12 3Z"/></svg>
         시세 조회 하기
