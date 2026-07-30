@@ -12,6 +12,7 @@ import sys
 import unicodedata
 import unittest
 from pathlib import Path
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -225,6 +226,43 @@ class TestConfigConsistency(unittest.TestCase):
 
     def test_docstring_matches(self):
         self.assertIn("15개", b.__doc__)
+
+
+class TestRobotsSemantics(unittest.TestCase):
+    """RFC 9309 — 4xx 는 제한 없음, 명시 규칙은 존중, 5xx/네트워크 오류는 보수적 차단."""
+
+    URL = "https://api.example.com/api/1/find_v2.json"
+
+    def setUp(self):
+        b._robots_cache.clear()
+
+    def tearDown(self):
+        b._robots_cache.clear()
+
+    def test_missing_robots_allows(self):
+        # robots.txt 가 404/403 → _fetch_robots 가 빈 문자열 반환 → 전체 허용
+        with mock.patch.object(b, "_fetch_robots", return_value=""):
+            self.assertTrue(b.robots_allows(self.URL))
+
+    def test_explicit_disallow_blocks(self):
+        body = "User-agent: *\nDisallow: /api/"
+        with mock.patch.object(b, "_fetch_robots", return_value=body):
+            self.assertFalse(b.robots_allows(self.URL))
+
+    def test_unrelated_disallow_allows(self):
+        body = "User-agent: *\nDisallow: /admin/\nDisallow: /private/"
+        with mock.patch.object(b, "_fetch_robots", return_value=body):
+            self.assertTrue(b.robots_allows(self.URL))
+
+    def test_server_error_blocks_conservatively(self):
+        with mock.patch.object(b, "_fetch_robots", side_effect=RuntimeError("HTTP 503")):
+            self.assertFalse(b.robots_allows(self.URL))
+
+    def test_specific_bot_rule_does_not_apply_to_us(self):
+        # 특정 봇만 막는 규칙은 우리(일반 UA)에게 적용되지 않아야 한다
+        body = "User-agent: BadBot\nDisallow: /\n\nUser-agent: *\nAllow: /"
+        with mock.patch.object(b, "_fetch_robots", return_value=body):
+            self.assertTrue(b.robots_allows(self.URL))
 
 
 class TestBaseDirResolution(unittest.TestCase):

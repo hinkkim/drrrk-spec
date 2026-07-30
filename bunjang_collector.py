@@ -208,8 +208,12 @@ _warned = set()
 def log(msg):
     line = f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {msg}"
     print(line, flush=True)
-    with open(LOG_DIR / f"{datetime.now().strftime('%Y-%m-%d')}.log", "a", encoding="utf-8") as f:
-        f.write(line + "\n")
+    try:
+        LOG_DIR.mkdir(parents=True, exist_ok=True)
+        with open(LOG_DIR / f"{datetime.now().strftime('%Y-%m-%d')}.log", "a", encoding="utf-8") as f:
+            f.write(line + "\n")
+    except OSError:
+        pass    # 로그 파일 실패가 수집을 막으면 안 된다
 
 
 def warn_once(key, msg):
@@ -218,25 +222,48 @@ def warn_once(key, msg):
         log(msg)
 
 
+def _fetch_robots(origin):
+    """robots.txt 본문. RFC 9309 의미론 — 4xx(없음/접근거부)는 '제한 없음'으로 보고
+    빈 문자열을 반환하며, 5xx·네트워크 오류는 예외를 올려 보수적으로 차단하게 한다.
+    (표준 robotparser 는 기본 UA 로 요청하고 403 을 전체 금지로 해석해 오탐이 났었다)"""
+    req = urllib.request.Request(f"{origin}/robots.txt", headers={"User-Agent": UA})
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            return resp.read().decode("utf-8", "replace")
+    except urllib.error.HTTPError as e:
+        if 400 <= e.code < 500:
+            log(f"  robots.txt({origin}): HTTP {e.code} — 파일 없음/거부, 제한 없음으로 간주 (RFC 9309)")
+            return ""
+        raise
+
+
 def robots_allows(url):
-    """robots.txt 확인. 조회 실패 시에는 보수적으로 허용하지 않는다."""
+    """robots.txt 확인. 서버 장애로 규칙을 알 수 없을 때만 보수적으로 차단한다."""
     if not ROBOTS_ENFORCE:
         return True
     parts = urllib.parse.urlsplit(url)
     origin = f"{parts.scheme}://{parts.netloc}"
     rp = _robots_cache.get(origin)
     if rp is None:
-        rp = urllib.robotparser.RobotFileParser()
-        rp.set_url(f"{origin}/robots.txt")
         try:
-            rp.read()
+            body = _fetch_robots(origin)
         except Exception as e:
             log(f"  robots.txt 조회 실패 ({origin}): {e} — 해당 호스트 수집 보류")
-            rp = False
+            _robots_cache[origin] = False
+            return False
+        rp = urllib.robotparser.RobotFileParser()
+        rp.parse(body.splitlines())
         _robots_cache[origin] = rp
+        if body.strip():
+            rules = [ln.strip() for ln in body.splitlines()
+                     if ln.strip() and not ln.strip().startswith("#")]
+            log(f"  robots.txt({origin}): 규칙 {len(rules)}줄 로드")
     if rp is False:
         return False
-    return rp.can_fetch(UA, url)
+    allowed = rp.can_fetch(UA, url)
+    if not allowed:
+        log(f"  robots.txt 차단: {url} (매칭 규칙에 의해 불허)")
+    return allowed
 
 
 def http_get(url, retries=3):
