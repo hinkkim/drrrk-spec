@@ -7,7 +7,8 @@
 - 브랜드당 매일 최대 10개 신규 매물 (매일 11:00, launchd com.drrrk.c2c-collector)
 - 상품당 이미지 최소 2장 ~ 최대 10장. 실제 포맷대로 확장자를 붙여 저장하고
   webp 는 jpg 로 변환해 macOS 미리보기(Quick Look)에서 바로 선별 가능하게 한다.
-- 저장 위치: 구글드라이브 데스크톱 동기화 폴더 내 '드르륵' (자동 탐지, C2C_BASE 로 재지정)
+- 저장 위치: 구글드라이브 '내 드라이브/70_매물 크롤링' (데스크톱 동기화 경로 자동 탐지,
+  C2C_BASE 로 재지정). 어느 기기에서든 같은 계정으로 로그인하면 동일 폴더에 쌓인다.
 - 상태 파일(.state)은 Drive 동기화 경합을 피해 로컬(~/bunjang_c2c/.state)에 둔다.
 - 표준 라이브러리 + macOS 내장 도구(sips, osascript)만 사용. 외부 패키지 불필요.
 
@@ -30,7 +31,7 @@
   C2C_TOTAL_MAX  실행당 총 신규 매물 상한 (기본 150, 0=무제한)
   C2C_IMG_MIN    상품당 유효 이미지 최소 (기본 2, 미달 시 매물 제외)
   C2C_IMG_MAX    상품당 이미지 상한 (기본 10)
-  C2C_BASE       저장 루트 직접 지정 (기본: 구글드라이브 '드르륵/c2c market' 자동 탐지)
+  C2C_BASE       저장 루트 직접 지정 (기본: 구글드라이브 '70_매물 크롤링/c2c market' 자동 탐지)
   C2C_VISION     인물 감지 사용 (기본 1, 0=끔)
   C2C_ROBOTS     robots.txt 준수 (기본 1, 0=무시 — 권장하지 않음)
 """
@@ -53,6 +54,11 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 
+# 구글드라이브 '내 드라이브' 바로 아래 저장 폴더
+# https://drive.google.com/drive/folders/1k6hLyiBIlo8ZBR7mEBQmXSY5Ry6Aa0N2
+DRIVE_FOLDER = "70_매물 크롤링"
+
+
 def resolve_base_dir():
     """저장 루트. 구글드라이브 데스크톱 동기화 경로를 자동 탐지한다."""
     env = os.environ.get("C2C_BASE")
@@ -61,7 +67,7 @@ def resolve_base_dir():
     cloud = Path.home() / "Library" / "CloudStorage"
     for drive_name in ("My Drive", "내 드라이브"):
         for p in sorted(cloud.glob(f"GoogleDrive-*/{drive_name}")):
-            return p / "드르륵" / "c2c market"
+            return p / DRIVE_FOLDER / "c2c market"
     return Path.home() / "bunjang_c2c" / "c2c market"
 
 
