@@ -7,6 +7,7 @@
 - 브랜드당 매일 최대 10개 신규 매물 (매일 11:00, launchd com.drrrk.c2c-collector)
 - 상품당 이미지 최소 2장 ~ 최대 10장. 실제 포맷대로 확장자를 붙여 저장하고
   webp 는 jpg 로 변환해 macOS 미리보기(Quick Look)에서 바로 선별 가능하게 한다.
+- 폴더 구조: <브랜드_카테고리>/<수집일 YYYY-MM-DD>/<브랜드_제품명_구매연도>/
 - 저장 위치: 구글드라이브 '내 드라이브/70_매물 크롤링' (데스크톱 동기화 경로 자동 탐지,
   C2C_BASE 로 재지정). 어느 기기에서든 같은 계정으로 로그인하면 동일 폴더에 쌓인다.
 - 상태 파일(.state)은 Drive 동기화 경합을 피해 로컬(~/bunjang_c2c/.state)에 둔다.
@@ -682,7 +683,7 @@ def collect_product(pid, brand, allowed_cats, downloaded, rejects, res_state):
     name_clean = name_clean.strip() or name
 
     folder_name = sanitize(f"{brand}_{name_clean}" + (f"_{year}" if year else ""))
-    cat_dir = BASE_DIR / f"{brand}_{cat_label}"
+    cat_dir = BASE_DIR / f"{brand}_{cat_label}" / today   # 수집일 폴더로 묶는다
     folder = cat_dir / folder_name
     if folder.exists():
         folder = cat_dir / f"{folder_name}_{pid}"
