@@ -37,6 +37,7 @@
   C2C_ROBOTS     robots.txt 준수 (기본 1, 0=무시 — 권장하지 않음)
 """
 
+import http.client
 import json
 import os
 import re
@@ -292,7 +293,10 @@ def http_get(url, retries=3):
             if 400 <= e.code < 500:
                 raise RuntimeError(f"GET {e.code} ({url})") from e
             last_err = e
-        except urllib.error.URLError as e:
+        # 본문 수신 중 끊기는 오류(read timeout, 커넥션 리셋, IncompleteRead)는
+        # URLError 로 안 감싸여 오므로 별도로 잡아야 재시도가 걸린다.
+        except (urllib.error.URLError, TimeoutError, ConnectionError,
+                http.client.HTTPException) as e:
             last_err = e
         time.sleep(2 * (attempt + 1) + random.uniform(0, 0.5))
     raise RuntimeError(f"GET 실패 ({url}): {last_err}")

@@ -265,6 +265,67 @@ class TestRobotsSemantics(unittest.TestCase):
             self.assertTrue(b.robots_allows(self.URL))
 
 
+class TestHttpRetry(unittest.TestCase):
+    """본문 수신 중 끊기는 오류도 재시도 대상이어야 한다.
+
+    resp.read() 중 발생하는 read timeout 은 TimeoutError 로 올라오고
+    URLError 로 감싸이지 않는다. 이걸 안 잡으면 이미지 한 장이
+    재시도 없이 그대로 유실된다(실제 수집 로그에서 발생).
+    """
+
+    URL = "https://media.example.com/product/1_1.jpg"
+
+    def _run(self, side_effect):
+        calls = {"n": 0}
+
+        def fake_urlopen(req, timeout=None):
+            calls["n"] += 1
+            exc = side_effect(calls["n"])
+            if exc:
+                raise exc
+
+            class Resp:
+                headers = {"Content-Type": "image/jpeg"}
+
+                def read(self):
+                    return b"\xff\xd8\xffdata"
+
+                def __enter__(self):
+                    return self
+
+                def __exit__(self, *a):
+                    return False
+
+            return Resp()
+
+        with mock.patch.object(b, "robots_allows", return_value=True), \
+             mock.patch.object(b.urllib.request, "urlopen", fake_urlopen), \
+             mock.patch.object(b.time, "sleep", lambda s: None):
+            body, ctype = b.http_get(self.URL)
+        return body, calls["n"]
+
+    def test_read_timeout_is_retried(self):
+        body, n = self._run(lambda i: TimeoutError("The read operation timed out")
+                            if i < 3 else None)
+        self.assertEqual(body[:3], b"\xff\xd8\xff")
+        self.assertEqual(n, 3)
+
+    def test_connection_reset_is_retried(self):
+        body, n = self._run(lambda i: ConnectionResetError("reset") if i < 2 else None)
+        self.assertEqual(body[:3], b"\xff\xd8\xff")
+        self.assertEqual(n, 2)
+
+    def test_incomplete_read_is_retried(self):
+        body, n = self._run(lambda i: b.http.client.IncompleteRead(b"", 10)
+                            if i < 2 else None)
+        self.assertEqual(body[:3], b"\xff\xd8\xff")
+        self.assertEqual(n, 2)
+
+    def test_persistent_timeout_exhausts_retries(self):
+        with self.assertRaises(RuntimeError):
+            self._run(lambda i: TimeoutError("timed out"))
+
+
 class TestBaseDirResolution(unittest.TestCase):
     def test_env_override(self):
         old = os.environ.get("C2C_BASE")
