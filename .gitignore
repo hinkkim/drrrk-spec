@@ -2,3 +2,6 @@
 .DS_Store
 *.log
 .vercel
+prototype/*.db
+prototype/reports/
+__pycache__/
