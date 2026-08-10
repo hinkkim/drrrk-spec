@@ -12,6 +12,7 @@
 python3 run.py                        # 기본: 365일, 하루 2건 등록, 전당포 백필 300건
 python3 run.py --days 730 --listings-per-day 3
 python3 run.py --compare              # ★ 1차 단계(식별) 정확도 85/95/99% 시나리오 비교
+python3 dashboard.py                  # 웹 대시보드 생성 → reports/dashboard.html (브라우저로 열기)
 ```
 
 출력:
@@ -61,6 +62,7 @@ simulate.py       거래 시뮬레이터 (4개 가격 레이어 이벤트 생성
 metrics.py        주간 배치 — Asset Score 분위수 산출
 report.py         리포트 생성 + 1차 단계 오염도 분석
 run.py            진입점
+dashboard.py      웹 대시보드 생성 (dashboard_template.html 사용)
 ```
 
 ## 시뮬레이션 → 정식 개발 전환 시 매핑
