@@ -1,12 +1,36 @@
-# 드르륵 자산 언더라이팅 원장 — 로컬 프로토타입
+# 드르륵 자산 분석 프로그램 — 로컬 프로토타입
 
-거래를 통해 실물자산의 금융 데이터를 생산하는 시스템의 검증용 프로토타입.
-**내 컴퓨터에서 시뮬레이션을 돌려 스키마·산식·데이터 흐름을 검증한 뒤 정식 개발로 넘어가기 위한 것.**
+중고 실물자산·귀금속 정보를 분석하는 프로그램. 자산을 입력하면
+**식별 → 시장가치(MV) → 청산가치(LV) → 유동성 → 권장 LTV**를 원장 데이터에서 산출한다.
+내 컴퓨터에서 돌려 검증한 뒤 정식 개발로 넘어가기 위한 프로토타입.
+
+## 분석 프로그램 사용법
+
+```bash
+python3 app.py                                        # 웹 앱 → http://localhost:8765
+python3 analyze.py asset "서브마리너" --grade A        # CLI (별칭·모델명 검색 지원)
+python3 analyze.py gold --purity 18K --weight 18.75   # 귀금속 — 시세×순도×중량
+python3 analyze.py list                               # 분석 가능 자산 목록
+```
+
+실데이터로 원장을 키우는 통로 (시뮬레이션 없이도 사용 가능):
+
+```bash
+python3 ingest.py template                 # 입력용 CSV 템플릿 생성
+python3 ingest.py events real_data.csv     # 실제 견적·성사가·백필 일괄 입력
+python3 ingest.py spot gold 152000         # 금 시세 저장 (24K 1g당 원)
+```
+
+금융기관 PoC용 JSON API도 웹 앱에 내장: `GET /api/asset?q=서브마리너&grade=A`
+
+귀금속과 브랜드 자산의 차이가 곧 이 프로그램의 논리다 —
+**금은 표준화 자산이라 시세×순도×중량으로 즉시 계산된다 (은행이 이미 담보로 받는 이유).
+명품은 비표준 자산이라 모델·상태별 실거래 원장이 있어야 같은 답을 낼 수 있다 (드르륵의 존재 이유).**
 
 - 배경 전략: [`../docs/실물자산_금융데이터_시스템_전략.md`](../docs/실물자산_금융데이터_시스템_전략.md)
 - 원장 설계: [`../docs/자산_언더라이팅_원장_구현스펙.md`](../docs/자산_언더라이팅_원장_구현스펙.md)
 
-## 실행 (설치 불필요 — 파이썬 3.9+ 표준 라이브러리만 사용)
+## 시뮬레이션 (원장 검증용 — 설치 불필요, 파이썬 3.9+ 표준 라이브러리만)
 
 ```bash
 python3 run.py                        # 기본: 365일, 하루 2건 등록, 전당포 백필 300건
@@ -61,7 +85,10 @@ identify.py       1차 단계 — 식별·상태·정가품 (mock + Gemini 폐�
 simulate.py       거래 시뮬레이터 (4개 가격 레이어 이벤트 생성, sim_truth 정답지 기록)
 metrics.py        주간 배치 — Asset Score 분위수 산출
 report.py         리포트 생성 + 1차 단계 오염도 분석
-run.py            진입점
+run.py            시뮬레이션 진입점
+analyze.py        ★ 분석 엔진 + CLI (자산 입력 → Asset Score 산출)
+app.py            ★ 분석 프로그램 웹 앱 (+ PoC JSON API)
+ingest.py         ★ 실데이터 입력 (견적·성사가·백필 CSV, 금 시세)
 dashboard.py      웹 대시보드 생성 (dashboard_template.html 사용)
 ```
 
