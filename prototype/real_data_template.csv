@@ -1,0 +1,8 @@
+canonical_asset_id,event_type,deal_type,value_krw,observed_at,source,grade,meta_json
+WATCH-ROLEX-SUBMARINER-126610LN,buyer_quote,sale,11800000,2026-08-01,buyer:강남A,A,
+WATCH-ROLEX-SUBMARINER-126610LN,buyer_quote,sale,12100000,2026-08-01,buyer:종로B,A,
+WATCH-ROLEX-SUBMARINER-126610LN,contract_price,sale,12100000,2026-08-04,drrrk,A,"{""days_to_sale"": 3}"
+WATCH-ROLEX-SUBMARINER-126610LN,external_comp,external,14900000,2026-08-01,kream,,
+BAG-CHANEL-CLASSIC-MEDIUM,backfill_appraisal,pawn,13000000,2025-11-10,backfill:종로B,A,
+BAG-CHANEL-CLASSIC-MEDIUM,backfill_loan,pawn,7800000,2025-11-10,backfill:종로B,A,"{""ltv"": 0.6}"
+BAG-CHANEL-CLASSIC-MEDIUM,backfill_liquidation,pawn,10400000,2026-03-02,backfill:종로B,A,"{""loan_balance"": 8100000, ""days_to_liquidate"": 28, ""cost_pct"": 0.05}"
