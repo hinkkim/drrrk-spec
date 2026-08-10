@@ -1,0 +1,185 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>드르륵 실물자산 분석 프로그램</title>
+<style>
+:root {
+  color-scheme: light;
+  --plane:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
+  --ring:rgba(11,11,11,.1); --grid:#e1e0d9; --accent:#2a78d6; --good:#006300; --warnbg:#fdf6e7;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --plane:#0d0d0d; --surface:#1a1a19; --ink:#fff; --ink2:#c3c2b7; --muted:#898781;
+    --ring:rgba(255,255,255,.1); --grid:#2c2c2a; --accent:#3987e5; --good:#0ca30c; --warnbg:#2a2416;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --plane:#0d0d0d; --surface:#1a1a19; --ink:#fff; --ink2:#c3c2b7; --muted:#898781;
+  --ring:rgba(255,255,255,.1); --grid:#2c2c2a; --accent:#3987e5; --good:#0ca30c; --warnbg:#2a2416;
+}
+* { box-sizing:border-box }
+body { margin:0; background:var(--plane); color:var(--ink); font-size:14px; line-height:1.55;
+  font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic","Segoe UI",sans-serif; }
+.wrap { max-width:760px; margin:0 auto; padding:28px 18px 60px; display:flex; flex-direction:column; gap:16px; }
+.eyebrow { font-size:11px; letter-spacing:.12em; color:var(--muted); }
+h1 { font-size:20px; margin:2px 0 0; }
+.simbadge { background:var(--warnbg); border:1px solid var(--ring); border-radius:8px;
+  padding:10px 14px; font-size:12.5px; color:var(--ink2); }
+.card { background:var(--surface); border:1px solid var(--ring); border-radius:8px; padding:18px 20px; }
+.card h2 { font-size:15px; margin:0 0 10px; } .card h2 .sub { color:var(--muted); font-weight:400; }
+.row { display:flex; flex-wrap:wrap; gap:10px; align-items:end; }
+label { display:flex; flex-direction:column; gap:4px; font-size:12px; color:var(--ink2); }
+input, select { font:inherit; color:var(--ink); background:var(--plane); border:1px solid var(--grid);
+  border-radius:6px; padding:8px 10px; min-width:110px; }
+input:focus, select:focus, button:focus-visible { outline:2px solid var(--accent); outline-offset:1px; }
+button { font:inherit; font-weight:600; color:#fff; background:var(--accent); border:none;
+  border-radius:6px; padding:9px 18px; cursor:pointer; }
+.kv { display:grid; grid-template-columns:max-content 1fr; gap:6px 18px; font-variant-numeric:tabular-nums; }
+.kv dt { color:var(--ink2); } .kv dd { margin:0; font-weight:600; }
+.kv dd.big { font-size:20px; } .kv dd.ltv { color:var(--good); font-size:20px; }
+.note { color:var(--muted); font-size:12px; margin-top:10px; max-width:70ch; }
+table { border-collapse:collapse; width:100%; font-size:12.5px; margin-top:6px; }
+th,td { padding:6px 9px; text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+th { color:var(--muted); font-weight:600; border-bottom:1px solid var(--grid); }
+td:first-child, th:first-child { text-align:left; }
+tbody tr { border-bottom:1px solid var(--grid); }
+.tablewrap { overflow-x:auto; }
+.cand button { display:block; width:100%; text-align:left; background:none; color:var(--accent);
+  border:none; padding:5px 0; font-weight:400; cursor:pointer; }
+.warn { color:#b45309; }
+#result:empty, #goldResult:empty { display:none; }
+</style>
+
+<div class="wrap">
+<div><div class="eyebrow">DRRRK · ASSET ANALYZER — PROTOTYPE</div>
+<h1>실물자산 분석 프로그램</h1></div>
+
+<div class="simbadge">⚠ 현재 내장 데이터는 <b>시뮬레이션 생성 데이터</b>입니다 (실거래 아님).
+스키마·산식·프로그램 흐름 검증용이며, ingest.py로 실데이터를 입력한 뒤 재게시하면 같은 프로그램이 실데이터 기반으로 동작합니다.</div>
+
+<div class="card">
+  <h2>브랜드 자산 분석 <span class="sub">— 원장 데이터 기반 (비표준 자산)</span></h2>
+  <div class="row">
+    <label>모델명 · 별칭 검색
+      <input id="q" placeholder="예: 서브마리너, 클미, 버킨…" style="min-width:260px" list="assetlist"></label>
+    <label>상태 등급
+      <select id="grade"><option>S</option><option selected>A</option><option>B</option><option>C</option></select></label>
+    <button id="goAsset">분석</button>
+  </div>
+  <datalist id="assetlist"></datalist>
+  <div id="result" style="margin-top:14px"></div>
+</div>
+
+<div class="card">
+  <h2>귀금속 분석 <span class="sub">— 시세 × 순도 × 중량 (표준화 자산)</span></h2>
+  <div class="row">
+    <label>순도 <select id="purity"><option selected>24K</option><option>22K</option><option>18K</option><option>14K</option></select></label>
+    <label>중량 (g) <input id="weight" type="number" step="0.01" min="0.1" placeholder="18.75"></label>
+    <label>24K 1g 시세 (원) <input id="spot" type="number" step="100"></label>
+    <button id="goGold">분석</button>
+  </div>
+  <div id="goldResult" style="margin-top:14px"></div>
+  <div class="note">금은 표준화 자산이라 시세만으로 즉시 계산된다 — 은행이 이미 담보로 받는 이유.
+  명품은 모델·상태별 실거래 원장이 있어야 같은 답을 낼 수 있다 — 드르륵이 만드는 데이터가 그것.</div>
+</div>
+
+<div class="note">CLI·로컬 웹 앱·실데이터 입력 도구: github.com/hinkkim/drrrk-spec (prototype/) ·
+권장 LTV = P10 매입 호가 × (1−처분비용) ÷ 시세 — "최악 분위 호가로 처분해도 원금이 회수되는 대출 비율"</div>
+</div>
+
+<script>
+const D = __PAYLOAD__;
+const won = v => v==null ? '— (표본 부족)' : '₩' + Math.round(v).toLocaleString('ko-KR');
+const pct = v => v==null ? '—' : v + '%';
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const EV_NAMES = {buyer_quote:'매입 호가', contract_price:'성사가', external_comp:'외부 시세',
+  ai_estimate:'AI 추정', backfill_appraisal:'감정가(백필)', backfill_loan:'대출액(백필)',
+  backfill_liquidation:'처분가(백필)', liquidation_price:'처분가', extension_reappraisal:'재평가'};
+
+// 검색용 datalist
+const dl = document.getElementById('assetlist');
+D.assets.forEach(a => { const o = document.createElement('option');
+  o.value = `${a.brand} ${a.model}`; dl.appendChild(o); });
+
+function findAsset(q) {
+  q = q.trim().toLowerCase();
+  if (!q) return {cands: []};
+  const exact = D.assets.find(a => a.cid.toLowerCase() === q);
+  if (exact) return {hit: exact};
+  const m = D.assets.filter(a =>
+    a.cid.toLowerCase().includes(q) ||
+    (a.brand + ' ' + a.model).toLowerCase().includes(q) ||
+    a.model.toLowerCase().includes(q) ||
+    (a.aliases || '').toLowerCase().split(';').some(al => al && (al.includes(q) || q.includes(al))));
+  return m.length === 1 ? {hit: m[0]} : {cands: m};
+}
+
+function renderAsset(a, grade) {
+  const gm = D.grade_mult[grade] || 1, s = a.stats;
+  const g = v => v==null ? null : v * gm;
+  const smp = s.sample;
+  let h = `<h2>${esc(a.brand)} ${esc(a.model)} <span class="sub">(${esc(a.ref || '-')}) · 등급 ${grade}</span></h2>
+  <dl class="kv">
+    <dt>시장가치 (MV)</dt><dd class="big">${won(g(s.mv))}</dd>
+    <dt>청산가치 (LV)</dt><dd class="big">${won(g(s.lv))}</dd>
+    <dt>보수적 LV (P25)</dt><dd>${won(g(s.lv25))}</dd>
+    <dt>도매할인율</dt><dd>${pct(s.discount)}</dd>
+    <dt>호가 스프레드</dt><dd>${pct(s.spread)}</dd>
+    <dt>예상 처분 소요</dt><dd>${s.days_sale ?? '—'}일 (판매) · ${s.days_liq ?? '—'}일 (유질)</dd>
+    <dt>유질 회수율</dt><dd>${pct(s.recovery)}</dd>
+    <dt>권장 LTV</dt><dd class="ltv">${pct(s.ltv)}</dd>
+    <dt>근거 표본</dt><dd style="font-weight:400">호가 ${smp.quotes} · 성사 ${smp.sales} · 외부시세 ${smp.external_comps} · 유질처분 ${smp.liquidations} <span style="color:var(--muted)">(최근 ${s.window}일, 기준일 ${s.as_of})</span></dd>
+    <dt>신뢰도</dt><dd>${s.confidence}</dd>
+  </dl>`;
+  if (s.confidence === 'insufficient')
+    h += `<div class="note">※ 표본 부족 — 가격 산출 불가. 실호가·실거래 데이터 수집이 필요합니다.</div>`;
+  if (a.events.length) {
+    h += `<div class="tablewrap"><table><thead><tr><th>일자</th><th>유형</th><th>거래</th><th>금액(원)</th><th>출처</th></tr></thead><tbody>`;
+    a.events.forEach(e => {
+      h += `<tr><td>${e.t}</td><td>${EV_NAMES[e.e] || e.e}</td><td>${e.d}</td><td>${e.v.toLocaleString('ko-KR')}</td><td>${esc(e.s)}</td></tr>`;
+    });
+    h += `</tbody></table></div>`;
+  }
+  return h;
+}
+
+document.getElementById('goAsset').addEventListener('click', () => {
+  const q = document.getElementById('q').value;
+  const grade = document.getElementById('grade').value;
+  const r = findAsset(q), box = document.getElementById('result');
+  if (r.hit) box.innerHTML = renderAsset(r.hit, grade);
+  else if (r.cands.length) {
+    box.innerHTML = `<div class="cand"><b>검색 결과가 여러 개입니다:</b>` +
+      r.cands.map((c, i) => `<button data-i="${D.assets.indexOf(c)}">${esc(c.brand)} ${esc(c.model)} (${esc(c.cid)})</button>`).join('') + `</div>`;
+    box.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+      box.innerHTML = renderAsset(D.assets[+b.dataset.i], grade);
+    }));
+  } else box.innerHTML = `<b class="warn">검색 결과 없음</b> — 카탈로그에 없는 모델입니다.`;
+});
+document.getElementById('q').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('goAsset').click();
+});
+
+// 귀금속
+if (D.gold_spot) document.getElementById('spot').value = D.gold_spot.krw_per_g;
+document.getElementById('goGold').addEventListener('click', () => {
+  const purity = document.getElementById('purity').value;
+  const wgt = parseFloat(document.getElementById('weight').value);
+  const spot = parseFloat(document.getElementById('spot').value);
+  const box = document.getElementById('goldResult');
+  if (!wgt || !spot) { box.innerHTML = `<b class="warn">중량과 시세를 입력하세요.</b>` +
+    (D.gold_spot ? '' : ' (시세 참고: 한국금거래소 고시가)'); return; }
+  const mv = spot * D.purity[purity] * wgt, lv = mv * (1 - D.gold_spread);
+  box.innerHTML = `<h2>금 ${purity} ${wgt}g <span class="sub">(24K ${spot.toLocaleString('ko-KR')}원/g)</span></h2>
+  <dl class="kv">
+    <dt>시장가치 (MV)</dt><dd class="big">${won(mv)}</dd>
+    <dt>청산가치 (LV)</dt><dd class="big">${won(lv)}</dd>
+    <dt>매입 스프레드</dt><dd>${(D.gold_spread*100).toFixed(1)}%</dd>
+    <dt>권장 LTV</dt><dd class="ltv">${pct(D.gold_ltv)}</dd>
+    <dt>신뢰도</dt><dd>high — 표준화 자산 (시세×순도×중량 직접 산출)</dd>
+  </dl>
+  <div class="note">※ 스프레드·LTV 관행값은 실측으로 교체할 것.</div>`;
+});
+</script>

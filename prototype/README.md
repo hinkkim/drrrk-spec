@@ -23,6 +23,12 @@ python3 ingest.py spot gold 152000         # 금 시세 저장 (24K 1g당 원)
 
 금융기관 PoC용 JSON API도 웹 앱에 내장: `GET /api/asset?q=서브마리너&grade=A`
 
+공개 URL 배포판 (서버 없이 브라우저에서 작동하는 단일 HTML):
+
+```bash
+python3 export_web.py      # → reports/analyzer.html (분석 로직·데이터 내장, 그대로 호스팅 가능)
+```
+
 귀금속과 브랜드 자산의 차이가 곧 이 프로그램의 논리다 —
 **금은 표준화 자산이라 시세×순도×중량으로 즉시 계산된다 (은행이 이미 담보로 받는 이유).
 명품은 비표준 자산이라 모델·상태별 실거래 원장이 있어야 같은 답을 낼 수 있다 (드르륵의 존재 이유).**
@@ -89,6 +95,7 @@ run.py            시뮬레이션 진입점
 analyze.py        ★ 분석 엔진 + CLI (자산 입력 → Asset Score 산출)
 app.py            ★ 분석 프로그램 웹 앱 (+ PoC JSON API)
 ingest.py         ★ 실데이터 입력 (견적·성사가·백필 CSV, 금 시세)
+export_web.py     분석 프로그램 웹 배포판 생성 (analyzer_template.html 사용)
 dashboard.py      웹 대시보드 생성 (dashboard_template.html 사용)
 ```
 
