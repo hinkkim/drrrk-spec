@@ -20,7 +20,7 @@ import sqlite3
 import sys
 from datetime import timedelta
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # ROOT는 뒤에 — sim 내부 모듈(report.py 등)이 우선
 
 from simulate import run_simulation, START
 from metrics import compute_metrics

@@ -9,25 +9,30 @@
 """
 import json
 import os
-import sqlite3
+import sys
 
-import analyze as az
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from core import db as coredb
+from engine import baseline
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+ENV = "SIMULATION" if os.environ.get("DRRRK_ENV", "SIM").upper().startswith("SIM") \
+    else "REAL"
 
 
 def build_payload():
-    conn = sqlite3.connect(az.DB)
+    conn = coredb.connect(ENV)
     assets = []
     for cid, cat, brand, model, ref, aliases in conn.execute(
             "select canonical_asset_id, category, brand, model, reference_no, aliases "
-            "from asset_master order by category, brand"):
-        r = az.analyze_asset(conn, cid, grade="A")  # A등급 기준 — 등급 조정은 JS에서
+            "from asset_master where status='active' order by category, brand"):
+        r = baseline.analyze_asset_compat(conn, cid, grade="A")  # 등급 조정은 JS에서
         events = [
             {"t": t[:10], "e": e, "d": d, "v": v, "s": s}
             for t, e, d, v, s in conn.execute(
                 "select observed_at, event_type, deal_type, value_krw, source "
-                "from valuation_event where canonical_asset_id=? "
+                "from valuation_event_v where canonical_asset_id=? "
                 "order by observed_at desc limit 8", (cid,))]
         assets.append({
             "cid": cid, "category": cat, "brand": brand, "model": model,
@@ -40,20 +45,21 @@ def build_payload():
                 "days_liq": r.get("days_to_liquidate"),
                 "recovery": r.get("recovery_rate_pct"),
                 "ltv": r.get("recommended_ltv_pct"),
+                "ltv_reasons": r.get("ltv_reasons", []),
+                "ltv_indicative_ref": r.get("indicative_ltv_reference_pct"),
                 "sample": r["sample"], "confidence": r["confidence"],
                 "window": r["window_days"], "as_of": r["as_of"],
             }, "events": events})
     spot = None
-    if az._has_spot(conn):
-        row = conn.execute("select krw_per_g, updated_at from spot_price "
-                           "where metal='gold'").fetchone()
-        if row:
-            spot = {"krw_per_g": row[0], "as_of": row[1]}
+    row = conn.execute("select krw_per_g, updated_at from spot_price "
+                       "where metal='gold'").fetchone()
+    if row:
+        spot = {"krw_per_g": row[0], "as_of": row[1]}
     conn.close()
-    return {"assets": assets, "gold_spot": spot,
-            "grade_mult": {"S": 1.08, "A": 1.00, "B": 0.88, "C": 0.72},
-            "purity": {"24K": 0.999, "22K": 0.916, "18K": 0.750, "14K": 0.585},
-            "gold_spread": 0.05, "gold_ltv": 80.0}
+    from core.evidence import GRADE_MULT, PURITY, GOLD_BUY_SPREAD
+    return {"assets": assets, "gold_spot": spot, "env": ENV,
+            "grade_mult": GRADE_MULT, "purity": PURITY,
+            "gold_spread": GOLD_BUY_SPREAD, "gold_ltv": 80.0}
 
 
 def main():

@@ -23,7 +23,7 @@ import sys
 import uuid
 from datetime import date, timedelta
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # ROOT는 뒤에 — sim 내부 모듈(report.py 등)이 우선
 
 from identify import identify_mock
 from core.evidence import GRADE_MULT

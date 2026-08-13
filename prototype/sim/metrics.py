@@ -16,7 +16,7 @@ import statistics as st
 import sys
 from datetime import date, timedelta
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # ROOT는 뒤에 — sim 내부 모듈(report.py 등)이 우선
 
 from core.evidence import pct as _pct, DISPOSAL_COST, MIN_SAMPLE
 
