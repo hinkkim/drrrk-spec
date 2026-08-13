@@ -66,6 +66,12 @@ def metrics(conn, cid, window_days=180, as_of=None):
         if last and last < cutoff:
             failed += 1
 
+    # 등록→첫 bid / 첫 FIRM bid 소요일 (T11).
+    # 이식(migrated) 자산은 created_at이 등록 시점이 아니므로 자동 제외된다
+    # (첫 bid가 created_at보다 빠르면 무효 표본).
+    ttfb = _time_to_first(conn, cid, since, firm=False)
+    ttff = _time_to_first(conn, cid, since, firm=True)
+
     return {
         "canonical_asset_id": cid, "as_of": as_of.isoformat(),
         "window_days": window_days,
@@ -85,7 +91,31 @@ def metrics(conn, cid, window_days=180, as_of=None):
         "bid_to_sale_conversion_pct": round(conv, 1) if conv is not None else None,
         "days_to_sale_median": pct(d2s, 0.5),
         "failed_listing_count": failed,
+        "time_to_first_bid_days": ttfb,
+        "time_to_first_firm_bid_days": ttff,
     }
+
+
+def _time_to_first(conn, cid, since, firm):
+    """자산별 (첫 bid 일자 − 등록 일자) 중위값. 유효 표본 없으면 None."""
+    type_cond = ("and b.bid_type in ('FIRM','COMMITTED','SETTLED')" if firm else "")
+    rows = conn.execute(
+        f"select a.created_at, min(b.bid_time) from dealer_bids b"
+        f" join assets a using (asset_id)"
+        f" where b.canonical_asset_id=? and b.bid_time>=? {type_cond}"
+        f" group by b.asset_id", (cid, since)).fetchall()
+    days = []
+    for created, first_bid in rows:
+        if not created or not first_bid:
+            continue
+        try:
+            d = (date.fromisoformat(first_bid[:10])
+                 - date.fromisoformat(created[:10])).days
+        except ValueError:
+            continue
+        if d >= 0:   # 이식 데이터(등록시각이 bid 이후)는 무효
+            days.append(d)
+    return pct(days, 0.5) if days else None
 
 
 def write_snapshot(conn, cid, env, window_days=180, as_of=None):
@@ -95,12 +125,14 @@ def write_snapshot(conn, cid, env, window_days=180, as_of=None):
         "insert into liquidity_snapshots (snapshot_id, snapshot_date,"
         " canonical_asset_id, window_days, unique_qualified_bidders, bid_count,"
         " firm_bid_count, bid_dispersion_pct, top1_buyer_share_pct,"
-        " top3_buyer_share_pct, bid_to_sale_conversion_pct, days_to_sale_median,"
-        " failed_listing_count, data_environment)"
-        " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        " top3_buyer_share_pct, time_to_first_bid_days,"
+        " time_to_first_firm_bid_days, bid_to_sale_conversion_pct,"
+        " days_to_sale_median, failed_listing_count, data_environment)"
+        " values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         (sid, m["as_of"], cid, window_days, m["unique_qualified_bidders"],
          m["bid_count"], m["firm_bid_count"], m["bid_dispersion_pct"],
          m["top1_buyer_share_pct"], m["top3_buyer_share_pct"],
+         m["time_to_first_bid_days"], m["time_to_first_firm_bid_days"],
          m["bid_to_sale_conversion_pct"], m["days_to_sale_median"],
          m["failed_listing_count"], env))
     conn.commit()

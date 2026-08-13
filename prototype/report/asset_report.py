@@ -60,6 +60,8 @@ def build(conn, cid, grade="A", asset_id=None, window_days=180):
             "bid_to_sale_conversion_pct": liq["bid_to_sale_conversion_pct"],
             "days_to_sale_median": liq["days_to_sale_median"],
             "failed_listing_count": liq["failed_listing_count"],
+            "time_to_first_bid_days": liq["time_to_first_bid_days"],
+            "time_to_first_firm_bid_days": liq["time_to_first_firm_bid_days"],
         },
         "liquidation": {
             "expected_7d": _est_view(est[7]),
@@ -203,6 +205,8 @@ def render_text(r):
     lq = r["liquidity"]
     L.append(f"  LIQUIDITY     성사 전환 {lq['bid_to_sale_conversion_pct'] or '—'}%"
              f" · 처분 중위 {lq['days_to_sale_median'] or '—'}일"
+             f" · 첫 bid {lq['time_to_first_bid_days'] if lq['time_to_first_bid_days'] is not None else '—'}일"
+             f" / 첫 FIRM {lq['time_to_first_firm_bid_days'] if lq['time_to_first_firm_bid_days'] is not None else '—'}일"
              f" · 유찰 {lq['failed_listing_count']}건")
     for h in ("expected_7d", "expected_30d"):
         e = r["liquidation"][h]

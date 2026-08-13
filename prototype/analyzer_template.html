@@ -192,7 +192,9 @@ function renderAsset(a, grade) {
     ${rangeRow('30일 처분', r.liquidation.expected_30d, gm)}
     </tbody></table></div>
     <div class="note" style="margin-top:8px">성사 전환율 ${pct(lq.bid_to_sale_conversion_pct)}
-    · 처분 소요 중위 ${lq.days_to_sale_median ?? '—'}일 · 유찰 ${lq.failed_listing_count}건</div></div>`);
+    · 처분 소요 중위 ${lq.days_to_sale_median ?? '—'}일
+    · 첫 bid까지 ${lq.time_to_first_bid_days ?? '—'}일 / 첫 FIRM까지 ${lq.time_to_first_firm_bid_days ?? '—'}일
+    · 유찰 ${lq.failed_listing_count}건</div></div>`);
 
   let ltvHtml;
   if (ltv.status === 'AVAILABLE') {

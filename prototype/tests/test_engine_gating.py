@@ -145,3 +145,38 @@ class StaleGate(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TimeToFirstBid(unittest.TestCase):
+    """T11 — 등록→첫 bid 소요일. 등록시각이 bid 이후인 이식 데이터는 제외."""
+
+    def test_measured_and_snapshot(self):
+        from engine import liquidity
+        conn = fresh()
+        aid = ingest.register_asset(conn, source="drrrk", env="REAL",
+                                    canonical_asset_id=CID, grade="A")
+        conn.execute("update assets set created_at='2026-08-01 09:00:00'"
+                     " where asset_id=?", (aid,))
+        bids.place_bid(conn, aid, "buyer:1", 100, "INDICATIVE",
+                       bid_time="2026-08-03")
+        bids.place_bid(conn, aid, "buyer:2", 110, "FIRM", bid_time="2026-08-06")
+        m = liquidity.metrics(conn, CID)
+        self.assertEqual(m["time_to_first_bid_days"], 2)
+        self.assertEqual(m["time_to_first_firm_bid_days"], 5)
+        sid = liquidity.write_snapshot(conn, CID, "REAL")
+        row = conn.execute("select time_to_first_bid_days,"
+                           " time_to_first_firm_bid_days, evidence_class"
+                           " from liquidity_snapshots where snapshot_id=?",
+                           (sid,)).fetchone()
+        self.assertEqual(row, (2.0, 5.0, "DERIVED"))
+
+    def test_migrated_rows_excluded(self):
+        from engine import liquidity
+        conn = fresh()
+        aid = ingest.register_asset(conn, source="drrrk", env="REAL",
+                                    canonical_asset_id=CID)
+        # 등록시각(오늘)이 bid(과거)보다 늦음 — 이식 데이터 패턴 → 무효 표본
+        bids.place_bid(conn, aid, "buyer:1", 100, "INDICATIVE",
+                       bid_time="2020-01-01")
+        m = liquidity.metrics(conn, CID, window_days=36500)
+        self.assertIsNone(m["time_to_first_bid_days"])
