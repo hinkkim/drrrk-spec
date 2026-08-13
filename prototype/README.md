@@ -34,6 +34,10 @@ python3 analyze.py list                    # 자산 목록 (기본: REAL)
 python3 analyze.py asset "서브마리너"       # 리포트 (LTV는 게이트 통과 시에만)
 python3 analyze.py gold --purity 18K --weight 18.75
 python3 app.py                             # 웹 (localhost:8765) + /api/asset
+#   → /console : 전문가 검증 콘솔 (등록·사진·AI 후보 확정·correction·
+#                진위 evidence·bid 수명주기·거래·비용 입력)
+python3 kpi.py                             # 제품 KPI (§20) — 정확도·correction·
+                                           #   검증시간·FIRM→정산 전환·캘리브레이션
 
 # ④ 시뮬레이션 (회귀 테스트·백테스트 하네스 — 별도 DB)
 python3 sim/run.py                         # → drrrk_sim.db (v1 자동 이식 포함)
@@ -81,6 +85,8 @@ LIQUIDATION   30d: INSUFFICIENT DATA — sample_too_small
 - `drrrk_sim.db`의 숫자는 **100% 시뮬레이션**이다 (기준가 수기 근사 + 가정 기반
   난수). 목적은 그릇(스키마·산식·게이트)의 작동 검증. 실측은 `intake/ingest.py`로
   들어오는 순간 같은 프로그램이 REAL 원장 위에서 동작한다.
-- 다음 단계(P1~): 전문가 검증 콘솔(T8) · 시장 Evidence 입력 UI(T9) · Evidence
-  Report 웹 고도화(T10) · 유동성 KPI(T11~12) · 백테스트(T13) · 파트너 백필(T15) ·
-  Gemini 실연동(T16) · 기관 API(T17). 티켓 정의는 설계 문서 §7–9.
+- P1 완료: 전문가 검증 콘솔(T8) · 시장 Evidence 입력 UI(T9) · Evidence Report
+  웹 배포판(T10) · 유동성 지표 보강(T11) · KPI 리포트(T12).
+- 다음 단계(P2): 청산 추정 백테스트(T13) · outcome 캘리브레이션 루프(T14) ·
+  파트너 백필 임포터(T15) · Gemini 실연동(T16) · 기관 API(T17).
+  티켓 정의는 설계 문서 §7–9.
