@@ -145,3 +145,77 @@ class ConsoleFlow(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class MarketFlow(ConsoleFlow):
+    """T9 — 콘솔 HTTP로 bid 수명주기·거래·비용·외부 comp."""
+
+    def test_market_flow(self):
+        _, loc = self._post("/console/register", {"source": "drrrk"})
+        aid = urllib.parse.parse_qs(urllib.parse.urlparse(loc).query)["id"][0]
+        c = self.conn()
+        from intake import verify as vfy
+        vfy.complete_verification(c, aid, "identity", CID, "expert:kim")
+        c.close()
+
+        # bid 등록 → FIRM 승격 → COMMITTED → 낙찰 → 정산
+        self._post("/console/bid", {"asset_id": aid, "buyer_id": "buyer:B",
+                                    "price_krw": "12000000",
+                                    "bid_time": "2026-08-10"})
+        c = self.conn()
+        b1 = c.execute("select bid_id from dealer_bids where asset_id=?",
+                       (aid,)).fetchone()[0]
+        c.close()
+        self._post("/console/bid-action", {"asset_id": aid, "bid_id": b1,
+                                           "act": "promote_FIRM"})
+        c = self.conn()
+        b2 = c.execute("select bid_id from dealer_bids where asset_id=?"
+                       " and bid_type='FIRM'", (aid,)).fetchone()[0]
+        c.close()
+        self._post("/console/bid-action", {"asset_id": aid, "bid_id": b2,
+                                           "act": "promote_COMMITTED"})
+        c = self.conn()
+        b3 = c.execute("select bid_id from dealer_bids where asset_id=?"
+                       " and bid_type='COMMITTED'", (aid,)).fetchone()[0]
+        c.close()
+        self._post("/console/bid-action", {"asset_id": aid, "bid_id": b3,
+                                           "act": "select"})
+        self._post("/console/bid-action", {"asset_id": aid, "bid_id": b3,
+                                           "act": "settle_ok"})
+
+        # 거래 + 비용 + 외부 comp
+        self._post("/console/transaction", {
+            "asset_id": aid, "transaction_type": "sale",
+            "gross_price_krw": "12000000", "contracted_at": "2026-08-13",
+            "settled_at": "2026-08-14", "days_to_sale": "3"})
+        c = self.conn()
+        tid = c.execute("select transaction_id from transactions where asset_id=?",
+                        (aid,)).fetchone()[0]
+        c.close()
+        self._post("/console/cost", {"asset_id": aid, "transaction_id": tid,
+                                     "cost_type": "platform_fee",
+                                     "amount_krw": "360000"})
+        self._post("/console/external", {
+            "asset_id": aid, "canonical_asset_id": CID,
+            "kind": "EXTERNAL_SOLD", "price_krw": "14900000",
+            "ext_source": "kream", "observed_at": "2026-08-12"})
+
+        c = self.conn()
+        types = {r[0] for r in c.execute(
+            "select bid_type from dealer_bids where asset_id=?", (aid,))}
+        self.assertEqual(types, {"INDICATIVE", "FIRM", "COMMITTED", "SETTLED"})
+        from market import transactions as mtx
+        np_ = mtx.net_proceeds(c, tid)
+        self.assertEqual(np_["net_proceeds_krw"], 12000000 - 360000)
+        n_ext = c.execute("select count(*) from market_events where"
+                          " canonical_asset_id=? and source_type='EXTERNAL_SOLD'",
+                          (CID,)).fetchone()[0]
+        self.assertGreaterEqual(n_ext, 1)
+        # 자산 페이지에 net proceeds가 표시된다
+        page = self._get(f"/console/asset?id={aid}")
+        self.assertIn("11,640,000", page)
+        c.close()
+
+    # 부모 클래스 테스트 중복 실행 방지
+    test_full_console_flow = None
+    test_multipart_register_with_photo = None

@@ -274,10 +274,207 @@ def _do_auth(conn, form, env):
     return ("redirect", f"/console/asset?id={aid}&msg={urllib.parse.quote(msg)}")
 
 
-# ── T9: 시장 Evidence (bid·거래·비용·외부 comp) — market_section/market_action ──
+# ── T9: 시장 Evidence — bid 수명주기·거래·비용·외부 comp ─────────────────
+BID_ACTIONS = {  # status/type 조건 → 버튼 라벨
+    "promote_FIRM": "FIRM 승격", "promote_COMMITTED": "COMMITTED 승격",
+    "select": "낙찰", "settle_ok": "정산 완료", "settle_fail": "정산 실패",
+    "expire": "만료", "cancel": "취소",
+}
+
+
 def market_section(conn, aid, cid, env):
-    return ""  # T9에서 구현
+    from market import transactions as mtx
+    verified = conn.execute(
+        "select identity_status from assets where asset_id=?",
+        (aid,)).fetchone()[0] == "HUMAN_VERIFIED"
+    h = []
+
+    # bid 목록 + 행별 액션
+    bids_rows = conn.execute(
+        "select bid_id, buyer_id, bid_type, bid_price_krw, bid_time, expiry,"
+        " status, settlement_status from dealer_bids where asset_id=?"
+        " order by created_at", (aid,)).fetchall()
+    tr = []
+    for bid_id, buyer, btype, price, btime, expiry, status, ss in bids_rows:
+        acts = []
+        if status in ("active", "selected"):
+            if status == "active":
+                if btype == "INDICATIVE":
+                    acts.append("promote_FIRM")
+                if btype in ("INDICATIVE", "FIRM"):
+                    acts.append("promote_COMMITTED")
+                acts += (["select"] if btype == "COMMITTED" else []) \
+                    + ["expire", "cancel"]
+            else:  # selected
+                if btype == "COMMITTED":
+                    acts += ["settle_ok", "settle_fail"]
+                acts.append("cancel")
+        btns = "".join(
+            f'<form method="post" action="/console/bid-action" style="display:inline">'
+            f'<input type="hidden" name="asset_id" value="{esc(aid)}">'
+            f'<input type="hidden" name="bid_id" value="{esc(bid_id)}">'
+            f'<input type="hidden" name="act" value="{a}">'
+            f'<button style="padding:3px 8px;font-size:11.5px;font-weight:500">'
+            f'{BID_ACTIONS[a]}</button></form> ' for a in acts)
+        tr.append(
+            f'<tr><td>{esc(buyer)}</td><td>{esc(btype)}</td>'
+            f'<td>{price:,}</td><td>{esc(btime[:10])}</td>'
+            f'<td>{esc(expiry[:10] if expiry else "—")}</td>'
+            f'<td>{esc(status)}{f" · {ss}" if ss else ""}</td>'
+            f'<td style="text-align:left;white-space:normal">{btns or "—"}</td></tr>')
+    table = ("<table><thead><tr><th>바이어</th><th>단계</th><th>호가(원)</th>"
+             "<th>일자</th><th>만료</th><th>상태</th><th>액션</th></tr></thead>"
+             f"<tbody>{''.join(tr)}</tbody></table>" if tr else
+             '<div class="note">아직 bid 없음</div>')
+    gate_note = ("" if verified else
+                 '<div class="note">⚠ 식별 미확정 자산 — bid는 기록되지만 '
+                 'LTV·청산 추정은 identification_unverified로 차단된다.</div>')
+    h.append(f"""
+<div class="card"><h2>③ 딜러 Bid <span style="color:var(--muted);font-weight:400">
+— INDICATIVE→FIRM→COMMITTED→SETTLED (승격은 새 행, 이력 보존)</span></h2>
+{table}{gate_note}
+<form class="row" action="/console/bid" method="post" style="margin-top:10px">
+  <input type="hidden" name="asset_id" value="{esc(aid)}">
+  <label>바이어 <input name="buyer_id" placeholder="buyer:강남A" required></label>
+  <label>호가(원) <input name="price_krw" type="number" min="1000" required></label>
+  <label>단계 <select name="bid_type"><option selected>INDICATIVE</option>
+    <option>FIRM</option><option>COMMITTED</option></select></label>
+  <label>일자 <input name="bid_time" type="date"></label>
+  <label>만료일 <input name="expiry" type="date"></label>
+  <button>bid 기록</button>
+</form></div>""")
+
+    # 거래·비용
+    txs = conn.execute(
+        "select transaction_id, transaction_type, gross_price_krw, contracted_at,"
+        " settled_at from transactions where asset_id=? order by created_at",
+        (aid,)).fetchall()
+    tx_html = []
+    for tid, ttype, gross, cat, sat in txs:
+        np_ = mtx.net_proceeds(conn, tid)
+        costs = conn.execute(
+            "select cost_type, amount_krw from transaction_costs"
+            " where transaction_id=?", (tid,)).fetchall()
+        cost_txt = " · ".join(f"{t} {a:,}" for t, a in costs) or \
+            ("비용 미상" if np_["costs_unknown"] else "비용 0")
+        tx_html.append(f"""
+<div style="border:1px solid var(--grid);border-radius:6px;padding:10px 14px;margin-top:8px">
+  <b>{esc(ttype)}</b> gross ₩{gross:,} − 비용 ₩{np_['total_costs_krw']:,}
+  = <b>net ₩{np_['net_proceeds_krw']:,}</b>
+  <span style="color:var(--muted)">({esc(cat[:10])} 계약{f" · {esc(sat[:10])} 정산" if sat else " · 미정산"})
+  · {cost_txt}</span>
+  <form class="row" action="/console/cost" method="post" style="margin-top:6px">
+    <input type="hidden" name="asset_id" value="{esc(aid)}">
+    <input type="hidden" name="transaction_id" value="{esc(tid)}">
+    <label>비용 유형 <select name="cost_type"><option>platform_fee</option>
+      <option>shipping</option><option>authentication</option><option>repair</option>
+      <option>other</option></select></label>
+    <label>금액(원) <input name="amount_krw" type="number" min="0" required></label>
+    <button style="padding:6px 12px">비용 추가</button>
+  </form>
+</div>""")
+    settled_bids = conn.execute(
+        "select bid_id, buyer_id, bid_price_krw from dealer_bids where asset_id=?"
+        " and status in ('selected','settled') order by created_at desc",
+        (aid,)).fetchall()
+    bid_opts = '<option value="">(직접 입력 거래)</option>' + "".join(
+        f'<option value="{esc(b)}">{esc(buyer)} ₩{p:,}</option>'
+        for b, buyer, p in settled_bids)
+    h.append(f"""
+<div class="card"><h2>④ 거래 · 비용 · Net Proceeds</h2>
+{''.join(tx_html) or '<div class="note">아직 거래 없음</div>'}
+<form class="row" action="/console/transaction" method="post" style="margin-top:10px">
+  <input type="hidden" name="asset_id" value="{esc(aid)}">
+  <label>낙찰 bid <select name="winning_bid_id">{bid_opts}</select></label>
+  <label>유형 <select name="transaction_type"><option selected>sale</option>
+    <option>purchase</option><option>liquidation</option></select></label>
+  <label>성사가(원) <input name="gross_price_krw" type="number" min="1000" required></label>
+  <label>계약일 <input name="contracted_at" type="date" required></label>
+  <label>정산일 <input name="settled_at" type="date"></label>
+  <label>등록→성사 일수 <input name="days_to_sale" type="number" min="0" style="min-width:80px"></label>
+  <button>거래 기록</button>
+</form>
+<div class="note" style="margin-top:6px">Net Proceeds = gross − Σ비용 (자동 파생).
+비용을 입력하지 않으면 costs_unknown으로 남는다.</div></div>""")
+
+    # 외부 시세 (canonical 레벨)
+    if cid:
+        h.append(f"""
+<div class="card"><h2>⑤ 외부 시장 Evidence <span style="color:var(--muted);font-weight:400">— {esc(cid)}</span></h2>
+<form class="row" action="/console/external" method="post">
+  <input type="hidden" name="asset_id" value="{esc(aid)}">
+  <input type="hidden" name="canonical_asset_id" value="{esc(cid)}">
+  <label>구분 <select name="kind"><option value="PUBLIC_LISTING">호가(리스팅)</option>
+    <option value="EXTERNAL_SOLD">실판매(sold)</option></select></label>
+  <label>가격(원) <input name="price_krw" type="number" min="1000" required></label>
+  <label>출처 <input name="ext_source" placeholder="kream / chrono24" required></label>
+  <label>관측일 <input name="observed_at" type="date" required></label>
+  <label>URL <input name="url" placeholder="선택" style="min-width:180px"></label>
+  <button>기록</button>
+</form></div>""")
+    return "".join(h)
 
 
 def market_action(conn, path, form, env):
-    return None  # T9에서 구현
+    from market import bids as mbids
+    from market import transactions as mtx
+    aid = form.get("asset_id", "")
+    back = f"/console/asset?id={aid}&msg="
+
+    if path == "/console/bid":
+        mbids.place_bid(conn, aid, form["buyer_id"], int(form["price_krw"]),
+                        bid_type=form.get("bid_type", "INDICATIVE"),
+                        bid_time=form.get("bid_time") or None,
+                        expiry=form.get("expiry") or None, env=env,
+                        actor="console")
+        return ("redirect", back + urllib.parse.quote("bid 기록됨"))
+
+    if path == "/console/bid-action":
+        bid_id, act = form["bid_id"], form["act"]
+        if act.startswith("promote_"):
+            mbids.promote_bid(conn, bid_id, act.split("_", 1)[1], actor="console")
+        elif act == "select":
+            mbids.select_bid(conn, bid_id, actor="console")
+        elif act == "settle_ok":
+            mbids.settle_bid(conn, bid_id, actor="console", settled=True)
+        elif act == "settle_fail":
+            mbids.settle_bid(conn, bid_id, actor="console", settled=False)
+        elif act == "expire":
+            mbids.expire_bid(conn, bid_id, actor="console")
+        elif act == "cancel":
+            mbids.cancel_bid(conn, bid_id, actor="console")
+        else:
+            raise ValueError(f"알 수 없는 액션: {act}")
+        return ("redirect", back + urllib.parse.quote(f"{BID_ACTIONS.get(act, act)} 처리됨"))
+
+    if path == "/console/transaction":
+        mtx.record_transaction(
+            conn, aid, form.get("transaction_type", "sale"),
+            int(form["gross_price_krw"]), form["contracted_at"],
+            winning_bid_id=form.get("winning_bid_id") or None,
+            settled_at=form.get("settled_at") or None,
+            days_to_sale=(float(form["days_to_sale"])
+                          if form.get("days_to_sale") else None),
+            costs_unknown=1, source="drrrk", env=env, actor="console")
+        return ("redirect", back + urllib.parse.quote(
+            "거래 기록됨 — 비용을 입력하면 net proceeds가 확정된다"))
+
+    if path == "/console/cost":
+        mtx.add_cost(conn, form["transaction_id"], form["cost_type"],
+                     int(form["amount_krw"]), actor="console")
+        return ("redirect", back + urllib.parse.quote("비용 추가됨"))
+
+    if path == "/console/external":
+        mid = str(uuid.uuid4())
+        conn.execute(
+            "insert into market_events (market_event_id, canonical_asset_id,"
+            " source_type, price_krw, source, url, data_environment, observed_at)"
+            " values (?,?,?,?,?,?,?,?)",
+            (mid, form["canonical_asset_id"], form["kind"],
+             int(form["price_krw"]), form["ext_source"],
+             form.get("url") or None, env, form["observed_at"]))
+        from core import audit
+        audit.log(conn, form["ext_source"], "insert", "market_events", mid)
+        conn.commit()
+        return ("redirect", back + urllib.parse.quote("외부 시세 기록됨"))
+    return None
