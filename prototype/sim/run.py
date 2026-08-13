@@ -25,6 +25,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from simulate import run_simulation, START
 from metrics import compute_metrics
 from report import write_reports, pollution_stats, overall_mape
+from migrate_v1 import migrate
 
 HERE = os.path.dirname(os.path.abspath(__file__))   # sim/
 ROOT = os.path.dirname(HERE)                        # prototype/
@@ -61,6 +62,7 @@ def run_once(args, id_accuracy, db_suffix=""):
                            counterfeit_rate=0.02, sale_conversion=0.60,
                            backfill_pawn_deals=args.backfill)
     compute_metrics(conn, as_of=START + timedelta(days=args.days))
+    migrate(conn, "SIMULATION")  # v1 테이블에도 이식 — 마이그레이션 코드의 상시 검증
     return conn, stats, params
 
 
