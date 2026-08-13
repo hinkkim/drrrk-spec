@@ -1,34 +1,38 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>드르륵 실물자산 분석 프로그램</title>
+<title>드르륵 Evidence Report</title>
 <style>
 :root {
   color-scheme: light;
   --plane:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
-  --ring:rgba(11,11,11,.1); --grid:#e1e0d9; --accent:#2a78d6; --good:#006300; --warnbg:#fdf6e7;
+  --ring:rgba(11,11,11,.1); --grid:#e1e0d9; --accent:#2a78d6; --good:#006300;
+  --warn:#b45309; --warnbg:#fdf6e7; --chipbg:#f1f0ec;
 }
 @media (prefers-color-scheme: dark) {
   :root:where(:not([data-theme="light"])) {
     color-scheme: dark;
     --plane:#0d0d0d; --surface:#1a1a19; --ink:#fff; --ink2:#c3c2b7; --muted:#898781;
-    --ring:rgba(255,255,255,.1); --grid:#2c2c2a; --accent:#3987e5; --good:#0ca30c; --warnbg:#2a2416;
+    --ring:rgba(255,255,255,.1); --grid:#2c2c2a; --accent:#3987e5; --good:#0ca30c;
+    --warn:#e8912d; --warnbg:#2a2416; --chipbg:#242422;
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
   --plane:#0d0d0d; --surface:#1a1a19; --ink:#fff; --ink2:#c3c2b7; --muted:#898781;
-  --ring:rgba(255,255,255,.1); --grid:#2c2c2a; --accent:#3987e5; --good:#0ca30c; --warnbg:#2a2416;
+  --ring:rgba(255,255,255,.1); --grid:#2c2c2a; --accent:#3987e5; --good:#0ca30c;
+  --warn:#e8912d; --warnbg:#2a2416; --chipbg:#242422;
 }
 * { box-sizing:border-box }
 body { margin:0; background:var(--plane); color:var(--ink); font-size:14px; line-height:1.55;
   font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic","Segoe UI",sans-serif; }
-.wrap { max-width:760px; margin:0 auto; padding:28px 18px 60px; display:flex; flex-direction:column; gap:16px; }
+.wrap { max-width:800px; margin:0 auto; padding:28px 18px 60px; display:flex; flex-direction:column; gap:14px; }
 .eyebrow { font-size:11px; letter-spacing:.12em; color:var(--muted); }
-h1 { font-size:20px; margin:2px 0 0; }
+h1 { font-size:20px; margin:2px 0 0; text-wrap:balance; }
 .simbadge { background:var(--warnbg); border:1px solid var(--ring); border-radius:8px;
   padding:10px 14px; font-size:12.5px; color:var(--ink2); }
-.card { background:var(--surface); border:1px solid var(--ring); border-radius:8px; padding:18px 20px; }
-.card h2 { font-size:15px; margin:0 0 10px; } .card h2 .sub { color:var(--muted); font-weight:400; }
+.card { background:var(--surface); border:1px solid var(--ring); border-radius:8px; padding:16px 20px; }
+.card h2 { font-size:12px; letter-spacing:.09em; margin:0 0 10px; color:var(--muted); font-weight:600; }
+.card h2 .sub { letter-spacing:0; font-weight:400; text-transform:none; }
 .row { display:flex; flex-wrap:wrap; gap:10px; align-items:end; }
 label { display:flex; flex-direction:column; gap:4px; font-size:12px; color:var(--ink2); }
 input, select { font:inherit; color:var(--ink); background:var(--plane); border:1px solid var(--grid);
@@ -36,44 +40,56 @@ input, select { font:inherit; color:var(--ink); background:var(--plane); border:
 input:focus, select:focus, button:focus-visible { outline:2px solid var(--accent); outline-offset:1px; }
 button { font:inherit; font-weight:600; color:#fff; background:var(--accent); border:none;
   border-radius:6px; padding:9px 18px; cursor:pointer; }
-.kv { display:grid; grid-template-columns:max-content 1fr; gap:6px 18px; font-variant-numeric:tabular-nums; }
+.kv { display:grid; grid-template-columns:max-content 1fr; gap:5px 18px; font-variant-numeric:tabular-nums; }
 .kv dt { color:var(--ink2); } .kv dd { margin:0; font-weight:600; }
-.kv dd.big { font-size:20px; } .kv dd.ltv { color:var(--good); font-size:20px; }
-.note { color:var(--muted); font-size:12px; margin-top:10px; max-width:70ch; }
-table { border-collapse:collapse; width:100%; font-size:12.5px; margin-top:6px; }
-th,td { padding:6px 9px; text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.big { font-size:19px; }
+.chip { display:inline-block; font-size:11px; font-weight:700; border-radius:999px;
+  padding:2px 10px; background:var(--chipbg); color:var(--ink2); vertical-align:1px; }
+.chip.good { color:var(--good); } .chip.warn { color:var(--warn); }
+.assethead { font-size:18px; font-weight:700; }
+.assethead .sub { color:var(--muted); font-weight:400; font-size:13px; }
+.note { color:var(--muted); font-size:12px; max-width:72ch; }
+.reason { color:var(--warn); font-size:12.5px; }
+table { border-collapse:collapse; width:100%; font-size:12.5px; }
+th,td { padding:5px 9px; text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
 th { color:var(--muted); font-weight:600; border-bottom:1px solid var(--grid); }
 td:first-child, th:first-child { text-align:left; }
 tbody tr { border-bottom:1px solid var(--grid); }
+tbody tr:last-child { border-bottom:none; }
 .tablewrap { overflow-x:auto; }
 .cand button { display:block; width:100%; text-align:left; background:none; color:var(--accent);
   border:none; padding:5px 0; font-weight:400; cursor:pointer; }
-.warn { color:#b45309; }
+.warn { color:var(--warn); }
+.range { display:flex; align-items:center; gap:8px; font-variant-numeric:tabular-nums; }
+.rangebar { flex:1; height:6px; min-width:80px; max-width:220px; border-radius:3px;
+  background:var(--grid); position:relative; overflow:hidden; }
+.rangebar > i { position:absolute; top:0; bottom:0; background:var(--accent); opacity:.55; }
+.rangebar > b { position:absolute; top:-2px; bottom:-2px; width:2px; background:var(--accent); }
 #result:empty, #goldResult:empty { display:none; }
 </style>
 
 <div class="wrap">
-<div><div class="eyebrow">DRRRK · ASSET ANALYZER — PROTOTYPE</div>
-<h1>실물자산 분석 프로그램</h1></div>
+<div><div class="eyebrow">DRRRK · ASSET INTELLIGENCE — V1</div>
+<h1>실물자산 Evidence Report</h1></div>
 
-<div class="simbadge">⚠ 현재 내장 데이터는 <b>시뮬레이션 생성 데이터</b>입니다 (실거래 아님).
-스키마·산식·프로그램 흐름 검증용이며, ingest.py로 실데이터를 입력한 뒤 재게시하면 같은 프로그램이 실데이터 기반으로 동작합니다.</div>
+<div class="simbadge" id="envbadge"></div>
 
 <div class="card">
-  <h2>브랜드 자산 분석 <span class="sub">— 원장 데이터 기반 (비표준 자산)</span></h2>
+  <h2>자산 검색 <span class="sub">— 하나의 시세가 아니라 근거 보고서를 반환한다</span></h2>
   <div class="row">
-    <label>모델명 · 별칭 검색
+    <label>모델명 · 별칭
       <input id="q" placeholder="예: 서브마리너, 클미, 버킨…" style="min-width:260px" list="assetlist"></label>
     <label>상태 등급
       <select id="grade"><option>S</option><option selected>A</option><option>B</option><option>C</option></select></label>
     <button id="goAsset">분석</button>
   </div>
   <datalist id="assetlist"></datalist>
-  <div id="result" style="margin-top:14px"></div>
 </div>
 
+<div id="result" style="display:contents"></div>
+
 <div class="card">
-  <h2>귀금속 분석 <span class="sub">— 시세 × 순도 × 중량 (표준화 자산)</span></h2>
+  <h2>귀금속 <span class="sub">— 표준화 자산 (시세 × 순도 × 중량)</span></h2>
   <div class="row">
     <label>순도 <select id="purity"><option selected>24K</option><option>22K</option><option>18K</option><option>14K</option></select></label>
     <label>중량 (g) <input id="weight" type="number" step="0.01" min="0.1" placeholder="18.75"></label>
@@ -81,24 +97,31 @@ tbody tr { border-bottom:1px solid var(--grid); }
     <button id="goGold">분석</button>
   </div>
   <div id="goldResult" style="margin-top:14px"></div>
-  <div class="note">금은 표준화 자산이라 시세만으로 즉시 계산된다 — 은행이 이미 담보로 받는 이유.
-  명품은 모델·상태별 실거래 원장이 있어야 같은 답을 낼 수 있다 — 드르륵이 만드는 데이터가 그것.</div>
+  <div class="note" style="margin-top:8px">금은 시세만으로 즉시 계산된다 — 은행이 이미 담보로 받는 이유.
+  명품이 같은 답을 얻으려면 모델·상태별 실거래 원장이 필요하다 — 드르륵이 만드는 데이터가 그것.</div>
 </div>
 
-<div class="note">CLI·로컬 웹 앱·실데이터 입력 도구: github.com/hinkkim/drrrk-spec (prototype/) ·
-권장 LTV = P10 매입 호가 × (1−처분비용) ÷ 시세 — "최악 분위 호가로 처분해도 원금이 회수되는 대출 비율"</div>
+<div class="note">LTV는 FIRM(확정) 호가·정산 실측·식별 확정을 전부 통과할 때만 산출된다 —
+부족하면 NOT AVAILABLE과 사유를 그대로 보여준다. 도구: github.com/hinkkim/drrrk-spec (prototype/)</div>
 </div>
 
 <script>
 const D = __PAYLOAD__;
-const won = v => v==null ? '— (표본 부족)' : '₩' + Math.round(v).toLocaleString('ko-KR');
+const won = v => v==null ? '—' : '₩' + Math.round(v).toLocaleString('ko-KR');
 const pct = v => v==null ? '—' : v + '%';
-const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const REASON_KO = {sample_too_small:'표본 부족', no_firm_bid:'FIRM 호가 없음',
+  no_settled_transaction:'정산 실측 없음', identification_unverified:'식별 미확정',
+  stale_market_evidence:'최신 증거 없음', authenticity_unresolved:'진위 미해결'};
 const EV_NAMES = {buyer_quote:'매입 호가', contract_price:'성사가', external_comp:'외부 시세',
-  ai_estimate:'AI 추정', backfill_appraisal:'감정가(백필)', backfill_loan:'대출액(백필)',
+  ai_estimate:'AI 추정(구버전)', backfill_appraisal:'감정가(백필)', backfill_loan:'대출액(백필)',
   backfill_liquidation:'처분가(백필)', liquidation_price:'처분가', extension_reappraisal:'재평가'};
+const CONF_CLS = {HIGH:'good', MEDIUM:'', LOW:'warn', INSUFFICIENT:'warn'};
 
-// 검색용 datalist
+document.getElementById('envbadge').innerHTML = D.env === 'SIMULATION'
+  ? '⚠ 현재 내장 데이터는 <b>시뮬레이션 생성 데이터</b>입니다 (실거래 아님). 스키마·산식·게이트 검증용이며, 실데이터 입력(intake/ingest.py) 후 재게시하면 같은 보고서가 실측 기반으로 나옵니다.'
+  : '● REAL 원장 기반 보고서입니다. 모든 값에 표본수·근거 등급이 병기됩니다.';
+
 const dl = document.getElementById('assetlist');
 D.assets.forEach(a => { const o = document.createElement('option');
   o.value = `${a.brand} ${a.model}`; dl.appendChild(o); });
@@ -116,47 +139,97 @@ function findAsset(q) {
   return m.length === 1 ? {hit: m[0]} : {cands: m};
 }
 
-const REASON_KO = {sample_too_small:'표본 부족', no_firm_bid:'FIRM(확정) 호가 없음',
-  no_settled_transaction:'정산 완료 거래 없음', identification_unverified:'식별 미확정',
-  stale_market_evidence:'최신 시장 증거 없음', authenticity_unresolved:'진위 미해결'};
+const reasons = rs => (rs && rs.length)
+  ? `<span class="reason">${rs.map(r => REASON_KO[r] || r).join(' · ')}</span>` : '';
 
-function ltvCell(s) {
-  if (s.ltv != null) return `<dd class="ltv">${pct(s.ltv)}</dd>`;
-  const why = (s.ltv_reasons || []).map(r => REASON_KO[r] || r).join(', ');
-  let h = `<dd><span class="warn">NOT AVAILABLE</span>`;
-  if (why) h += ` <span style="color:var(--muted);font-weight:400">— ${why}</span>`;
-  if (s.ltv_indicative_ref != null)
-    h += `<br><span style="color:var(--muted);font-weight:400">indicative 참고치 ${pct(s.ltv_indicative_ref)} (확정 호가·정산 실측 아님 — 권장값 아님)</span>`;
-  return h + `</dd>`;
+function layerRow(name, l, gm) {
+  const stale = l.stale && l.n ? ' <span class="chip warn">stale</span>' : '';
+  return `<tr><td>${name}</td><td>${won(l.median_krw==null?null:l.median_krw*gm)}</td>
+    <td>${l.n}</td><td>${l.latest || '—'}${stale}</td></tr>`;
+}
+
+function rangeRow(label, e, gm) {
+  if (e.range_mid_krw == null)
+    return `<tr><td>${label}</td><td colspan="2" style="text-align:left">
+      <span class="chip warn">INSUFFICIENT DATA</span> ${reasons(e.reasons)}</td>
+      <td><span class="chip ${CONF_CLS[e.confidence]||''}">${e.confidence}</span></td></tr>`;
+  const lo = e.range_low_krw*gm, mid = e.range_mid_krw*gm, hi = e.range_high_krw*gm;
+  const span = hi - lo || 1, midpos = ((mid - lo) / span * 100).toFixed(1);
+  return `<tr><td>${label}</td>
+    <td style="text-align:left"><div class="range">${won(lo)}
+      <span class="rangebar"><i style="left:0;right:0"></i><b style="left:${midpos}%"></b></span>
+      ${won(hi)}</div></td>
+    <td>mid ${won(mid)}</td>
+    <td><span class="chip ${CONF_CLS[e.confidence]||''}">${e.confidence}</span>
+      ${reasons(e.reasons)}</td></tr>`;
 }
 
 function renderAsset(a, grade) {
-  const gm = D.grade_mult[grade] || 1, s = a.stats;
-  const g = v => v==null ? null : v * gm;
-  const smp = s.sample;
-  let h = `<h2>${esc(a.brand)} ${esc(a.model)} <span class="sub">(${esc(a.ref || '-')}) · 등급 ${grade}</span></h2>
-  <dl class="kv">
-    <dt>시장가치 (MV)</dt><dd class="big">${won(g(s.mv))}</dd>
-    <dt>청산가치 (LV)</dt><dd class="big">${won(g(s.lv))}</dd>
-    <dt>보수적 LV (P25)</dt><dd>${won(g(s.lv25))}</dd>
-    <dt>도매할인율</dt><dd>${pct(s.discount)}</dd>
-    <dt>호가 스프레드</dt><dd>${pct(s.spread)}</dd>
-    <dt>예상 처분 소요</dt><dd>${s.days_sale ?? '—'}일 (판매) · ${s.days_liq ?? '—'}일 (유질)</dd>
-    <dt>유질 회수율</dt><dd>${pct(s.recovery)}</dd>
-    <dt>근거 표본</dt><dd style="font-weight:400">호가 ${smp.quotes} (FIRM ${smp.firm_bids ?? 0}) · 성사 ${smp.sales} (정산 ${smp.settled_sales ?? 0}) · 외부시세 ${smp.external_comps} · 유질처분 ${smp.liquidations} <span style="color:var(--muted)">(최근 ${s.window}일, 기준일 ${s.as_of})</span></dd>
-    <dt>신뢰도</dt><dd>${s.confidence}</dd>
-    <dt>권장 LTV</dt>${ltvCell(s)}
-  </dl>`;
-  if (s.confidence === 'insufficient')
-    h += `<div class="note">※ 표본 부족 — 가격 산출 불가. 실호가·실거래 데이터 수집이 필요합니다.</div>`;
-  if (a.events.length) {
-    h += `<div class="tablewrap"><table><thead><tr><th>일자</th><th>유형</th><th>거래</th><th>금액(원)</th><th>출처</th></tr></thead><tbody>`;
-    a.events.forEach(e => {
-      h += `<tr><td>${e.t}</td><td>${EV_NAMES[e.e] || e.e}</td><td>${e.d}</td><td>${e.v.toLocaleString('ko-KR')}</td><td>${esc(e.s)}</td></tr>`;
-    });
-    h += `</tbody></table></div>`;
+  const gm = D.grade_mult[grade] || 1, r = a.report;
+  const m = r.market, d = r.dealer_market, lq = r.liquidity, ltv = r.ltv, q = r.data_quality;
+  const cards = [];
+
+  cards.push(`<div class="card"><div class="assethead">${esc(a.brand)} ${esc(a.model)}
+    <span class="sub">(${esc(a.ref || '-')}) · 등급 ${grade} · 기준일 ${r.as_of} · 최근 ${r.window_days}일
+    · evidence grade <b>${q.evidence_grade}</b> · rule ${esc(r.rule_version)}</span></div></div>`);
+
+  cards.push(`<div class="card"><h2>MARKET · DEALER MARKET
+    <span class="sub">— 하나의 시세가 아니라 레이어별 관측값</span></h2>
+    <div class="tablewrap"><table><thead><tr><th>레이어</th><th>중앙값</th><th>표본</th><th>최신 관측</th></tr></thead><tbody>
+    ${layerRow('소매 호가 시세', m.retail_asking, gm)}
+    ${layerRow('외부 실판매 (sold)', m.observed_sold, gm)}
+    ${layerRow('딜러 indicative', d.dealer_indicative, gm)}
+    ${layerRow('딜러 FIRM (확정)', d.dealer_firm, gm)}
+    </tbody></table></div>
+    <div class="note" style="margin-top:8px">바이어 ${d.unique_bidders}명
+    (지불능력 검증 ${d.unique_qualified_bidders}명) · top1 점유 ${pct(d.top1_buyer_share_pct)}
+    · 호가 분산 ${pct(d.bid_dispersion_pct)} · FIRM 취소 ${d.firm_bid_cancellation_count}건
+    · 정산 실패 ${d.settlement_failure_count}건</div></div>`);
+
+  cards.push(`<div class="card"><h2>LIQUIDITY · LIQUIDATION</h2>
+    <div class="tablewrap"><table><thead><tr><th>구간</th><th>현금화 범위</th><th></th><th>신뢰도</th></tr></thead><tbody>
+    ${rangeRow('7일 급처분', r.liquidation.expected_7d, gm)}
+    ${rangeRow('30일 처분', r.liquidation.expected_30d, gm)}
+    </tbody></table></div>
+    <div class="note" style="margin-top:8px">성사 전환율 ${pct(lq.bid_to_sale_conversion_pct)}
+    · 처분 소요 중위 ${lq.days_to_sale_median ?? '—'}일 · 유찰 ${lq.failed_listing_count}건</div></div>`);
+
+  let ltvHtml;
+  if (ltv.status === 'AVAILABLE') {
+    ltvHtml = `<span class="big" style="color:var(--good)">${pct(ltv.recommended_pct)}</span>
+      <span class="chip good">AVAILABLE</span>`;
+  } else {
+    ltvHtml = `<span class="chip warn">NOT AVAILABLE</span> ${reasons(ltv.reasons)}`;
+    if (ltv.indicative_reference_pct != null)
+      ltvHtml += `<div class="note" style="margin-top:6px">indicative 참고치
+        ${pct(ltv.indicative_reference_pct)} — 확정 호가·정산 실측이 아니므로 권장값이 아니다.</div>`;
   }
-  return h;
+  cards.push(`<div class="card"><h2>FINANCIAL LTV
+    <span class="sub">— FIRM 호가·정산 실측·식별 확정을 전부 통과해야 산출</span></h2>${ltvHtml}</div>`);
+
+  const txs = r.outcome.recent_transactions || [];
+  if (txs.length) {
+    const tr = txs.map(t => `<tr><td>${(t.settled_at || '').slice(0,10) || '—'}</td>
+      <td>${won(t.gross_krw)}</td><td>${won(t.costs_krw)}${t.costs_unknown ? ' <span class="chip warn">미상</span>' : ''}</td>
+      <td><b>${won(t.net_proceeds_krw)}</b></td><td>${t.days_to_sale ?? '—'}</td></tr>`).join('');
+    cards.push(`<div class="card"><h2>OUTCOME — 실측 <span class="sub">— 최고 등급 Ground Truth</span></h2>
+      <div class="tablewrap"><table><thead><tr><th>정산일</th><th>성사가</th><th>비용</th>
+      <th>Net Proceeds</th><th>소요일</th></tr></thead><tbody>${tr}</tbody></table></div></div>`);
+  }
+
+  cards.push(`<div class="card"><h2>DATA QUALITY</h2>
+    <div class="note">표본 — 호가 ${q.sample.quotes} (FIRM ${q.sample.firm_bids}) ·
+    성사 ${q.sample.sales} (정산 ${q.sample.settled_sales}) · 외부시세 ${q.sample.external_comps} ·
+    유질처분 ${q.sample.liquidations} · 환경 ${esc(JSON.stringify(q.environment_mix))}</div></div>`);
+
+  if (a.events.length) {
+    const tr = a.events.map(e => `<tr><td>${e.t}</td><td>${EV_NAMES[e.e] || e.e}</td>
+      <td>${e.d}</td><td>${e.v.toLocaleString('ko-KR')}</td><td>${esc(e.s)}</td></tr>`).join('');
+    cards.push(`<div class="card"><h2>최근 원장 이벤트</h2>
+      <div class="tablewrap"><table><thead><tr><th>일자</th><th>유형</th><th>거래</th>
+      <th>금액(원)</th><th>출처</th></tr></thead><tbody>${tr}</tbody></table></div></div>`);
+  }
+  return cards.join('');
 }
 
 document.getElementById('goAsset').addEventListener('click', () => {
@@ -165,18 +238,17 @@ document.getElementById('goAsset').addEventListener('click', () => {
   const r = findAsset(q), box = document.getElementById('result');
   if (r.hit) box.innerHTML = renderAsset(r.hit, grade);
   else if (r.cands.length) {
-    box.innerHTML = `<div class="cand"><b>검색 결과가 여러 개입니다:</b>` +
-      r.cands.map((c, i) => `<button data-i="${D.assets.indexOf(c)}">${esc(c.brand)} ${esc(c.model)} (${esc(c.cid)})</button>`).join('') + `</div>`;
+    box.innerHTML = `<div class="card"><div class="cand"><b>검색 결과가 여러 개입니다:</b>` +
+      r.cands.map(c => `<button data-i="${D.assets.indexOf(c)}">${esc(c.brand)} ${esc(c.model)} (${esc(c.cid)})</button>`).join('') + `</div></div>`;
     box.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
       box.innerHTML = renderAsset(D.assets[+b.dataset.i], grade);
     }));
-  } else box.innerHTML = `<b class="warn">검색 결과 없음</b> — 카탈로그에 없는 모델입니다.`;
+  } else box.innerHTML = `<div class="card"><b class="warn">검색 결과 없음</b> — 카탈로그에 없는 모델입니다.</div>`;
 });
 document.getElementById('q').addEventListener('keydown', e => {
   if (e.key === 'Enter') document.getElementById('goAsset').click();
 });
 
-// 귀금속
 if (D.gold_spot) document.getElementById('spot').value = D.gold_spot.krw_per_g;
 document.getElementById('goGold').addEventListener('click', () => {
   const purity = document.getElementById('purity').value;
@@ -186,14 +258,13 @@ document.getElementById('goGold').addEventListener('click', () => {
   if (!wgt || !spot) { box.innerHTML = `<b class="warn">중량과 시세를 입력하세요.</b>` +
     (D.gold_spot ? '' : ' (시세 참고: 한국금거래소 고시가)'); return; }
   const mv = spot * D.purity[purity] * wgt, lv = mv * (1 - D.gold_spread);
-  box.innerHTML = `<h2>금 ${purity} ${wgt}g <span class="sub">(24K ${spot.toLocaleString('ko-KR')}원/g)</span></h2>
-  <dl class="kv">
+  box.innerHTML = `<div class="assethead" style="font-size:15px">금 ${purity} ${wgt}g
+    <span class="sub">(24K ${spot.toLocaleString('ko-KR')}원/g)</span></div>
+  <dl class="kv" style="margin-top:8px">
     <dt>시장가치 (MV)</dt><dd class="big">${won(mv)}</dd>
     <dt>청산가치 (LV)</dt><dd class="big">${won(lv)}</dd>
     <dt>매입 스프레드</dt><dd>${(D.gold_spread*100).toFixed(1)}%</dd>
-    <dt>관행 LTV 참고치</dt><dd>${pct(D.gold_ltv)} <span style="color:var(--muted);font-weight:400">— 은행 관행 참고치 (드르륵 실측·권장값 아님)</span></dd>
-    <dt>신뢰도</dt><dd>high — 표준화 자산 (시세×순도×중량 직접 산출)</dd>
-  </dl>
-  <div class="note">※ 스프레드·LTV 관행값은 실측으로 교체할 것.</div>`;
+    <dt>관행 LTV 참고치</dt><dd>${pct(D.gold_ltv_ref)} <span class="note">— 은행 관행 참고치 (드르륵 실측·권장값 아님)</span></dd>
+  </dl>`;
 });
 </script>
