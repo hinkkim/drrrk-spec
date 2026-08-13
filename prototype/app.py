@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from core import db as coredb
 from engine import baseline
-from report import asset_report
+from report import asset_report, console
 import analyze as az
 
 STYLE = """<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -76,7 +76,10 @@ def header(env):
     tag = "SIMULATION DATA" if env == "SIMULATION" else "REAL LEDGER"
     return (f'<div class="wrap"><div><div class="eyebrow">DRRRK · ASSET'
             f' INTELLIGENCE — V1 <span class="badge">{tag}</span></div>'
-            f'<h1><a href="/">실물자산 Evidence Report</a></h1></div>')
+            f'<h1><a href="/">실물자산 Evidence Report</a>'
+            f' <span style="font-size:13px;font-weight:400">·'
+            f' <a href="/console" style="color:var(--accent);text-decoration:none">'
+            f'검증 콘솔</a></span></h1></div>')
 
 
 FORMS = """
@@ -219,6 +222,14 @@ class Handler(BaseHTTPRequestHandler):
         q = {k: v[0] for k, v in urllib.parse.parse_qs(url.query).items()}
         if url.path == "/":
             body = FORMS
+        elif url.path.startswith("/console"):
+            conn = coredb.connect(self.env)
+            body = console.page(conn, url.path, q, self.env)
+            conn.close()
+            if body is None:
+                self.send_response(404)
+                self.end_headers()
+                return
         elif url.path in ("/asset", "/api/asset"):
             conn = coredb.connect(self.env)
             cid, cands = baseline.find_asset(conn, q.get("q", ""))
@@ -267,6 +278,58 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", len(page))
         self.end_headers()
         self.wfile.write(page)
+
+    def do_POST(self):
+        url = urllib.parse.urlparse(self.path)
+        if not url.path.startswith("/console/"):
+            self.send_response(404)
+            self.end_headers()
+            return
+        form = self._parse_post()
+        conn = coredb.connect(self.env)
+        env = "SIMULATION" if self.env == "SIMULATION" else "REAL"
+        result = console.action(conn, url.path, form, env)
+        conn.close()
+        if result is None:
+            self.send_response(404)
+            self.end_headers()
+            return
+        kind, payload = result
+        if kind == "redirect":
+            self.send_response(303)
+            self.send_header("Location", payload)
+            self.end_headers()
+            return
+        page = (f"<!doctype html><html lang='ko'><head>{STYLE}"
+                f"<title>드르륵 자산 분석</title></head><body>{header(self.env)}"
+                f"{payload}</div></body></html>").encode()
+        self.send_response(400)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", len(page))
+        self.end_headers()
+        self.wfile.write(page)
+
+    def _parse_post(self):
+        length = int(self.headers.get("Content-Length", 0) or 0)
+        body = self.rfile.read(length)
+        ctype = self.headers.get("Content-Type", "")
+        form = {}
+        if ctype.startswith("multipart/form-data"):
+            import email
+            msg = email.message_from_bytes(
+                b"Content-Type: " + ctype.encode() + b"\r\n\r\n" + body)
+            for part in msg.get_payload():
+                name = part.get_param("name", header="content-disposition")
+                filename = part.get_param("filename", header="content-disposition")
+                data = part.get_payload(decode=True) or b""
+                if filename is not None:
+                    form[f"_file_{name}"] = {"filename": filename, "data": data}
+                elif name:
+                    form[name] = data.decode("utf-8", "replace").strip()
+        else:
+            for k, v in urllib.parse.parse_qs(body.decode("utf-8", "replace")).items():
+                form[k] = v[0]
+        return form
 
     def _json(self, payload):
         data = json.dumps(payload, ensure_ascii=False, indent=2).encode()

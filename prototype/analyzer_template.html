@@ -116,6 +116,20 @@ function findAsset(q) {
   return m.length === 1 ? {hit: m[0]} : {cands: m};
 }
 
+const REASON_KO = {sample_too_small:'표본 부족', no_firm_bid:'FIRM(확정) 호가 없음',
+  no_settled_transaction:'정산 완료 거래 없음', identification_unverified:'식별 미확정',
+  stale_market_evidence:'최신 시장 증거 없음', authenticity_unresolved:'진위 미해결'};
+
+function ltvCell(s) {
+  if (s.ltv != null) return `<dd class="ltv">${pct(s.ltv)}</dd>`;
+  const why = (s.ltv_reasons || []).map(r => REASON_KO[r] || r).join(', ');
+  let h = `<dd><span class="warn">NOT AVAILABLE</span>`;
+  if (why) h += ` <span style="color:var(--muted);font-weight:400">— ${why}</span>`;
+  if (s.ltv_indicative_ref != null)
+    h += `<br><span style="color:var(--muted);font-weight:400">indicative 참고치 ${pct(s.ltv_indicative_ref)} (확정 호가·정산 실측 아님 — 권장값 아님)</span>`;
+  return h + `</dd>`;
+}
+
 function renderAsset(a, grade) {
   const gm = D.grade_mult[grade] || 1, s = a.stats;
   const g = v => v==null ? null : v * gm;
@@ -129,9 +143,9 @@ function renderAsset(a, grade) {
     <dt>호가 스프레드</dt><dd>${pct(s.spread)}</dd>
     <dt>예상 처분 소요</dt><dd>${s.days_sale ?? '—'}일 (판매) · ${s.days_liq ?? '—'}일 (유질)</dd>
     <dt>유질 회수율</dt><dd>${pct(s.recovery)}</dd>
-    <dt>권장 LTV</dt><dd class="ltv">${pct(s.ltv)}</dd>
-    <dt>근거 표본</dt><dd style="font-weight:400">호가 ${smp.quotes} · 성사 ${smp.sales} · 외부시세 ${smp.external_comps} · 유질처분 ${smp.liquidations} <span style="color:var(--muted)">(최근 ${s.window}일, 기준일 ${s.as_of})</span></dd>
+    <dt>근거 표본</dt><dd style="font-weight:400">호가 ${smp.quotes} (FIRM ${smp.firm_bids ?? 0}) · 성사 ${smp.sales} (정산 ${smp.settled_sales ?? 0}) · 외부시세 ${smp.external_comps} · 유질처분 ${smp.liquidations} <span style="color:var(--muted)">(최근 ${s.window}일, 기준일 ${s.as_of})</span></dd>
     <dt>신뢰도</dt><dd>${s.confidence}</dd>
+    <dt>권장 LTV</dt>${ltvCell(s)}
   </dl>`;
   if (s.confidence === 'insufficient')
     h += `<div class="note">※ 표본 부족 — 가격 산출 불가. 실호가·실거래 데이터 수집이 필요합니다.</div>`;
@@ -177,7 +191,7 @@ document.getElementById('goGold').addEventListener('click', () => {
     <dt>시장가치 (MV)</dt><dd class="big">${won(mv)}</dd>
     <dt>청산가치 (LV)</dt><dd class="big">${won(lv)}</dd>
     <dt>매입 스프레드</dt><dd>${(D.gold_spread*100).toFixed(1)}%</dd>
-    <dt>권장 LTV</dt><dd class="ltv">${pct(D.gold_ltv)}</dd>
+    <dt>관행 LTV 참고치</dt><dd>${pct(D.gold_ltv)} <span style="color:var(--muted);font-weight:400">— 은행 관행 참고치 (드르륵 실측·권장값 아님)</span></dd>
     <dt>신뢰도</dt><dd>high — 표준화 자산 (시세×순도×중량 직접 산출)</dd>
   </dl>
   <div class="note">※ 스프레드·LTV 관행값은 실측으로 교체할 것.</div>`;

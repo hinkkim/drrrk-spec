@@ -5,3 +5,4 @@
 prototype/*.db
 prototype/reports/
 __pycache__/
+prototype/uploads/
