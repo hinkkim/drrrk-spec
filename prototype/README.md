@@ -1,118 +1,86 @@
-# 드르륵 자산 분석 프로그램 — 로컬 프로토타입
+# 드르륵 Asset Intelligence System — V1 프로토타입
 
-중고 실물자산·귀금속 정보를 분석하는 프로그램. 자산을 입력하면
-**식별 → 시장가치(MV) → 청산가치(LV) → 유동성 → 권장 LTV**를 원장 데이터에서 산출한다.
-내 컴퓨터에서 돌려 검증한 뒤 정식 개발로 넘어가기 위한 프로토타입.
+비정형 실물자산(명품·시계·귀금속)을 금융기관이 사용할 수 있는 표준 데이터로
+변환하는 시스템. **"정답을 잘 예측하는 시스템"이 아니라 "정답을 학습할 수 있도록
+Evidence와 Ground Truth를 정확히 축적하는 시스템"**이 V1의 목표다.
 
-## 분석 프로그램 사용법
+설계 문서: `docs/V1_전환설계_AssetIntelligence.md` · 파이썬 표준 라이브러리만 사용 (설치 불필요).
 
-```bash
-python3 app.py                                        # 웹 앱 → http://localhost:8765
-python3 analyze.py asset "서브마리너" --grade A        # CLI (별칭·모델명 검색 지원)
-python3 analyze.py gold --purity 18K --weight 18.75   # 귀금속 — 시세×순도×중량
-python3 analyze.py list                               # 분석 가능 자산 목록
-```
+## 핵심 원칙 (코드로 강제됨)
 
-실데이터로 원장을 키우는 통로 (시뮬레이션 없이도 사용 가능):
-
-```bash
-python3 ingest.py template                 # 입력용 CSV 템플릿 생성
-python3 ingest.py events real_data.csv     # 실제 견적·성사가·백필 일괄 입력
-python3 ingest.py spot gold 152000         # 금 시세 저장 (24K 1g당 원)
-```
-
-금융기관 PoC용 JSON API도 웹 앱에 내장: `GET /api/asset?q=서브마리너&grade=A`
-
-공개 URL 배포판 (서버 없이 브라우저에서 작동하는 단일 HTML):
-
-```bash
-python3 export_web.py      # → reports/analyzer.html (분석 로직·데이터 내장, 그대로 호스팅 가능)
-```
-
-귀금속과 브랜드 자산의 차이가 곧 이 프로그램의 논리다 —
-**금은 표준화 자산이라 시세×순도×중량으로 즉시 계산된다 (은행이 이미 담보로 받는 이유).
-명품은 비표준 자산이라 모델·상태별 실거래 원장이 있어야 같은 답을 낼 수 있다 (드르륵의 존재 이유).**
-
-- 배경 전략: [`../docs/실물자산_금융데이터_시스템_전략.md`](../docs/실물자산_금융데이터_시스템_전략.md)
-- 원장 설계: [`../docs/자산_언더라이팅_원장_구현스펙.md`](../docs/자산_언더라이팅_원장_구현스펙.md)
-
-## 시뮬레이션 (원장 검증용 — 설치 불필요, 파이썬 3.9+ 표준 라이브러리만)
-
-```bash
-python3 run.py                        # 기본: 365일, 하루 2건 등록, 전당포 백필 300건
-python3 run.py --days 730 --listings-per-day 3
-python3 run.py --compare              # ★ 1차 단계(식별) 정확도 85/95/99% 시나리오 비교
-python3 dashboard.py                  # 웹 대시보드 생성 → reports/dashboard.html (브라우저로 열기)
-```
-
-출력:
-- `drrrk_ledger.db` — SQLite 원장 (스키마 = 구현 스펙과 동일 구조)
-- `reports/summary.md` — Asset Score 리포트 (자산별 MV/LV/도매할인/회수율/권장 LTV)
-- `reports/asset_scores.json` — 금융기관 PoC API 응답과 같은 형태의 구조화 데이터
-
-## 4개 가격 레이어가 전부 하나의 원장에 쌓인다
-
-| 레이어 | 원장 이벤트 | 시뮬레이션 소스 |
-|---|---|---|
-| ① 중고 거래 시세 (retail) | `external_comp` | 주간 시세 시계열 (KREAM/Chrono24 모사, 랜덤워크+추세) |
-| ② 매입/위탁 호가 (wholesale) | `buyer_quote` (sale) | 바이어 매입 견적 — **Liquidation Value 직접 관측치** |
-| ③ 담보 거래 가치 | `backfill_appraisal` / `backfill_loan` | 파트너 전당포 과거 장부 (감정가·대출액·LTV) |
-| ④ 회수율 | `backfill_liquidation` | 유질 처분가·소요일·비용 → 회수율 실측 |
-
-주간 배치(`metrics.py`)가 원장에서 분위수 통계로 Asset Score를 산출한다:
-MV(P50) · LV(P50/P25) · Bid Depth · Bid Spread · 변동성 · MAPE · 도매할인율 · 회수율 · 처분소요일 · **권장 LTV** (= P10 호가 × (1−처분비용) ÷ MV — "최악 분위 호가로 처분해도 원금이 회수되는 비율").
-
-## 1차 단계(자산 식별·상태판별·정가품 판별)가 왜 결정적인가 — 정량 확인
-
-모든 가격 이벤트는 1차 단계가 결정한 canonical_asset_id에 귀속된다.
-여기서 틀리면 이후 모든 데이터가 잘못된 서랍에 들어간다.
-`--compare`는 동일 거래량·동일 seed(5개 평균)에서 식별 정확도만 바꿔 그 영향을 측정한다:
-
-```
-식별정확도 | 오염 이벤트 | MAPE  | Spread | 평균 권장LTV
-    85%   |    5.0%    | 18.0% | 43.7%  |   55.0%
-    95%   |    1.6%    | 16.0% | 34.4%  |   57.4%
-    99%   |    0.3%    |  9.0% | 31.2%  |   59.0%
-```
-
-식별 정확도가 오를수록: 오염 이벤트(잘못된 자산에 귀속된 견적/성사가)가 1/17로 줄고,
-추정오차(MAPE)가 절반이 되며, 스프레드가 좁아지고, **같은 데이터로 더 높은 LTV를
-안전하게 제시할 수 있다.** 즉 식별 정확도는 곧 금융 한도의 상한이다.
-
-`identify.py`에 실서비스용 Gemini 폐쇄형 분류(카탈로그 매칭) 프롬프트 구조가 정의되어 있다 —
-가격 필드가 아예 없는 JSON 스키마로, 식별·상태·정가품 플래그만 출력한다.
-
-## 파일 구성
-
-```
-schema.sql        원장 DDL (asset_master / asset_instance / valuation_event / metric_snapshot)
-catalog_seed.csv  카노니컬 자산 사전 샘플 22개 모델 (실서비스: 상위 200개로 확장)
-identify.py       1차 단계 — 식별·상태·정가품 (mock + Gemini 폐쇄형 분류 구조)
-simulate.py       거래 시뮬레이터 (4개 가격 레이어 이벤트 생성, sim_truth 정답지 기록)
-metrics.py        주간 배치 — Asset Score 분위수 산출
-report.py         리포트 생성 + 1차 단계 오염도 분석
-run.py            시뮬레이션 진입점
-analyze.py        ★ 분석 엔진 + CLI (자산 입력 → Asset Score 산출)
-app.py            ★ 분석 프로그램 웹 앱 (+ PoC JSON API)
-ingest.py         ★ 실데이터 입력 (견적·성사가·백필 CSV, 금 시세)
-export_web.py     분석 프로그램 웹 배포판 생성 (analyzer_template.html 사용)
-dashboard.py      웹 대시보드 생성 (dashboard_template.html 사용)
-```
-
-## 시뮬레이션 → 정식 개발 전환 시 매핑
-
-| 프로토타입 | 정식 개발 |
+| 원칙 | 강제 위치 |
 |---|---|
-| SQLite | Supabase (Postgres) — DDL 거의 동일 |
-| `identify_mock` | Gemini 폐쇄형 분류 (`GEMINI_CLOSED_SET_PROMPT`) + 유저 확인 폴백 UI |
-| `simulate.py`의 이벤트 생성 | 비교견적·자산수첩 API의 기록 훅 (구현 스펙 §3.1) |
-| 백필 생성기 | 파트너 전당포 엑셀 템플릿 import |
-| `sim_truth` 정답지 | 삭제 (시뮬레이션 전용) — 대신 유저 확인·바이어 검수 결과가 라벨이 됨 |
-| `reports/asset_scores.json` | 금융기관 PoC API 응답 |
+| AI는 가격을 만들지 않는다 — 식별 후보·필드 추출만 | `ai_predictions` 스키마 CHECK + `intake/ai_assist.py` |
+| AI 예측과 인간 검증은 항상 별도 행 | `human_verifications` / correction 사유 13종 enum |
+| 시뮬레이션과 실데이터는 물리적으로 분리 | `drrrk_sim.db` / `drrrk_real.db` + 환경 가드 trigger |
+| 모든 증거에 source_type · OBSERVED/DERIVED/ESTIMATED | 전 테이블 공통 컬럼 + CHECK |
+| bid는 4단계 (INDICATIVE→FIRM→COMMITTED→SETTLED) | `market/bids.py` 상태기계 — 역행·건너뛰기 거부 |
+| 표본이 부족하면 "모른다"고 답한다 | confidence 게이트 — LTV `NOT AVAILABLE` + 사유 코드 |
+| 모든 상태 변경은 audit trail | `audit_logs` append-only (trigger로 UPDATE/DELETE 차단) |
 
-## 시뮬레이션 가정값 (검증 대상 — 실데이터로 교체할 것)
+## 빠른 시작 (prototype/ 디렉토리에서)
 
-도매할인율(시계 15%/가방 25%/주얼리 22%), 등급 계수(S 1.08/A 1.00/B 0.88/C 0.72),
-디폴트율 15%, 가품 출현율 2%, 판매 전환율 60% 등은 전부 가정이다.
-**프로토타입의 목적은 이 값들이 맞다는 게 아니라, 이 값들을 실측으로 채워 넣을
-그릇(스키마·산식·플로우)이 작동함을 확인하는 것이다.**
+```bash
+# ① 관통 시나리오 — 실물 1건이 등록→AI→검증→bid→거래→Net Proceeds까지 흐르는지
+python3 e2e_scenario.py
+
+# ② 실데이터 입력 (REAL 원장 — 실제 운영은 여기부터)
+python3 intake/ingest.py template          # CSV 템플릿
+python3 intake/ingest.py events real_data_template.csv
+python3 intake/ingest.py spot gold 152000  # 금 시세
+
+# ③ 분석 — Evidence Report
+python3 analyze.py list                    # 자산 목록 (기본: REAL)
+python3 analyze.py asset "서브마리너"       # 리포트 (LTV는 게이트 통과 시에만)
+python3 analyze.py gold --purity 18K --weight 18.75
+python3 app.py                             # 웹 (localhost:8765) + /api/asset
+
+# ④ 시뮬레이션 (회귀 테스트·백테스트 하네스 — 별도 DB)
+python3 sim/run.py                         # → drrrk_sim.db (v1 자동 이식 포함)
+python3 sim/run.py --compare               # 식별 정확도 85/95/99% 비교
+python3 analyze.py --env SIM asset "클미"   # 시뮬레이션 원장 조회
+python3 sim/dashboard.py                   # 시뮬레이션 대시보드 HTML
+
+# ⑤ 테스트 (52건 + e2e)
+python3 -m unittest discover -s tests
+```
+
+## 구조
+
+```
+core/       schema_v1.sql(전 테이블 DDL+무결성 trigger) · db.py(환경 분리)
+            evidence.py(분류 enum·상수) · audit.py
+intake/     ingest.py(실데이터 입력·자산 등록) · ai_assist.py(AI 후보 — 가격 금지)
+            verify.py(전문가 확정·correction·진위)
+market/     bids.py(bid 4단계 상태기계) · transactions.py(거래·비용·net proceeds·outcome)
+engine/     baseline.py(Dealer Median baseline — 이후 모델의 비교 기준선)
+            liquidity.py(원시 유동성 지표) · liquidation.py(rule-v1 구간 추정+게이트)
+report/     asset_report.py(Evidence Report §18 — CLI·웹·API 공용 JSON)
+sim/        시뮬레이터 격리 (simulate/metrics/report/run/dashboard + legacy 스키마)
+tests/      제약 16 · 환경 6 · 마이그레이션 8 · intake/market 12 · 게이팅 10 · e2e
+analyze.py  CLI · app.py 웹 앱 · export_web.py 공개 배포판 · migrate_v1.py
+e2e_scenario.py  P0 인수 테스트 (관통 흐름)
+```
+
+## Evidence Report가 답하는 것 (§18)
+
+하나의 "시세" 숫자가 아니라: 식별(AI 후보 vs 인간 확정·correction 이력) · 진위
+(시리얼 해시·중복 탐지) · 시장(호가/sold 분리) · 딜러(단계별 호가·바이어 집중도·
+취소/정산실패) · 유동성(전환율·소요일·유찰) · 청산 범위(7/30일·confidence·사유) ·
+실측(gross−비용=net proceeds) · 데이터 품질(표본·evidence grade·누락 필드).
+
+데이터가 부족하면:
+
+```
+LTV           NOT AVAILABLE — no_firm_bid, no_settled_transaction
+LIQUIDATION   30d: INSUFFICIENT DATA — sample_too_small
+```
+
+## 주의
+
+- `drrrk_sim.db`의 숫자는 **100% 시뮬레이션**이다 (기준가 수기 근사 + 가정 기반
+  난수). 목적은 그릇(스키마·산식·게이트)의 작동 검증. 실측은 `intake/ingest.py`로
+  들어오는 순간 같은 프로그램이 REAL 원장 위에서 동작한다.
+- 다음 단계(P1~): 전문가 검증 콘솔(T8) · 시장 Evidence 입력 UI(T9) · Evidence
+  Report 웹 고도화(T10) · 유동성 KPI(T11~12) · 백테스트(T13) · 파트너 백필(T15) ·
+  Gemini 실연동(T16) · 기관 API(T17). 티켓 정의는 설계 문서 §7–9.
