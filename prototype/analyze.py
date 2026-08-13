@@ -22,16 +22,13 @@ import sqlite3
 import sys
 from datetime import date, timedelta
 
-from metrics import _pct, DISPOSAL_COST
-from simulate import GRADE_MULT
+from core.evidence import (pct as _pct, DISPOSAL_COST, GRADE_MULT, PURITY,
+                           GOLD_BUY_SPREAD, MIN_SAMPLE)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-DB = os.path.join(HERE, "drrrk_ledger.db")
+DB = os.path.join(HERE, "drrrk_sim.db")   # 구 스키마 원장 — T6에서 engine/으로 대체
 
-PURITY = {"24K": 0.999, "22K": 0.916, "18K": 0.750, "14K": 0.585}
-GOLD_BUY_SPREAD = 0.05   # 귀금속 매입 스프레드 (실측으로 교체할 것)
 GOLD_LTV = 0.80          # 표준화 자산의 관행적 담보 비율 (참고치)
-MIN_SAMPLE = 5
 
 
 def connect():

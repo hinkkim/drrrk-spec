@@ -16,14 +16,18 @@
 """
 import json
 import math
+import os
 import random
 import sqlite3
+import sys
 import uuid
 from datetime import date, timedelta
 
-from identify import identify_mock
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-GRADE_MULT = {"S": 1.08, "A": 1.00, "B": 0.88, "C": 0.72}
+from identify import identify_mock
+from core.evidence import GRADE_MULT
+
 GRADE_DIST = [("S", 0.10), ("A", 0.40), ("B", 0.35), ("C", 0.15)]
 WHOLESALE_DISCOUNT = {"WATCH": 0.15, "BAG": 0.25, "JWL": 0.22}
 CATEGORY_TREND_WK = {"WATCH": 0.0005, "BAG": 0.001, "JWL": 0.0002}  # 주간 추세

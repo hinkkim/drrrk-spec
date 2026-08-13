@@ -11,20 +11,14 @@
   Recommended LTV     = P10(buyer_quote) × (1 − 처분비용률) / MV_P50
 """
 import json
+import os
 import statistics as st
+import sys
 from datetime import date, timedelta
 
-DISPOSAL_COST = 0.05
-MIN_SAMPLE = 5
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-
-def _pct(values, p):
-    if not values:
-        return None
-    vs = sorted(values)
-    k = (len(vs) - 1) * p
-    f, c = int(k), min(int(k) + 1, len(vs) - 1)
-    return vs[f] + (vs[c] - vs[f]) * (k - f)
+from core.evidence import pct as _pct, DISPOSAL_COST, MIN_SAMPLE
 
 
 def compute_metrics(conn, as_of: date, window_days=180):

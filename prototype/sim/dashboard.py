@@ -14,15 +14,19 @@
 import json
 import os
 import sqlite3
+import sys
 from datetime import date, timedelta
 from statistics import median
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from simulate import run_simulation, START
 from metrics import compute_metrics
 from report import asset_scores, pollution_stats, overall_mape
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-DB = os.path.join(HERE, "drrrk_ledger.db")
+HERE = os.path.dirname(os.path.abspath(__file__))   # sim/
+ROOT = os.path.dirname(HERE)                        # prototype/
+DB = os.path.join(ROOT, "drrrk_sim.db")
 DAYS = 365
 COMPARE_SEEDS = 3
 
@@ -71,7 +75,7 @@ def run_compare():
     for acc in (0.85, 0.95, 0.99):
         agg = {"polluted": [], "mape": [], "spread": [], "ltv": []}
         for s in range(COMPARE_SEEDS):
-            db = os.path.join(HERE, f"_cmp_{int(acc*100)}_{s}.db")
+            db = os.path.join(ROOT, f"_cmp_{int(acc*100)}_{s}.db")
             conn = init_db(db)
             run_simulation(conn, days=DAYS, listings_per_day=2.0, seed=42 + s,
                            id_accuracy=acc)
@@ -128,7 +132,7 @@ def main():
     with open(os.path.join(HERE, "dashboard_template.html"), encoding="utf-8") as f:
         html = f.read()
     html = html.replace("__PAYLOAD__", json.dumps(payload, ensure_ascii=False))
-    outdir = os.path.join(HERE, "reports")
+    outdir = os.path.join(ROOT, "reports")
     os.makedirs(outdir, exist_ok=True)
     out = os.path.join(outdir, "dashboard.html")
     with open(out, "w", encoding="utf-8") as f:
