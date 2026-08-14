@@ -21,6 +21,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from core import db as coredb
 from engine import baseline
+from report import api as inst_api
 from report import asset_report, console
 import analyze as az
 
@@ -241,6 +242,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         url = urllib.parse.urlparse(self.path)
         q = {k: v[0] for k, v in urllib.parse.parse_qs(url.query).items()}
+        if url.path.startswith("/api/v1/"):
+            return self._api_v1(url, q)
         if url.path == "/":
             body = FORMS
         elif url.path.startswith("/console"):
@@ -352,9 +355,31 @@ class Handler(BaseHTTPRequestHandler):
                 form[k] = v[0]
         return form
 
-    def _json(self, payload):
+    def _api_v1(self, url, q):
+        """기관용 버전드 API — DRRRK_API_KEY 설정 시 Bearer 토큰 강제."""
+        if not inst_api.authorized(self.headers):
+            return self._json({"error": "unauthorized",
+                               "hint": "Authorization: Bearer <DRRRK_API_KEY>"},
+                              status=401)
+        conn = coredb.connect(self.env)
+        env = "SIMULATION" if self.env == "SIMULATION" else "REAL"
+        if url.path == "/api/v1/asset":
+            payload = inst_api.asset_response(
+                conn, env, q.get("q", ""), grade=q.get("grade", "A"),
+                asset_id=q.get("asset_id"))
+        elif url.path == "/api/v1/assets":
+            payload = inst_api.assets_response(conn, env)
+        else:
+            conn.close()
+            self.send_response(404)
+            self.end_headers()
+            return
+        conn.close()
+        self._json(payload)
+
+    def _json(self, payload, status=200):
         data = json.dumps(payload, ensure_ascii=False, indent=2).encode()
-        self.send_response(200)
+        self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", len(data))
         self.end_headers()

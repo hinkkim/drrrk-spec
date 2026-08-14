@@ -39,13 +39,23 @@ python3 app.py                             # 웹 (localhost:8765) + /api/asset
 python3 kpi.py                             # 제품 KPI (§20) — 정확도·correction·
                                            #   검증시간·FIRM→정산 전환·캘리브레이션
 
-# ④ 시뮬레이션 (회귀 테스트·백테스트 하네스 — 별도 DB)
+# ④ 검증·학습 루프 (P2)
+python3 engine/backtest.py --env SIM           # 시간 절단 백테스트 — rule vs
+                                               #   Dealer Median baseline (배포 게이트)
+python3 engine/calibration.py --env REAL       # 추정↔정산 자동 대사 + 캘리브레이션
+python3 intake/partner_import.py template      # 파트너 장부 CSV 템플릿
+python3 intake/partner_import.py import ledger.csv --partner 종로B  # 백필 (BACKFILL 태깅)
+GEMINI_API_KEY=... python3 intake/gemini_client.py <asset_id> photo.jpg  # AI 후보 기록
+# 기관용 API: /api/v1/asset?q=서브마리너 · /api/v1/assets
+#   (DRRRK_API_KEY 설정 시 Bearer 토큰 강제)
+
+# ⑤ 시뮬레이션 (회귀 테스트·백테스트 하네스 — 별도 DB)
 python3 sim/run.py                         # → drrrk_sim.db (v1 자동 이식 포함)
 python3 sim/run.py --compare               # 식별 정확도 85/95/99% 비교
 python3 analyze.py --env SIM asset "클미"   # 시뮬레이션 원장 조회
 python3 sim/dashboard.py                   # 시뮬레이션 대시보드 HTML
 
-# ⑤ 테스트 (52건 + e2e)
+# ⑥ 테스트 (87건 + e2e)
 python3 -m unittest discover -s tests
 ```
 
@@ -87,6 +97,6 @@ LIQUIDATION   30d: INSUFFICIENT DATA — sample_too_small
   들어오는 순간 같은 프로그램이 REAL 원장 위에서 동작한다.
 - P1 완료: 전문가 검증 콘솔(T8) · 시장 Evidence 입력 UI(T9) · Evidence Report
   웹 배포판(T10) · 유동성 지표 보강(T11) · KPI 리포트(T12).
-- 다음 단계(P2): 청산 추정 백테스트(T13) · outcome 캘리브레이션 루프(T14) ·
-  파트너 백필 임포터(T15) · Gemini 실연동(T16) · 기관 API(T17).
-  티켓 정의는 설계 문서 §7–9.
+- P2 완료: 백테스트+배포 게이트(T13) · 캘리브레이션 루프(T14) · 파트너 백필
+  임포터(T15) · Gemini 실연동(T16) · 기관 API v1(T17). V1 티켓 전체 완료 —
+  이후는 실데이터 축적과 정식 개발 전환(Supabase, 구현 스펙 §3.1).
