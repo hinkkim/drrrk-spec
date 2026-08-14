@@ -16,7 +16,7 @@ from datetime import date, timedelta
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from core.evidence import pct, GRADE_MULT, MIN_SAMPLE, STALE_DAYS
-from engine.baseline import latest_date, _bid_rows
+from engine.baseline import latest_date, _bid_rows, until_of
 
 RULE_VERSION = "rule-v1.0"
 
@@ -31,16 +31,17 @@ def estimate(conn, cid, horizon_days=30, grade="A", window_days=180,
         raise ValueError(f"horizon_days must be one of {tuple(HORIZON_PCTS)}")
     as_of = as_of or latest_date(conn)
     since = (as_of - timedelta(days=window_days)).isoformat()
+    until = until_of(as_of)   # as_of 이후 데이터는 보지 않는다 (백테스트 시간 절단)
 
-    firm = [r[0] for r in _bid_rows(conn, cid, since, firm=True)]
-    indicative = [r[0] for r in _bid_rows(conn, cid, since, firm=False)]
+    firm = [r[0] for r in _bid_rows(conn, cid, since, firm=True, until=until)]
+    indicative = [r[0] for r in _bid_rows(conn, cid, since, firm=False, until=until)]
     settled = [r[0] for r in conn.execute(
         "select net_proceeds_krw from v_net_proceeds where canonical_asset_id=?"
         " and transaction_type='sale' and settled_at is not null"
-        " and settled_at>=?", (cid, since))]
+        " and settled_at>=? and settled_at<?", (cid, since, until))]
     latest_bid = conn.execute(
-        "select max(bid_time) from dealer_bids where canonical_asset_id=?",
-        (cid,)).fetchone()[0]
+        "select max(bid_time) from dealer_bids where canonical_asset_id=?"
+        " and bid_time<?", (cid, until)).fetchone()[0]
 
     reasons, base = [], firm
     if len(firm) < 2:

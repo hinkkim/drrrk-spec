@@ -40,10 +40,18 @@ def find_asset(conn, query):
     return None, [r[0] for r in rows]
 
 
+def until_of(as_of):
+    """as_of '당일 포함' 상한 — ISO 문자열 비교용 (다음날 0시 미만)."""
+    return (as_of + timedelta(days=1)).isoformat()
+
+
 def value_layers(conn, cid, window_days=180, as_of=None):
-    """§11 가격 레이어 — 각각 {median, n, latest}. 표본 없으면 median=None."""
+    """§11 가격 레이어 — 각각 {median, n, latest}. 표본 없으면 median=None.
+
+    as_of를 주면 그 시점까지의 데이터만 사용한다 (백테스트의 시간 절단)."""
     as_of = as_of or latest_date(conn)
     since = (as_of - timedelta(days=window_days)).isoformat()
+    until = until_of(as_of)
 
     def layer(rows):
         vals = [r[0] for r in rows]
@@ -55,17 +63,18 @@ def value_layers(conn, cid, window_days=180, as_of=None):
     listing = conn.execute(
         "select price_krw, observed_at from market_events where"
         " canonical_asset_id=? and source_type='PUBLIC_LISTING'"
-        " and observed_at>=?", (cid, since)).fetchall()
+        " and observed_at>=? and observed_at<?", (cid, since, until)).fetchall()
     sold = conn.execute(
         "select price_krw, observed_at from market_events where"
         " canonical_asset_id=? and source_type='EXTERNAL_SOLD'"
-        " and observed_at>=?", (cid, since)).fetchall()
-    indicative = _bid_rows(conn, cid, since, firm=False)
-    firm = _bid_rows(conn, cid, since, firm=True)
+        " and observed_at>=? and observed_at<?", (cid, since, until)).fetchall()
+    indicative = _bid_rows(conn, cid, since, firm=False, until=until)
+    firm = _bid_rows(conn, cid, since, firm=True, until=until)
     settled = conn.execute(
         "select net_proceeds_krw, settled_at from v_net_proceeds"
         " where canonical_asset_id=? and transaction_type='sale'"
-        " and settled_at is not null and settled_at>=?", (cid, since)).fetchall()
+        " and settled_at is not null and settled_at>=? and settled_at<?",
+        (cid, since, until)).fetchall()
 
     return {
         "as_of": as_of.isoformat(), "window_days": window_days,
@@ -86,6 +95,7 @@ def analyze_asset_compat(conn, cid, grade="A", window_days=180, as_of=None,
     """
     as_of = as_of or latest_date(conn)
     since = (as_of - timedelta(days=window_days)).isoformat()
+    until = until_of(as_of)
     meta = conn.execute("select category, brand, model, reference_no from"
                         " asset_master where canonical_asset_id=?", (cid,)).fetchone()
     if not meta:
@@ -94,20 +104,20 @@ def analyze_asset_compat(conn, cid, grade="A", window_days=180, as_of=None,
 
     ext = [r[0] for r in conn.execute(
         "select price_krw from market_events where canonical_asset_id=?"
-        " and observed_at>=?", (cid, since))]
+        " and observed_at>=? and observed_at<?", (cid, since, until))]
     sales = conn.execute(
         "select gross_price_krw, days_to_sale from transactions where"
-        " canonical_asset_id=? and transaction_type='sale' and contracted_at>=?",
-        (cid, since)).fetchall()
+        " canonical_asset_id=? and transaction_type='sale'"
+        " and contracted_at>=? and contracted_at<?", (cid, since, until)).fetchall()
     settled_n = conn.execute(
         "select count(*) from transactions where canonical_asset_id=?"
         " and transaction_type='sale' and settled_at is not null"
-        " and contracted_at>=?", (cid, since)).fetchone()[0]
-    quotes = [r[0] for r in _bid_rows(conn, cid, since, firm=None)]
-    firm = [r[0] for r in _bid_rows(conn, cid, since, firm=True)]
+        " and contracted_at>=? and contracted_at<?", (cid, since, until)).fetchone()[0]
+    quotes = [r[0] for r in _bid_rows(conn, cid, since, firm=None, until=until)]
+    firm = [r[0] for r in _bid_rows(conn, cid, since, firm=True, until=until)]
     latest_bid = conn.execute(
-        "select max(bid_time) from dealer_bids where canonical_asset_id=?",
-        (cid,)).fetchone()[0]
+        "select max(bid_time) from dealer_bids where canonical_asset_id=?"
+        " and bid_time<?", (cid, until)).fetchone()[0]
 
     gm = GRADE_MULT.get(grade, 1.0)
     mv = pct(ext + [s[0] for s in sales], 0.5)
@@ -172,18 +182,23 @@ def latest_date(conn):
     return date.fromisoformat(max(dates)) if dates else date.today()
 
 
-def _bid_rows(conn, cid, since, firm):
+def _bid_rows(conn, cid, since, firm, until=None):
     """(price, bid_time) 목록. firm=True → FIRM 이상, False → INDICATIVE만,
-    None → 전체. superseded(단계 중복)·cancelled·rejected 제외, 가품 플래그 제외."""
+    None → 전체. superseded(단계 중복)·cancelled·rejected 제외, 가품 플래그 제외.
+    until을 주면 그 시각 미만의 bid만 (백테스트의 시간 절단)."""
     q = ("select bid_price_krw, bid_time, meta from dealer_bids where"
          " canonical_asset_id=? and bid_time>=? and status in "
          f"{PRICE_STATUSES!r}")
+    args = [cid, since]
+    if until:
+        q += " and bid_time<?"
+        args.append(until)
     if firm is True:
         q += f" and bid_type in {FIRM_TYPES!r}"
     elif firm is False:
         q += " and bid_type='INDICATIVE'"
     out = []
-    for v, t, m in conn.execute(q, (cid, since)):
+    for v, t, m in conn.execute(q, args):
         if json.loads(m or "{}").get("flagged_fake"):
             continue
         out.append((v, t))
