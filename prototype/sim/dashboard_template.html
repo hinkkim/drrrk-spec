@@ -1,119 +1,167 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>드르륵 자산 언더라이팅 원장 — 시뮬레이션 대시보드</title>
+<title>드르륵 원장 시뮬레이션</title>
 <style>
 :root {
   color-scheme: light;
-  --plane: #f9f9f7; --surface: #fcfcfb;
-  --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
-  --grid: #e1e0d9; --axis: #c3c2b7; --ring: rgba(11,11,11,0.10);
-  --s-retail: #2a78d6; --s-quote: #eb6834; --s-sale: #1baf7a;
-  --good-text: #006300;
+  --plane:#eef0ef; --surface:#f9faf9; --ink:#131717; --ink2:#49524f; --muted:#7c8582;
+  --line:#d7dcda; --hair:#e3e7e5; --ring:rgba(19,23,23,.14);
+  --accent:#0e7264; --brass:#8a6b2d; --good:#1d7a3e; --warn:#b05416;
+  --stamp-warn-bg:rgba(176,84,22,.06);
+  --grid:#e3e7e5; --axis:#c2c9c6;
+  --s-retail:#2a78d6; --s-quote:#eb6834; --s-sale:#1baf7a;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
 }
 @media (prefers-color-scheme: dark) {
   :root:where(:not([data-theme="light"])) {
     color-scheme: dark;
-    --plane: #0d0d0d; --surface: #1a1a19;
-    --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
-    --grid: #2c2c2a; --axis: #383835; --ring: rgba(255,255,255,0.10);
-    --s-retail: #3987e5; --s-quote: #d95926; --s-sale: #199e70;
-    --good-text: #0ca30c;
+    --plane:#0e1112; --surface:#151a1a; --ink:#eef1f0; --ink2:#b7c0bd; --muted:#79837f;
+    --line:#2b3231; --hair:#202625; --ring:rgba(238,241,240,.16);
+    --accent:#31a892; --brass:#c9a45c; --good:#43b365; --warn:#dd8a45;
+    --stamp-warn-bg:rgba(221,138,69,.08);
+    --grid:#202625; --axis:#3a4240;
+    --s-retail:#3987e5; --s-quote:#d95926; --s-sale:#199e70;
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --plane: #0d0d0d; --surface: #1a1a19;
-  --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
-  --grid: #2c2c2a; --axis: #383835; --ring: rgba(255,255,255,0.10);
-  --s-retail: #3987e5; --s-quote: #d95926; --s-sale: #199e70;
-  --good-text: #0ca30c;
+  --plane:#0e1112; --surface:#151a1a; --ink:#eef1f0; --ink2:#b7c0bd; --muted:#79837f;
+  --line:#2b3231; --hair:#202625; --ring:rgba(238,241,240,.16);
+  --accent:#31a892; --brass:#c9a45c; --good:#43b365; --warn:#dd8a45;
+  --stamp-warn-bg:rgba(221,138,69,.08);
+  --grid:#202625; --axis:#3a4240;
+  --s-retail:#3987e5; --s-quote:#d95926; --s-sale:#199e70;
 }
-* { box-sizing: border-box; }
-body {
-  margin: 0; background: var(--plane); color: var(--ink);
-  font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", sans-serif;
-  font-size: 14px; line-height: 1.55;
-}
-.wrap { max-width: 1080px; margin: 0 auto; padding: 32px 20px 64px; display: flex; flex-direction: column; gap: 20px; }
-header .eyebrow { font-size: 11px; letter-spacing: .12em; color: var(--muted); margin-bottom: 6px; }
-header h1 { font-size: 22px; font-weight: 700; margin: 0 0 4px; text-wrap: balance; }
-header .sub { color: var(--ink-2); font-size: 13px; max-width: 68ch; }
-.card { background: var(--surface); border: 1px solid var(--ring); border-radius: 8px; padding: 18px 20px; }
-.card h2 { font-size: 15px; font-weight: 700; margin: 0 0 2px; }
-.card .desc { color: var(--ink-2); font-size: 12.5px; margin: 0 0 14px; max-width: 78ch; }
-.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
-.tile { background: var(--surface); border: 1px solid var(--ring); border-radius: 8px; padding: 14px 16px; }
-.tile .label { font-size: 11px; letter-spacing: .08em; color: var(--muted); }
-.tile .value { font-size: 24px; font-weight: 700; margin-top: 2px; }
-.tile .note { font-size: 11.5px; color: var(--ink-2); margin-top: 2px; }
-.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--ink-2); margin-bottom: 8px; align-items: center; }
-.legend .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
-.legend select { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--axis); border-radius: 6px; padding: 4px 8px; margin-left: auto; }
-.chartbox { position: relative; }
-.chartbox svg { display: block; width: 100%; height: auto; }
-.tip { position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--ring);
-  border-radius: 6px; padding: 6px 9px; font-size: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.12);
-  display: none; white-space: nowrap; z-index: 2; }
-.tip b { font-variant-numeric: tabular-nums; }
-.smalls { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
-.small h3 { font-size: 12.5px; font-weight: 600; margin: 0 0 6px; color: var(--ink-2); }
-.tablewrap { overflow-x: auto; }
-table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
-th, td { padding: 7px 10px; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
-th { color: var(--muted); font-weight: 600; font-size: 11.5px; letter-spacing: .04em; border-bottom: 1px solid var(--axis); }
-td:first-child, th:first-child { text-align: left; }
-tbody tr { border-bottom: 1px solid var(--grid); }
-td.ltv { font-weight: 700; }
-.footnote { color: var(--muted); font-size: 11.5px; max-width: 80ch; }
-.outnote { font-size: 11px; color: var(--muted); margin-top: 4px; }
-@media (prefers-reduced-motion: no-preference) {
-  .tile, .card { transition: border-color .15s; }
-}
+* { box-sizing:border-box }
+body { margin:0; background:var(--plane); color:var(--ink); font-size:14px; line-height:1.5;
+  font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic","Segoe UI",sans-serif; }
+.wrap { max-width:1080px; margin:0 auto; padding:26px 20px 80px; }
+
+/* 마스트헤드 */
+.mast { display:flex; align-items:baseline; justify-content:space-between; gap:12px;
+  flex-wrap:wrap; padding-bottom:14px; border-bottom:2px solid var(--ink); }
+.wordmark { font:700 12px/1 var(--mono); letter-spacing:.34em; }
+.wordmark b { color:var(--accent); }
+.mast h1 { font-size:21px; font-weight:750; letter-spacing:-.01em; margin:6px 0 0; text-wrap:balance; }
+.envstamp { font:600 10.5px var(--mono); letter-spacing:.1em; text-transform:uppercase;
+  border:1px solid currentColor; border-radius:2px; padding:3px 8px;
+  color:var(--warn); background:var(--stamp-warn-bg); }
+.lede { font-size:12.5px; color:var(--ink2); margin-top:10px; max-width:80ch; }
+
+/* 키 수치 스트립 */
+.keys { display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
+  border:1px solid var(--line); background:var(--surface); margin-top:18px; }
+.key { padding:12px 18px 13px; border-left:1px solid var(--hair); }
+.key:first-child { border-left:none; }
+.key .kl { font:600 10px var(--mono); letter-spacing:.14em; color:var(--muted); text-transform:uppercase; }
+.key .kv { font:600 19px var(--mono); margin-top:5px; letter-spacing:-.02em; }
+.key .ks { font-size:11px; color:var(--muted); margin-top:2px; }
+
+/* 시트 + 거터 라벨 섹션 */
+.sheet { background:var(--surface); border:1px solid var(--line); margin-top:18px; }
+.sec { display:grid; grid-template-columns:130px 1fr; border-top:1px solid var(--hair); }
+.sec:first-child { border-top:none; }
+.lbl { font:600 10px var(--mono); letter-spacing:.14em; color:var(--muted);
+  text-transform:uppercase; padding:16px 0 0 20px; }
+.lbl .sub { display:block; letter-spacing:.02em; margin-top:3px; font-weight:500; }
+.bd { padding:14px 20px 18px; min-width:0; }
+@media (max-width:680px) { .sec { grid-template-columns:1fr } .lbl { padding:14px 20px 0 } .bd { padding-top:8px } }
+.desc { color:var(--ink2); font-size:12.5px; margin:0 0 12px; max-width:80ch; }
+
+/* 범례·컨트롤 */
+.legend { display:flex; flex-wrap:wrap; gap:14px; font-size:12px; color:var(--ink2);
+  margin-bottom:8px; align-items:center; }
+.legend .sw { display:inline-block; width:10px; height:10px; margin-right:5px; vertical-align:-1px; }
+.legend select { font:inherit; font-size:12.5px; color:var(--ink); background:var(--plane);
+  border:1px solid var(--line); border-radius:2px; padding:5px 9px; margin-left:auto; }
+.legend select:focus { outline:2px solid var(--accent); outline-offset:0; }
+
+.chartbox { position:relative; }
+.chartbox svg { display:block; width:100%; height:auto; }
+.tip { position:absolute; pointer-events:none; background:var(--surface); border:1px solid var(--line);
+  padding:6px 9px; font-size:12px; display:none; white-space:nowrap; z-index:2; }
+.tip b { font-family:var(--mono); }
+.smalls { display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:18px; }
+.small h3 { font:600 10.5px var(--mono); letter-spacing:.1em; text-transform:uppercase;
+  margin:0 0 6px; color:var(--ink2); }
+.small h3 .sub { font-family:inherit; letter-spacing:0; text-transform:none;
+  font-weight:400; color:var(--muted); }
+
+/* 표 */
+.tablewrap { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; font-size:12.5px; }
+th, td { padding:6px 7px; text-align:right; white-space:nowrap; }
+td { font-family:var(--mono); letter-spacing:-.02em; font-size:12px; }
+td:first-child { font-family:inherit; }
+th { font:600 10px var(--mono); letter-spacing:.1em; text-transform:uppercase;
+  color:var(--muted); border-bottom:1px solid var(--line); }
+td:first-child, th:first-child { text-align:left; padding-left:0; }
+th:first-child { padding-left:0; }
+td:last-child, th:last-child { padding-right:0; }
+tbody tr { border-bottom:1px solid var(--hair); }
+tbody tr:last-child { border-bottom:none; }
+td.ltv { font-weight:700; }
+.footnote, .outnote { color:var(--muted); font-size:11.5px; max-width:84ch; }
+.outnote { margin-top:6px; }
+.pagefoot { margin-top:20px; line-height:1.7; }
 </style>
 
 <div class="wrap">
-<header>
-  <div class="eyebrow">DRRRK · ASSET UNDERWRITING LEDGER — SIMULATION</div>
-  <h1>자산 언더라이팅 원장 시뮬레이션 대시보드</h1>
-  <div class="sub">거래를 통해 실물자산의 금융 데이터를 생산하는 시스템의 프로토타입 검증 결과.
-  4개 가격 레이어(중고 거래 시세 · 매입/위탁 호가 · 담보 가치 · 회수율)가 단일 원장에 축적되고,
-  주간 배치가 자산별 Asset Score를 산출한다. 모든 수치는 시뮬레이션 데이터다.</div>
-</header>
-
-<div class="tiles" id="tiles"></div>
-
-<div class="card">
-  <h2>가격 레이어 — 중고 시세 · 매입 호가 · 성사가</h2>
-  <p class="desc">파란 선이 중고 거래 시세(주간 external comp), 주황 점이 바이어 매입 호가(도매 = Liquidation Value 관측치),
-  녹색 점이 실제 판매 성사가. 선과 점 사이의 간격이 곧 도매할인율이며, 금융기관이 원하는 값은 선이 아니라 점의 분포다.</p>
-  <div class="legend">
-    <span><span class="sw" style="background:var(--s-retail)"></span>중고 거래 시세 (주간)</span>
-    <span><span class="sw" style="background:var(--s-quote)"></span>매입 호가 (도매)</span>
-    <span><span class="sw" style="background:var(--s-sale)"></span>판매 성사가</span>
-    <select id="assetSel" aria-label="자산 선택"></select>
+<header class="mast">
+  <div>
+    <div class="wordmark">DRRRK<b>·</b>ASSET INTELLIGENCE</div>
+    <h1>원장 시뮬레이션 — 검증 하네스</h1>
   </div>
-  <div class="chartbox" id="priceChart"><div class="tip" id="priceTip"></div></div>
-  <div class="outnote" id="outNote"></div>
+  <span class="envstamp">Simulation data</span>
+</header>
+<p class="lede">거래를 통해 실물자산의 금융 데이터를 생산하는 시스템의 프로토타입 검증 결과.
+4개 가격 레이어(중고 거래 시세 · 매입 호가 · 담보 가치 · 회수율)가 단일 원장에 축적되고
+주간 배치가 자산별 지표를 산출한다. 모든 수치는 시뮬레이션 가정값이다 — 목적은 숫자가 아니라
+그릇(스키마·산식·게이트)의 작동 확인.</p>
+
+<div class="keys" id="tiles"></div>
+
+<div class="sheet">
+  <div class="sec">
+    <div class="lbl">Price layers<span class="sub">시세 · 호가 · 성사</span></div>
+    <div class="bd">
+      <p class="desc">파란 선이 중고 거래 시세(주간 external comp), 주황 점이 바이어 매입 호가(도매 =
+      Liquidation Value 관측치), 녹색 점이 실제 판매 성사가. 선과 점 사이 간격이 곧 도매할인율이며,
+      금융기관이 원하는 값은 선이 아니라 점의 분포다.</p>
+      <div class="legend">
+        <span><span class="sw" style="background:var(--s-retail)"></span>중고 거래 시세 (주간)</span>
+        <span><span class="sw" style="background:var(--s-quote)"></span>매입 호가 (도매)</span>
+        <span><span class="sw" style="background:var(--s-sale)"></span>판매 성사가</span>
+        <select id="assetSel" aria-label="자산 선택"></select>
+      </div>
+      <div class="chartbox" id="priceChart"><div class="tip" id="priceTip"></div></div>
+      <div class="outnote" id="outNote"></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="lbl">Stage-1 impact<span class="sub">식별 정확도</span></div>
+    <div class="bd">
+      <p class="desc">동일 거래량·동일 seed 평균에서 식별 정확도만 85 → 95 → 99%로 바꾼 결과.
+      식별이 정확할수록 원장 오염이 줄고 추정오차가 절반이 되며, <b>같은 데이터로 더 높은 LTV를
+      안전하게 제시할 수 있다</b> — 식별 정확도가 곧 금융 한도의 상한이다.</p>
+      <div class="smalls" id="compare"></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="lbl">Asset score<span class="sub">자산별 지표</span></div>
+    <div class="bd">
+      <p class="desc">주간 배치가 원장에서 분위수 통계로 산출. 권장 LTV = P10 매입 호가 ×
+      (1−처분비용) ÷ 시세 — "최악 분위 호가로 처분해도 원금이 회수되는 대출 비율".</p>
+      <div class="tablewrap"><table id="scoreTable"></table></div>
+    </div>
+  </div>
 </div>
 
-<div class="card">
-  <h2>1차 단계(자산 식별) 정확도의 영향</h2>
-  <p class="desc">동일 거래량·동일 seed 평균에서 식별 정확도만 85 → 95 → 99%로 바꾼 결과.
-  식별이 정확할수록 원장 오염이 줄고 추정오차가 절반이 되며, <b>같은 데이터로 더 높은 LTV를 안전하게 제시할 수 있다</b> —
-  식별 정확도가 곧 금융 한도의 상한이다.</p>
-  <div class="smalls" id="compare"></div>
-</div>
-
-<div class="card">
-  <h2>Asset Score — 자산별 언더라이팅 지표</h2>
-  <p class="desc">주간 배치가 원장에서 분위수 통계로 산출. 권장 LTV = P10 매입 호가 × (1−처분비용) ÷ 시세 —
-  "최악 분위 호가로 처분해도 원금이 회수되는 대출 비율".</p>
-  <div class="tablewrap"><table id="scoreTable"></table></div>
-</div>
-
-<p class="footnote">※ 도매할인율·등급 계수·디폴트율·가품 출현율 등은 전부 시뮬레이션 가정값이다.
-프로토타입의 목적은 이 값들이 맞다는 것이 아니라, 실측으로 채워 넣을 그릇(스키마·산식·플로우)이 작동함을 확인하는 것.
-생성: prototype/dashboard.py · 원장 스키마: docs/자산_언더라이팅_원장_구현스펙.md</p>
+<p class="footnote pagefoot">※ 도매할인율·등급 계수·디폴트율·가품 출현율 등은 전부 시뮬레이션 가정값이다.
+프로토타입의 목적은 이 값들이 맞다는 것이 아니라, 실측으로 채워 넣을 그릇이 작동함을 확인하는 것.
+생성: prototype/sim/dashboard.py · 원장 스키마: docs/자산_언더라이팅_원장_구현스펙.md</p>
 </div>
 
 <script>
@@ -122,18 +170,18 @@ const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).
 const man = v => (v/10000).toLocaleString('ko-KR', {maximumFractionDigits:0}) + '만';
 const won = v => '₩' + v.toLocaleString('ko-KR');
 
-/* ── 스탯 타일 ── */
+/* ── 키 수치 스트립 ── */
 (function(){
   const t = [
     ['등록', D.stats.listings + '건', D.days + '일 · 하루 2건 가정'],
     ['가격 이벤트', D.stats.events.toLocaleString() + '건', '4개 레이어 합산 원장'],
-    ['매입 호가', D.stats.quotes.toLocaleString() + '건', 'Liquidation Value 관측치'],
-    ['판매 성사', D.stats.sales + '건', '처분 실측 (등록→성사 소요일 포함)'],
-    ['원장 오염', D.pollution.polluted_price_events_pct + '%', '오식별로 잘못 귀속된 이벤트'],
-    ['유질 회수율', D.recovery.rate + '%', '백필 ' + D.recovery.n + '건 · 평균 처분 ' + D.recovery.days + '일'],
+    ['매입 호가', D.stats.quotes.toLocaleString() + '건', 'LV 관측치'],
+    ['판매 성사', D.stats.sales + '건', '처분 실측'],
+    ['원장 오염', D.pollution.polluted_price_events_pct + '%', '오식별 귀속 이벤트'],
+    ['유질 회수율', D.recovery.rate + '%', '백필 ' + D.recovery.n + '건 · 처분 ' + D.recovery.days + '일'],
   ];
   document.getElementById('tiles').innerHTML = t.map(([l,v,n]) =>
-    `<div class="tile"><div class="label">${l}</div><div class="value">${v}</div><div class="note">${n}</div></div>`).join('');
+    `<div class="key"><div class="kl">${l}</div><div class="kv">${v}</div><div class="ks">${n}</div></div>`).join('');
 })();
 
 /* ── 가격 레이어 차트 ── */
@@ -149,34 +197,27 @@ function drawPrice(idx){
   const x = d => m.l + d/D.days*(W-m.l-m.r);
   const y = v => m.t + (1-(v-ymin)/(ymax-ymin))*(H-m.t-m.b);
   let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${a.name} 가격 레이어 차트">`;
-  // grid + y ticks
   for(let i=0;i<=4;i++){
     const v = ymin + (ymax-ymin)*i/4, yy = y(v);
     s += `<line x1="${m.l}" x2="${W-m.r}" y1="${yy}" y2="${yy}" stroke="${css('--grid')}" stroke-width="1"/>`;
-    s += `<text x="${m.l-8}" y="${yy+4}" text-anchor="end" font-size="11" fill="${css('--muted')}" style="font-variant-numeric:tabular-nums">${man(v)}</text>`;
+    s += `<text x="${m.l-8}" y="${yy+4}" text-anchor="end" font-size="11" fill="${css('--muted')}" font-family="${css('--mono')}">${man(v)}</text>`;
   }
-  // x ticks (분기)
   for(let d=0; d<=D.days; d+=91){
-    s += `<text x="${x(d)}" y="${H-8}" text-anchor="middle" font-size="11" fill="${css('--muted')}">${d}일</text>`;
+    s += `<text x="${x(d)}" y="${H-8}" text-anchor="middle" font-size="11" fill="${css('--muted')}" font-family="${css('--mono')}">${d}일</text>`;
   }
   s += `<line x1="${m.l}" x2="${W-m.r}" y1="${H-m.b}" y2="${H-m.b}" stroke="${css('--axis')}" stroke-width="1"/>`;
-  // quotes (도매 호가)
   a.quotes.forEach(p=>{ s += `<circle cx="${x(p.d)}" cy="${y(p.v)}" r="2.6" fill="${css('--s-quote')}" fill-opacity="0.55"/>`; });
-  // retail line
   const path = a.retail.map((p,i)=>(i?'L':'M')+x(p.d).toFixed(1)+' '+y(p.v).toFixed(1)).join('');
   s += `<path d="${path}" fill="none" stroke="${css('--s-retail')}" stroke-width="2" stroke-linejoin="round"/>`;
-  // sales (성사가) — surface ring
   a.sales.forEach(p=>{ s += `<circle cx="${x(p.d)}" cy="${y(p.v)}" r="4.4" fill="${css('--surface')}"/><circle cx="${x(p.d)}" cy="${y(p.v)}" r="3.2" fill="${css('--s-sale')}"/>`; });
-  // direct label at line end
   const last = a.retail[a.retail.length-1];
-  if(last) s += `<text x="${Math.min(x(last.d)+6, W-m.r-2)}" y="${y(last.v)-8}" font-size="11" fill="${css('--ink-2')}">시세 P50</text>`;
+  if(last) s += `<text x="${Math.min(x(last.d)+6, W-m.r-2)}" y="${y(last.v)-8}" font-size="11" fill="${css('--ink2')}">시세 P50</text>`;
   s += `</svg>`;
   const box = document.getElementById('priceChart');
   box.innerHTML = `<div class="tip" id="priceTip"></div>` + s;
   document.getElementById('outNote').textContent =
     a.outliers ? `표시 범위 밖 이상치(오귀속 포함) ${a.outliers}건은 차트에서 제외 — 원장에는 보존됨` : '';
 
-  // hover tooltip (nearest point)
   const svg = box.querySelector('svg'), tip = box.querySelector('.tip');
   const pts = [
     ...a.quotes.map(p=>({...p, kind:'매입 호가', c:'--s-quote'})),
@@ -199,12 +240,12 @@ function drawPrice(idx){
 }
 drawPrice(0);
 
-/* ── 식별 정확도 비교 (소형 다중) ── */
+/* ── 식별 정확도 비교 (소형 다중 막대) ── */
 (function(){
   const metrics = [
-    ['오염 이벤트', 'polluted', '%', '잘못된 자산에 귀속된 견적·성사가'],
-    ['추정오차 MAPE', 'mape', '%', 'AI 추정 vs 실제 성사가'],
-    ['평균 권장 LTV', 'ltv', '%', '높을수록 같은 데이터로 더 넉넉한 한도'],
+    ['오염 이벤트', 'polluted', '%', '잘못된 자산에 귀속'],
+    ['추정오차 MAPE', 'mape', '%', 'AI 추정 vs 성사가'],
+    ['평균 권장 LTV', 'ltv', '%', '높을수록 넉넉한 한도'],
   ];
   const wrap = document.getElementById('compare');
   wrap.innerHTML = metrics.map(([title,key,unit,sub])=>{
@@ -215,13 +256,12 @@ drawPrice(0);
     s += `<line x1="8" x2="${W-8}" y1="${H-26}" y2="${H-26}" stroke="${css('--axis')}" stroke-width="1"/>`;
     D.compare.forEach((c,i)=>{
       const h = c[key]/max*(H-56), bx = x0+i*(bw+gap), by = H-26-h;
-      s += `<rect x="${bx}" y="${by}" width="${bw}" height="${h}" rx="4" fill="${css('--s-retail')}"/>`;
-      s += `<rect x="${bx}" y="${H-30}" width="${bw}" height="4" fill="${css('--s-retail')}"/>`;
-      s += `<text x="${bx+bw/2}" y="${by-6}" text-anchor="middle" font-size="12" font-weight="700" fill="${css('--ink')}" style="font-variant-numeric:tabular-nums">${c[key]}${unit}</text>`;
-      s += `<text x="${bx+bw/2}" y="${H-8}" text-anchor="middle" font-size="11" fill="${css('--muted')}">${c.acc}%</text>`;
+      s += `<rect x="${bx}" y="${by}" width="${bw}" height="${h}" fill="${css('--accent')}" fill-opacity="0.82"/>`;
+      s += `<text x="${bx+bw/2}" y="${by-6}" text-anchor="middle" font-size="12" font-weight="700" fill="${css('--ink')}" font-family="${css('--mono')}">${c[key]}${unit}</text>`;
+      s += `<text x="${bx+bw/2}" y="${H-8}" text-anchor="middle" font-size="11" fill="${css('--muted')}" font-family="${css('--mono')}">${c.acc}%</text>`;
     });
     s += `</svg>`;
-    return `<div class="small"><h3>${title} <span style="color:var(--muted);font-weight:400">— ${sub}</span></h3>${s}</div>`;
+    return `<div class="small"><h3>${title} <span class="sub">— ${sub}</span></h3>${s}</div>`;
   }).join('');
 })();
 
@@ -234,7 +274,7 @@ drawPrice(0);
       `<td>${s.liq_value_p50? man(s.liq_value_p50):'—'}</td><td>${c(s.wholesale_discount_pct)}%</td>`+
       `<td>${c(s.bid_depth_avg)}</td><td>${c(s.bid_spread_pct)}%</td><td>${c(s.mape_estimate_pct)}%</td>`+
       `<td>${s.recovery_rate_pct? s.recovery_rate_pct+'%':'—'}</td><td>${c(s.days_to_liquidate)}</td>`+
-      `<td class="ltv" style="color:var(--good-text)">${c(s.recommended_ltv_pct)}%</td><td>${s.sample_size}</td></tr>`;
+      `<td class="ltv" style="color:var(--good)">${c(s.recommended_ltv_pct)}%</td><td>${s.sample_size}</td></tr>`;
   }).join('');
   document.getElementById('scoreTable').innerHTML =
     `<thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows}</tbody>`;
