@@ -4,105 +4,188 @@
 <style>
 :root {
   color-scheme: light;
-  --plane:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
-  --ring:rgba(11,11,11,.1); --grid:#e1e0d9; --accent:#2a78d6; --good:#006300;
-  --warn:#b45309; --warnbg:#fdf6e7; --chipbg:#f1f0ec;
+  --plane:#eef0ef; --surface:#f9faf9; --ink:#131717; --ink2:#49524f; --muted:#7c8582;
+  --line:#d7dcda; --hair:#e3e7e5; --ring:rgba(19,23,23,.14);
+  --accent:#0e7264; --accent-soft:rgba(14,114,100,.08);
+  --brass:#8a6b2d; --good:#1d7a3e; --warn:#b05416; --bad:#b3352e;
+  --stamp-warn-bg:rgba(176,84,22,.06);
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
 }
 @media (prefers-color-scheme: dark) {
   :root:where(:not([data-theme="light"])) {
     color-scheme: dark;
-    --plane:#0d0d0d; --surface:#1a1a19; --ink:#fff; --ink2:#c3c2b7; --muted:#898781;
-    --ring:rgba(255,255,255,.1); --grid:#2c2c2a; --accent:#3987e5; --good:#0ca30c;
-    --warn:#e8912d; --warnbg:#2a2416; --chipbg:#242422;
+    --plane:#0e1112; --surface:#151a1a; --ink:#eef1f0; --ink2:#b7c0bd; --muted:#79837f;
+    --line:#2b3231; --hair:#202625; --ring:rgba(238,241,240,.16);
+    --accent:#31a892; --accent-soft:rgba(49,168,146,.1);
+    --brass:#c9a45c; --good:#43b365; --warn:#dd8a45; --bad:#dd6a5f;
+    --stamp-warn-bg:rgba(221,138,69,.08);
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --plane:#0d0d0d; --surface:#1a1a19; --ink:#fff; --ink2:#c3c2b7; --muted:#898781;
-  --ring:rgba(255,255,255,.1); --grid:#2c2c2a; --accent:#3987e5; --good:#0ca30c;
-  --warn:#e8912d; --warnbg:#2a2416; --chipbg:#242422;
+  --plane:#0e1112; --surface:#151a1a; --ink:#eef1f0; --ink2:#b7c0bd; --muted:#79837f;
+  --line:#2b3231; --hair:#202625; --ring:rgba(238,241,240,.16);
+  --accent:#31a892; --accent-soft:rgba(49,168,146,.1);
+  --brass:#c9a45c; --good:#43b365; --warn:#dd8a45; --bad:#dd6a5f;
+  --stamp-warn-bg:rgba(221,138,69,.08);
 }
 * { box-sizing:border-box }
-body { margin:0; background:var(--plane); color:var(--ink); font-size:14px; line-height:1.55;
+html { scroll-behavior:smooth }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior:auto } * { transition:none !important } }
+body { margin:0; background:var(--plane); color:var(--ink); font-size:14px; line-height:1.5;
   font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic","Segoe UI",sans-serif; }
-.wrap { max-width:800px; margin:0 auto; padding:28px 18px 60px; display:flex; flex-direction:column; gap:14px; }
-.eyebrow { font-size:11px; letter-spacing:.12em; color:var(--muted); }
-h1 { font-size:20px; margin:2px 0 0; text-wrap:balance; }
-.simbadge { background:var(--warnbg); border:1px solid var(--ring); border-radius:8px;
-  padding:10px 14px; font-size:12.5px; color:var(--ink2); }
-.card { background:var(--surface); border:1px solid var(--ring); border-radius:8px; padding:16px 20px; }
-.card h2 { font-size:12px; letter-spacing:.09em; margin:0 0 10px; color:var(--muted); font-weight:600; }
-.card h2 .sub { letter-spacing:0; font-weight:400; text-transform:none; }
-.row { display:flex; flex-wrap:wrap; gap:10px; align-items:end; }
-label { display:flex; flex-direction:column; gap:4px; font-size:12px; color:var(--ink2); }
-input, select { font:inherit; color:var(--ink); background:var(--plane); border:1px solid var(--grid);
-  border-radius:6px; padding:8px 10px; min-width:110px; }
-input:focus, select:focus, button:focus-visible { outline:2px solid var(--accent); outline-offset:1px; }
-button { font:inherit; font-weight:600; color:#fff; background:var(--accent); border:none;
-  border-radius:6px; padding:9px 18px; cursor:pointer; }
-.kv { display:grid; grid-template-columns:max-content 1fr; gap:5px 18px; font-variant-numeric:tabular-nums; }
-.kv dt { color:var(--ink2); } .kv dd { margin:0; font-weight:600; }
-.big { font-size:19px; }
-.chip { display:inline-block; font-size:11px; font-weight:700; border-radius:999px;
-  padding:2px 10px; background:var(--chipbg); color:var(--ink2); vertical-align:1px; }
-.chip.good { color:var(--good); } .chip.warn { color:var(--warn); }
-.assethead { font-size:18px; font-weight:700; }
-.assethead .sub { color:var(--muted); font-weight:400; font-size:13px; }
-.note { color:var(--muted); font-size:12px; max-width:72ch; }
-.reason { color:var(--warn); font-size:12.5px; }
-table { border-collapse:collapse; width:100%; font-size:12.5px; }
-th,td { padding:5px 9px; text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
-th { color:var(--muted); font-weight:600; border-bottom:1px solid var(--grid); }
-td:first-child, th:first-child { text-align:left; }
-tbody tr { border-bottom:1px solid var(--grid); }
-tbody tr:last-child { border-bottom:none; }
+.wrap { max-width:860px; margin:0 auto; padding:26px 20px 80px; }
+
+/* ── 마스트헤드 ── */
+.mast { display:flex; align-items:baseline; justify-content:space-between; gap:12px;
+  flex-wrap:wrap; padding-bottom:14px; border-bottom:2px solid var(--ink); }
+.wordmark { font:700 12px/1 var(--mono); letter-spacing:.34em; }
+.wordmark b { color:var(--accent); }
+.mast h1 { font-size:21px; font-weight:750; letter-spacing:-.01em; margin:6px 0 0; text-wrap:balance; }
+.envstamp { font:600 10.5px var(--mono); letter-spacing:.1em; text-transform:uppercase;
+  border:1px solid currentColor; border-radius:2px; padding:3px 8px; }
+.envstamp.sim { color:var(--warn); background:var(--stamp-warn-bg); }
+.envstamp.real { color:var(--good); }
+.envnote { font-size:12px; color:var(--muted); margin-top:8px; max-width:74ch; }
+
+/* ── 검색 콘솔 ── */
+.finder { display:flex; gap:0; align-items:stretch; margin-top:18px;
+  border:1px solid var(--line); background:var(--surface); }
+.finder input[type=text] { flex:1; min-width:0; border:none; background:transparent;
+  color:var(--ink); font:inherit; font-size:15px; padding:12px 14px; }
+.finder input::placeholder { color:var(--muted); }
+.finder input:focus { outline:none; }
+.finder:focus-within { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent); }
+.seg { display:flex; border-left:1px solid var(--hair); }
+.seg button { font:600 12.5px var(--mono); color:var(--muted); background:none; border:none;
+  padding:0 11px; cursor:pointer; border-left:1px solid var(--hair); }
+.seg button:first-child { border-left:none; }
+.seg button[aria-pressed="true"] { color:var(--accent); background:var(--accent-soft); }
+.go { font:600 13.5px/1 inherit; color:var(--surface); background:var(--ink); border:none;
+  padding:0 22px; cursor:pointer; letter-spacing:.02em; }
+.go:hover { background:var(--accent); }
+button:focus-visible, .chiprow button:focus-visible { outline:2px solid var(--accent); outline-offset:1px; }
+.chiprow { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+.chiprow button { font:500 12px inherit; color:var(--ink2); background:var(--surface);
+  border:1px solid var(--hair); border-radius:999px; padding:4px 12px; cursor:pointer; }
+.chiprow button:hover { border-color:var(--accent); color:var(--accent); }
+
+/* ── 시트(보고서) ── */
+.sheet { background:var(--surface); border:1px solid var(--line); margin-top:18px; }
+.sheethead { padding:16px 20px 14px; border-bottom:1px solid var(--line); }
+.assetname { font-size:19px; font-weight:750; letter-spacing:-.01em; }
+.assetmeta { font:500 11.5px var(--mono); color:var(--muted); margin-top:4px; letter-spacing:.02em; }
+.keys { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));
+  border-bottom:1px solid var(--line); }
+.key { padding:12px 20px 13px; border-left:1px solid var(--hair); }
+.key:first-child { border-left:none; }
+.key .kl { font:600 10px var(--mono); letter-spacing:.14em; color:var(--muted); text-transform:uppercase; }
+.key .kv { font:600 17px var(--mono); margin-top:5px; letter-spacing:-.02em; }
+.key .ks { font-size:11px; color:var(--muted); margin-top:2px; }
+.sec { display:grid; grid-template-columns:118px 1fr; border-top:1px solid var(--hair); }
+.sec:first-of-type { border-top:none; }
+.lbl { font:600 10px var(--mono); letter-spacing:.14em; color:var(--muted);
+  text-transform:uppercase; padding:16px 0 0 20px; }
+.lbl .sub { display:block; letter-spacing:.02em; margin-top:3px; font-weight:500; color:var(--muted); }
+.bd { padding:14px 20px 16px; min-width:0; }
+@media (max-width:620px) { .sec { grid-template-columns:1fr } .lbl { padding:14px 20px 0 } .bd { padding-top:8px } }
+
+/* 스탬프·실 */
+.stamp { display:inline-block; font:700 10.5px var(--mono); letter-spacing:.09em;
+  text-transform:uppercase; border:1px solid currentColor; border-radius:2px;
+  padding:2.5px 8px; vertical-align:2px; }
+.stamp.good { color:var(--good); } .stamp.warn { color:var(--warn); background:var(--stamp-warn-bg); }
+.stamp.mut { color:var(--muted); }
+.seal { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px;
+  border:1.5px solid var(--brass); border-radius:50%; color:var(--brass);
+  font:700 13px var(--mono); vertical-align:-6px; }
+.reason { color:var(--warn); font-size:12px; }
+
+/* 표 */
 .tablewrap { overflow-x:auto; }
-.cand button { display:block; width:100%; text-align:left; background:none; color:var(--accent);
-  border:none; padding:5px 0; font-weight:400; cursor:pointer; }
-.warn { color:var(--warn); }
-.range { display:flex; align-items:center; gap:8px; font-variant-numeric:tabular-nums; }
-.rangebar { flex:1; height:6px; min-width:80px; max-width:220px; border-radius:3px;
-  background:var(--grid); position:relative; overflow:hidden; }
-.rangebar > i { position:absolute; top:0; bottom:0; background:var(--accent); opacity:.55; }
-.rangebar > b { position:absolute; top:-2px; bottom:-2px; width:2px; background:var(--accent); }
+table { border-collapse:collapse; width:100%; font-size:12.5px; }
+th, td { padding:6px 10px; text-align:right; white-space:nowrap; }
+td, .num { font-family:var(--mono); font-size:12.5px; letter-spacing:-.01em; }
+th { font:600 10px var(--mono); letter-spacing:.12em; text-transform:uppercase;
+  color:var(--muted); border-bottom:1px solid var(--line); }
+td:first-child, th:first-child { text-align:left; padding-left:0; }
+td:last-child, th:last-child { padding-right:0; }
+th:first-child { padding-left:0; }
+tbody tr { border-bottom:1px solid var(--hair); }
+tbody tr:last-child { border-bottom:none; }
+td:first-child { font-family:inherit; }
+.dim { color:var(--muted); } .strong { font-weight:700; }
+
+/* 게이지 */
+.gauge { display:inline-flex; align-items:center; gap:8px; }
+.gaugetrack { position:relative; width:150px; height:12px; }
+.gaugetrack::before { content:""; position:absolute; left:0; right:0; top:5.5px;
+  height:1px; background:var(--line); }
+.gaugetrack .t { position:absolute; top:2px; bottom:2px; width:1px; background:var(--ink2); }
+.gaugetrack .m { position:absolute; top:2.5px; width:7px; height:7px; background:var(--accent);
+  transform:translateX(-3.5px) rotate(45deg); }
+.footnote { font-size:12px; color:var(--muted); margin-top:10px; max-width:74ch; }
+.cand button { display:block; width:100%; text-align:left; font:inherit; color:var(--accent);
+  background:none; border:none; border-bottom:1px solid var(--hair); padding:8px 0; cursor:pointer; }
+.cand button:last-child { border-bottom:none; }
+.nores { color:var(--warn); font-weight:600; }
 #result:empty, #goldResult:empty { display:none; }
+
+/* 귀금속 */
+.goldgrid { display:flex; gap:10px; flex-wrap:wrap; align-items:end; }
+.goldgrid label { display:flex; flex-direction:column; gap:4px; font-size:11.5px; color:var(--ink2); }
+.goldgrid input, .goldgrid select { font:inherit; color:var(--ink); background:var(--plane);
+  border:1px solid var(--line); border-radius:2px; padding:8px 10px; min-width:110px; }
+.goldgrid input:focus, .goldgrid select:focus { outline:2px solid var(--accent); outline-offset:0; }
+.goldgo { font:600 13px inherit; color:var(--surface); background:var(--ink); border:none;
+  padding:9px 18px; cursor:pointer; }
+.goldgo:hover { background:var(--accent); }
+.pagefoot { font-size:11.5px; color:var(--muted); margin-top:20px; max-width:76ch; line-height:1.7; }
 </style>
 
 <div class="wrap">
-<div><div class="eyebrow">DRRRK · ASSET INTELLIGENCE — V1</div>
-<h1>실물자산 Evidence Report</h1></div>
-
-<div class="simbadge" id="envbadge"></div>
-
-<div class="card">
-  <h2>자산 검색 <span class="sub">— 하나의 시세가 아니라 근거 보고서를 반환한다</span></h2>
-  <div class="row">
-    <label>모델명 · 별칭
-      <input id="q" placeholder="예: 서브마리너, 클미, 버킨…" style="min-width:260px" list="assetlist"></label>
-    <label>상태 등급
-      <select id="grade"><option>S</option><option selected>A</option><option>B</option><option>C</option></select></label>
-    <button id="goAsset">분석</button>
+<header class="mast">
+  <div>
+    <div class="wordmark">DRRRK<b>·</b>ASSET INTELLIGENCE</div>
+    <h1>실물자산 Evidence Report</h1>
   </div>
-  <datalist id="assetlist"></datalist>
+  <span class="envstamp" id="envstamp"></span>
+</header>
+<p class="envnote" id="envnote"></p>
+
+<div class="finder" role="search">
+  <input type="text" id="q" placeholder="모델명 · 별칭 검색 — 서브마리너, 클미, 버킨…" list="assetlist" autofocus>
+  <div class="seg" id="gradeseg" role="group" aria-label="상태 등급">
+    <button aria-pressed="false">S</button><button aria-pressed="true">A</button>
+    <button aria-pressed="false">B</button><button aria-pressed="false">C</button>
+  </div>
+  <button class="go" id="goAsset">조회</button>
+</div>
+<datalist id="assetlist"></datalist>
+<div class="chiprow" id="chips"></div>
+
+<div id="result"></div>
+
+<div class="sheet">
+  <div class="sec">
+    <div class="lbl">GOLD<span class="sub">표준화 자산</span></div>
+    <div class="bd">
+      <div class="goldgrid">
+        <label>순도 <select id="purity"><option selected>24K</option><option>22K</option><option>18K</option><option>14K</option></select></label>
+        <label>중량 (g) <input id="weight" type="number" step="0.01" min="0.1" placeholder="18.75"></label>
+        <label>24K 1g 시세 (원) <input id="spot" type="number" step="100"></label>
+        <button class="goldgo" id="goGold">계산</button>
+      </div>
+      <div id="goldResult" style="margin-top:14px"></div>
+      <div class="footnote">금은 시세 × 순도 × 중량으로 즉시 계산된다 — 은행이 이미 담보로 받는 이유.
+      명품이 같은 답을 얻으려면 모델·상태별 실거래 원장이 필요하다 — 드르륵이 만드는 데이터가 그것.</div>
+    </div>
+  </div>
 </div>
 
-<div id="result" style="display:contents"></div>
-
-<div class="card">
-  <h2>귀금속 <span class="sub">— 표준화 자산 (시세 × 순도 × 중량)</span></h2>
-  <div class="row">
-    <label>순도 <select id="purity"><option selected>24K</option><option>22K</option><option>18K</option><option>14K</option></select></label>
-    <label>중량 (g) <input id="weight" type="number" step="0.01" min="0.1" placeholder="18.75"></label>
-    <label>24K 1g 시세 (원) <input id="spot" type="number" step="100"></label>
-    <button id="goGold">분석</button>
-  </div>
-  <div id="goldResult" style="margin-top:14px"></div>
-  <div class="note" style="margin-top:8px">금은 시세만으로 즉시 계산된다 — 은행이 이미 담보로 받는 이유.
-  명품이 같은 답을 얻으려면 모델·상태별 실거래 원장이 필요하다 — 드르륵이 만드는 데이터가 그것.</div>
-</div>
-
-<div class="note">LTV는 FIRM(확정) 호가·정산 실측·식별 확정을 전부 통과할 때만 산출된다 —
-부족하면 NOT AVAILABLE과 사유를 그대로 보여준다. 도구: github.com/hinkkim/drrrk-spec (prototype/)</div>
+<p class="pagefoot">LTV는 FIRM(확정) 호가 · 정산 실측 · 식별 확정을 전부 통과할 때만 산출되며,
+부족하면 NOT AVAILABLE과 사유를 그대로 표기한다. 권장 LTV = P10 확정 호가 × (1−처분비용) ÷ 시장가치.
+도구·원장 스키마: github.com/hinkkim/drrrk-spec (prototype/)</p>
 </div>
 
 <script>
@@ -114,17 +197,42 @@ const REASON_KO = {sample_too_small:'표본 부족', no_firm_bid:'FIRM 호가 �
   no_settled_transaction:'정산 실측 없음', identification_unverified:'식별 미확정',
   stale_market_evidence:'최신 증거 없음', authenticity_unresolved:'진위 미해결'};
 const EV_NAMES = {buyer_quote:'매입 호가', contract_price:'성사가', external_comp:'외부 시세',
-  ai_estimate:'AI 추정(구버전)', backfill_appraisal:'감정가(백필)', backfill_loan:'대출액(백필)',
-  backfill_liquidation:'처분가(백필)', liquidation_price:'처분가', extension_reappraisal:'재평가'};
-const CONF_CLS = {HIGH:'good', MEDIUM:'', LOW:'warn', INSUFFICIENT:'warn'};
+  ai_estimate:'AI 추정(구)', backfill_appraisal:'감정가·백필', backfill_loan:'대출액·백필',
+  backfill_liquidation:'처분가·백필', liquidation_price:'처분가', extension_reappraisal:'재평가'};
+let GRADE = 'A';
 
-document.getElementById('envbadge').innerHTML = D.env === 'SIMULATION'
-  ? '⚠ 현재 내장 데이터는 <b>시뮬레이션 생성 데이터</b>입니다 (실거래 아님). 스키마·산식·게이트 검증용이며, 실데이터 입력(intake/ingest.py) 후 재게시하면 같은 보고서가 실측 기반으로 나옵니다.'
-  : '● REAL 원장 기반 보고서입니다. 모든 값에 표본수·근거 등급이 병기됩니다.';
+/* 환경 스탬프 */
+const stampEl = document.getElementById('envstamp');
+if (D.env === 'SIMULATION') {
+  stampEl.textContent = 'Simulation data'; stampEl.className = 'envstamp sim';
+  document.getElementById('envnote').textContent =
+    '내장 데이터는 시뮬레이션 생성값입니다 (실거래 아님) — 스키마·산식·게이트 검증용. 실데이터 입력 후 재게시하면 같은 보고서가 실측 기반으로 나옵니다.';
+} else {
+  stampEl.textContent = 'Real ledger'; stampEl.className = 'envstamp real';
+  document.getElementById('envnote').textContent = 'REAL 원장 기반 — 모든 값에 표본수와 근거 등급이 병기됩니다.';
+}
 
+/* 검색 보조: datalist + 인기 자산 칩 */
 const dl = document.getElementById('assetlist');
 D.assets.forEach(a => { const o = document.createElement('option');
   o.value = `${a.brand} ${a.model}`; dl.appendChild(o); });
+const byActivity = [...D.assets].sort((x, y) => {
+  const s = a => { const q = a.report.data_quality.sample; return q.firm_bids * 10 + q.quotes; };
+  return s(y) - s(x); }).slice(0, 7);
+const chips = document.getElementById('chips');
+byActivity.forEach(a => {
+  const b = document.createElement('button');
+  b.textContent = `${a.brand} ${a.model.split(' ')[0]}`;
+  b.addEventListener('click', () => { document.getElementById('q').value = `${a.brand} ${a.model}`; show(a); });
+  chips.appendChild(b);
+});
+
+/* 등급 세그먼트 */
+document.querySelectorAll('#gradeseg button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('#gradeseg button').forEach(x => x.setAttribute('aria-pressed', 'false'));
+  b.setAttribute('aria-pressed', 'true'); GRADE = b.textContent;
+  if (current) show(current);
+}));
 
 function findAsset(q) {
   q = q.trim().toLowerCase();
@@ -138,135 +246,177 @@ function findAsset(q) {
     (a.aliases || '').toLowerCase().split(';').some(al => al && (al.includes(q) || q.includes(al))));
   return m.length === 1 ? {hit: m[0]} : {cands: m};
 }
-
 const reasons = rs => (rs && rs.length)
   ? `<span class="reason">${rs.map(r => REASON_KO[r] || r).join(' · ')}</span>` : '';
 
 function layerRow(name, l, gm) {
-  const stale = l.stale && l.n ? ' <span class="chip warn">stale</span>' : '';
-  return `<tr><td>${name}</td><td>${won(l.median_krw==null?null:l.median_krw*gm)}</td>
-    <td>${l.n}</td><td>${l.latest || '—'}${stale}</td></tr>`;
+  const stale = l.stale && l.n ? ' <span class="stamp warn">stale</span>' : '';
+  return `<tr><td>${name}</td><td class="strong">${won(l.median_krw==null?null:l.median_krw*gm)}</td>
+    <td>${l.n}</td><td class="dim">${l.latest || '—'}${stale}</td></tr>`;
 }
-
+function gauge(lo, mid, hi) {
+  const span = hi - lo || 1, mp = ((mid - lo) / span * 100).toFixed(1);
+  return `<span class="gauge"><span class="num">${won(lo)}</span>
+    <span class="gaugetrack" aria-hidden="true"><span class="t" style="left:0"></span>
+    <span class="t" style="right:0"></span><span class="m" style="left:${mp}%"></span></span>
+    <span class="num">${won(hi)}</span></span>`;
+}
 function rangeRow(label, e, gm) {
   if (e.range_mid_krw == null)
-    return `<tr><td>${label}</td><td colspan="2" style="text-align:left">
-      <span class="chip warn">INSUFFICIENT DATA</span> ${reasons(e.reasons)}</td>
-      <td><span class="chip ${CONF_CLS[e.confidence]||''}">${e.confidence}</span></td></tr>`;
-  const lo = e.range_low_krw*gm, mid = e.range_mid_krw*gm, hi = e.range_high_krw*gm;
-  const span = hi - lo || 1, midpos = ((mid - lo) / span * 100).toFixed(1);
+    return `<tr><td>${label}</td><td style="text-align:left">
+      <span class="stamp warn">Insufficient data</span> ${reasons(e.reasons)}</td>
+      <td><span class="stamp mut">${e.confidence}</span></td></tr>`;
   return `<tr><td>${label}</td>
-    <td style="text-align:left"><div class="range">${won(lo)}
-      <span class="rangebar"><i style="left:0;right:0"></i><b style="left:${midpos}%"></b></span>
-      ${won(hi)}</div></td>
-    <td>mid ${won(mid)}</td>
-    <td><span class="chip ${CONF_CLS[e.confidence]||''}">${e.confidence}</span>
-      ${reasons(e.reasons)}</td></tr>`;
+    <td style="text-align:left">${gauge(e.range_low_krw*gm, e.range_mid_krw*gm, e.range_high_krw*gm)}
+      <span class="dim num" style="margin-left:6px">mid</span> <b class="num">${won(e.range_mid_krw*gm)}</b></td>
+    <td style="white-space:normal;min-width:110px;vertical-align:top"><span class="stamp ${
+      e.confidence==='HIGH'?'good':e.confidence==='MEDIUM'?'mut':'warn'}">${e.confidence}</span>${
+      (e.reasons && e.reasons.length) ? `<div class="reason" style="margin-top:3px">${e.reasons.map(r => REASON_KO[r] || r).join(' · ')}</div>` : ''}</td></tr>`;
+}
+
+let current = null;
+function show(a) { current = a;
+  document.getElementById('result').innerHTML = renderAsset(a, GRADE);
 }
 
 function renderAsset(a, grade) {
   const gm = D.grade_mult[grade] || 1, r = a.report;
   const m = r.market, d = r.dealer_market, lq = r.liquidity, ltv = r.ltv, q = r.data_quality;
-  const cards = [];
+  const e30 = r.liquidation.expected_30d;
+  const firmLayer = d.dealer_firm.median_krw != null;
+  const lvLabel = firmLayer ? 'FIRM 중앙값' : 'Indicative 중앙값';
+  const lvVal = firmLayer ? d.dealer_firm.median_krw : d.dealer_indicative.median_krw;
+  const secs = [];
 
-  cards.push(`<div class="card"><div class="assethead">${esc(a.brand)} ${esc(a.model)}
-    <span class="sub">(${esc(a.ref || '-')}) · 등급 ${grade} · 기준일 ${r.as_of} · 최근 ${r.window_days}일
-    · evidence grade <b>${q.evidence_grade}</b> · rule ${esc(r.rule_version)}</span></div></div>`);
+  /* 헤더 + 키 수치 스트립 */
+  secs.push(`<div class="sheethead">
+    <div class="assetname">${esc(a.brand)} ${esc(a.model)}</div>
+    <div class="assetmeta">${esc(a.ref || '-')} · GRADE ${grade} · AS OF ${r.as_of} ·
+      WINDOW ${r.window_days}D · ${esc(r.rule_version).toUpperCase()}</div></div>
+  <div class="keys">
+    <div class="key"><div class="kl">시장가치 레이어</div>
+      <div class="kv">${won(m.retail_asking.median_krw==null?null:m.retail_asking.median_krw*gm)}</div>
+      <div class="ks">소매 호가 n=${m.retail_asking.n}</div></div>
+    <div class="key"><div class="kl">${lvLabel}</div>
+      <div class="kv">${won(lvVal==null?null:lvVal*gm)}</div>
+      <div class="ks">딜러 호가 · FIRM ${d.firm_bid_count}건</div></div>
+    <div class="key"><div class="kl">30일 현금화 mid</div>
+      <div class="kv">${e30.range_mid_krw==null ? '—' : won(e30.range_mid_krw*gm)}</div>
+      <div class="ks">confidence ${e30.confidence}</div></div>
+    <div class="key"><div class="kl">권장 LTV</div>
+      <div class="kv">${ltv.status==='AVAILABLE'
+        ? `<span style="color:var(--good)">${pct(ltv.recommended_pct)}</span>`
+        : `<span class="stamp warn" style="vertical-align:0">N/A</span>`}</div>
+      <div class="ks">evidence <span class="seal" style="width:20px;height:20px;font-size:11px;vertical-align:-5px">${q.evidence_grade}</span>
+        · 정산 ${q.sample.settled_sales}건</div></div>
+  </div>`);
 
-  cards.push(`<div class="card"><h2>MARKET · DEALER MARKET
-    <span class="sub">— 하나의 시세가 아니라 레이어별 관측값</span></h2>
-    <div class="tablewrap"><table><thead><tr><th>레이어</th><th>중앙값</th><th>표본</th><th>최신 관측</th></tr></thead><tbody>
+  /* MARKET */
+  secs.push(`<div class="sec"><div class="lbl">Market<span class="sub">레이어별 관측</span></div>
+    <div class="bd"><div class="tablewrap"><table>
+    <thead><tr><th>레이어</th><th>중앙값</th><th>표본</th><th>최신</th></tr></thead><tbody>
     ${layerRow('소매 호가 시세', m.retail_asking, gm)}
-    ${layerRow('외부 실판매 (sold)', m.observed_sold, gm)}
+    ${layerRow('외부 실판매 sold', m.observed_sold, gm)}
     ${layerRow('딜러 indicative', d.dealer_indicative, gm)}
-    ${layerRow('딜러 FIRM (확정)', d.dealer_firm, gm)}
+    ${layerRow('딜러 FIRM 확정', d.dealer_firm, gm)}
     </tbody></table></div>
-    <div class="note" style="margin-top:8px">바이어 ${d.unique_bidders}명
-    (지불능력 검증 ${d.unique_qualified_bidders}명) · top1 점유 ${pct(d.top1_buyer_share_pct)}
-    · 호가 분산 ${pct(d.bid_dispersion_pct)} · FIRM 취소 ${d.firm_bid_cancellation_count}건
-    · 정산 실패 ${d.settlement_failure_count}건</div></div>`);
+    <div class="footnote">바이어 ${d.unique_bidders}명 (지불능력 검증 ${d.unique_qualified_bidders}) ·
+    top1 점유 ${pct(d.top1_buyer_share_pct)} · 호가 분산 ${pct(d.bid_dispersion_pct)} ·
+    FIRM 취소 ${d.firm_bid_cancellation_count} · 정산 실패 ${d.settlement_failure_count}</div></div></div>`);
 
-  cards.push(`<div class="card"><h2>LIQUIDITY · LIQUIDATION</h2>
-    <div class="tablewrap"><table><thead><tr><th>구간</th><th>현금화 범위</th><th></th><th>신뢰도</th></tr></thead><tbody>
+  /* LIQUIDATION */
+  secs.push(`<div class="sec"><div class="lbl">Liquidation<span class="sub">현금화 범위</span></div>
+    <div class="bd"><div class="tablewrap"><table>
+    <thead><tr><th>구간</th><th style="text-align:left">범위</th><th>신뢰도</th></tr></thead><tbody>
     ${rangeRow('7일 급처분', r.liquidation.expected_7d, gm)}
-    ${rangeRow('30일 처분', r.liquidation.expected_30d, gm)}
+    ${rangeRow('30일 처분', e30, gm)}
     </tbody></table></div>
-    <div class="note" style="margin-top:8px">성사 전환율 ${pct(lq.bid_to_sale_conversion_pct)}
-    · 처분 소요 중위 ${lq.days_to_sale_median ?? '—'}일
-    · 첫 bid까지 ${lq.time_to_first_bid_days ?? '—'}일 / 첫 FIRM까지 ${lq.time_to_first_firm_bid_days ?? '—'}일
-    · 유찰 ${lq.failed_listing_count}건</div></div>`);
+    <div class="footnote">성사 전환 ${pct(lq.bid_to_sale_conversion_pct)} ·
+    처분 소요 중위 ${lq.days_to_sale_median ?? '—'}일 ·
+    첫 bid ${lq.time_to_first_bid_days ?? '—'}일 / 첫 FIRM ${lq.time_to_first_firm_bid_days ?? '—'}일 ·
+    유찰 ${lq.failed_listing_count}건</div></div></div>`);
 
-  let ltvHtml;
+  /* LTV */
+  let ltvBody;
   if (ltv.status === 'AVAILABLE') {
-    ltvHtml = `<span class="big" style="color:var(--good)">${pct(ltv.recommended_pct)}</span>
-      <span class="chip good">AVAILABLE</span>`;
+    ltvBody = `<span class="num" style="font-size:22px;font-weight:700;color:var(--good)">${pct(ltv.recommended_pct)}</span>
+      <span class="stamp good" style="margin-left:8px">Available</span>`;
   } else {
-    ltvHtml = `<span class="chip warn">NOT AVAILABLE</span> ${reasons(ltv.reasons)}`;
+    ltvBody = `<span class="stamp warn">Not available</span> ${reasons(ltv.reasons)}`;
     if (ltv.indicative_reference_pct != null)
-      ltvHtml += `<div class="note" style="margin-top:6px">indicative 참고치
-        ${pct(ltv.indicative_reference_pct)} — 확정 호가·정산 실측이 아니므로 권장값이 아니다.</div>`;
+      ltvBody += `<div class="footnote">indicative 참고치 ${pct(ltv.indicative_reference_pct)} —
+        확정 호가·정산 실측이 아니므로 권장값이 아니다.</div>`;
   }
-  cards.push(`<div class="card"><h2>FINANCIAL LTV
-    <span class="sub">— FIRM 호가·정산 실측·식별 확정을 전부 통과해야 산출</span></h2>${ltvHtml}</div>`);
+  secs.push(`<div class="sec"><div class="lbl">Financial<span class="sub">LTV 게이트</span></div>
+    <div class="bd">${ltvBody}</div></div>`);
 
+  /* OUTCOME */
   const txs = r.outcome.recent_transactions || [];
   if (txs.length) {
-    const tr = txs.map(t => `<tr><td>${(t.settled_at || '').slice(0,10) || '—'}</td>
-      <td>${won(t.gross_krw)}</td><td>${won(t.costs_krw)}${t.costs_unknown ? ' <span class="chip warn">미상</span>' : ''}</td>
-      <td><b>${won(t.net_proceeds_krw)}</b></td><td>${t.days_to_sale ?? '—'}</td></tr>`).join('');
-    cards.push(`<div class="card"><h2>OUTCOME — 실측 <span class="sub">— 최고 등급 Ground Truth</span></h2>
-      <div class="tablewrap"><table><thead><tr><th>정산일</th><th>성사가</th><th>비용</th>
-      <th>Net Proceeds</th><th>소요일</th></tr></thead><tbody>${tr}</tbody></table></div></div>`);
+    const tr = txs.map(t => `<tr><td class="dim">${(t.settled_at || '').slice(0,10) || '—'}</td>
+      <td>${won(t.gross_krw)}</td><td>${won(t.costs_krw)}${t.costs_unknown ? ' <span class="stamp warn">미상</span>' : ''}</td>
+      <td class="strong">${won(t.net_proceeds_krw)}</td><td>${t.days_to_sale ?? '—'}</td></tr>`).join('');
+    secs.push(`<div class="sec"><div class="lbl">Outcome<span class="sub">실측 — ground truth</span></div>
+      <div class="bd"><div class="tablewrap"><table><thead><tr><th>정산일</th><th>성사가</th>
+      <th>비용</th><th>Net proceeds</th><th>일수</th></tr></thead><tbody>${tr}</tbody></table></div></div></div>`);
   }
 
-  cards.push(`<div class="card"><h2>DATA QUALITY</h2>
-    <div class="note">표본 — 호가 ${q.sample.quotes} (FIRM ${q.sample.firm_bids}) ·
-    성사 ${q.sample.sales} (정산 ${q.sample.settled_sales}) · 외부시세 ${q.sample.external_comps} ·
-    유질처분 ${q.sample.liquidations} · 환경 ${esc(JSON.stringify(q.environment_mix))}</div></div>`);
+  /* DATA QUALITY */
+  secs.push(`<div class="sec"><div class="lbl">Data quality</div>
+    <div class="bd"><span class="seal">${q.evidence_grade}</span>
+    <span class="footnote" style="display:inline-block;margin:0 0 0 10px;vertical-align:1px">
+    호가 ${q.sample.quotes} (FIRM ${q.sample.firm_bids}) · 성사 ${q.sample.sales}
+    (정산 ${q.sample.settled_sales}) · 외부시세 ${q.sample.external_comps} ·
+    유질처분 ${q.sample.liquidations} · 환경 ${esc(Object.entries(q.environment_mix).map(([k,v])=>`${k} ${v}`).join(', ') || '—')}</span></div></div>`);
 
+  /* LEDGER */
   if (a.events.length) {
-    const tr = a.events.map(e => `<tr><td>${e.t}</td><td>${EV_NAMES[e.e] || e.e}</td>
-      <td>${e.d}</td><td>${e.v.toLocaleString('ko-KR')}</td><td>${esc(e.s)}</td></tr>`).join('');
-    cards.push(`<div class="card"><h2>최근 원장 이벤트</h2>
-      <div class="tablewrap"><table><thead><tr><th>일자</th><th>유형</th><th>거래</th>
-      <th>금액(원)</th><th>출처</th></tr></thead><tbody>${tr}</tbody></table></div></div>`);
+    const tr = a.events.map(e => `<tr><td class="dim">${e.t}</td><td style="font-family:inherit">${EV_NAMES[e.e] || e.e}</td>
+      <td>${e.v.toLocaleString('ko-KR')}</td><td class="dim">${esc(e.s)}</td></tr>`).join('');
+    secs.push(`<div class="sec"><div class="lbl">Ledger<span class="sub">최근 이벤트</span></div>
+      <div class="bd"><div class="tablewrap"><table><thead><tr><th>일자</th><th>유형</th>
+      <th>금액(원)</th><th>출처</th></tr></thead><tbody>${tr}</tbody></table></div></div></div>`);
   }
-  return cards.join('');
+  return `<div class="sheet">${secs.join('')}</div>`;
 }
 
 document.getElementById('goAsset').addEventListener('click', () => {
   const q = document.getElementById('q').value;
-  const grade = document.getElementById('grade').value;
   const r = findAsset(q), box = document.getElementById('result');
-  if (r.hit) box.innerHTML = renderAsset(r.hit, grade);
+  if (r.hit) show(r.hit);
   else if (r.cands.length) {
-    box.innerHTML = `<div class="card"><div class="cand"><b>검색 결과가 여러 개입니다:</b>` +
-      r.cands.map(c => `<button data-i="${D.assets.indexOf(c)}">${esc(c.brand)} ${esc(c.model)} (${esc(c.cid)})</button>`).join('') + `</div></div>`;
-    box.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
-      box.innerHTML = renderAsset(D.assets[+b.dataset.i], grade);
-    }));
-  } else box.innerHTML = `<div class="card"><b class="warn">검색 결과 없음</b> — 카탈로그에 없는 모델입니다.</div>`;
+    current = null;
+    box.innerHTML = `<div class="sheet"><div class="sec"><div class="lbl">검색 결과</div>
+      <div class="bd cand">` +
+      r.cands.map(c => `<button data-i="${D.assets.indexOf(c)}">${esc(c.brand)} ${esc(c.model)}
+        <span class="dim num">${esc(c.cid)}</span></button>`).join('') + `</div></div></div>`;
+    box.querySelectorAll('button').forEach(b => b.addEventListener('click',
+      () => show(D.assets[+b.dataset.i])));
+  } else { current = null;
+    box.innerHTML = `<div class="sheet"><div class="sec"><div class="lbl">검색 결과</div>
+    <div class="bd"><span class="nores">일치하는 모델 없음</span>
+    <span class="footnote" style="display:inline;margin-left:8px">카탈로그에 없는 모델입니다.</span></div></div></div>`; }
 });
 document.getElementById('q').addEventListener('keydown', e => {
   if (e.key === 'Enter') document.getElementById('goAsset').click();
 });
 
+/* 귀금속 */
 if (D.gold_spot) document.getElementById('spot').value = D.gold_spot.krw_per_g;
 document.getElementById('goGold').addEventListener('click', () => {
   const purity = document.getElementById('purity').value;
   const wgt = parseFloat(document.getElementById('weight').value);
   const spot = parseFloat(document.getElementById('spot').value);
   const box = document.getElementById('goldResult');
-  if (!wgt || !spot) { box.innerHTML = `<b class="warn">중량과 시세를 입력하세요.</b>` +
-    (D.gold_spot ? '' : ' (시세 참고: 한국금거래소 고시가)'); return; }
+  if (!wgt || !spot) { box.innerHTML = `<span class="nores">중량과 시세를 입력하세요.</span>`; return; }
   const mv = spot * D.purity[purity] * wgt, lv = mv * (1 - D.gold_spread);
-  box.innerHTML = `<div class="assethead" style="font-size:15px">금 ${purity} ${wgt}g
-    <span class="sub">(24K ${spot.toLocaleString('ko-KR')}원/g)</span></div>
-  <dl class="kv" style="margin-top:8px">
-    <dt>시장가치 (MV)</dt><dd class="big">${won(mv)}</dd>
-    <dt>청산가치 (LV)</dt><dd class="big">${won(lv)}</dd>
-    <dt>매입 스프레드</dt><dd>${(D.gold_spread*100).toFixed(1)}%</dd>
-    <dt>관행 LTV 참고치</dt><dd>${pct(D.gold_ltv_ref)} <span class="note">— 은행 관행 참고치 (드르륵 실측·권장값 아님)</span></dd>
-  </dl>`;
+  box.innerHTML = `<div class="keys" style="border:1px solid var(--hair);border-bottom:1px solid var(--hair)">
+    <div class="key"><div class="kl">금 ${purity} ${wgt}g</div>
+      <div class="kv">${won(mv)}</div><div class="ks">시장가치 (24K ${spot.toLocaleString('ko-KR')}원/g)</div></div>
+    <div class="key"><div class="kl">청산가치</div><div class="kv">${won(lv)}</div>
+      <div class="ks">매입 스프레드 ${(D.gold_spread*100).toFixed(1)}%</div></div>
+    <div class="key"><div class="kl">관행 LTV 참고치</div><div class="kv">${pct(D.gold_ltv_ref)}</div>
+      <div class="ks">은행 관행 — 드르륵 실측·권장값 아님</div></div>
+  </div>`;
 });
 </script>

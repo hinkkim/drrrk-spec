@@ -27,36 +27,56 @@ import analyze as az
 STYLE = """<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 :root { color-scheme: light dark;
-  --plane:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
-  --ring:rgba(11,11,11,.1); --grid:#e1e0d9; --accent:#2a78d6; --good:#006300; --warn:#b45309; }
+  --plane:#eef0ef; --surface:#f9faf9; --ink:#131717; --ink2:#49524f; --muted:#7c8582;
+  --ring:#d7dcda; --grid:#e3e7e5; --accent:#0e7264; --accent-soft:rgba(14,114,100,.08);
+  --brass:#8a6b2d; --good:#1d7a3e; --warn:#b05416;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace; }
 @media (prefers-color-scheme: dark) { :root {
-  --plane:#0d0d0d; --surface:#1a1a19; --ink:#fff; --ink2:#c3c2b7;
-  --ring:rgba(255,255,255,.1); --grid:#2c2c2a; --accent:#3987e5; --good:#0ca30c; --warn:#e8912d; } }
+  --plane:#0e1112; --surface:#151a1a; --ink:#eef1f0; --ink2:#b7c0bd; --muted:#79837f;
+  --ring:#2b3231; --grid:#202625; --accent:#31a892; --accent-soft:rgba(49,168,146,.1);
+  --brass:#c9a45c; --good:#43b365; --warn:#dd8a45; } }
 * { box-sizing:border-box }
-body { margin:0; background:var(--plane); color:var(--ink); font-size:14px; line-height:1.55;
+body { margin:0; background:var(--plane); color:var(--ink); font-size:14px; line-height:1.5;
   font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic","Segoe UI",sans-serif; }
-.wrap { max-width:820px; margin:0 auto; padding:28px 18px 60px; display:flex; flex-direction:column; gap:14px; }
-.eyebrow { font-size:11px; letter-spacing:.12em; color:var(--muted); }
-h1 { font-size:20px; margin:2px 0 0; } h1 a { color:inherit; text-decoration:none; }
-.card { background:var(--surface); border:1px solid var(--ring); border-radius:8px; padding:16px 20px; }
-.card h2 { font-size:13px; margin:0 0 8px; letter-spacing:.08em; color:var(--muted); }
-form.row { display:flex; flex-wrap:wrap; gap:10px; align-items:end; }
-label { display:flex; flex-direction:column; gap:4px; font-size:12px; color:var(--ink2); }
-input, select { font:inherit; color:var(--ink); background:var(--plane); border:1px solid var(--grid);
-  border-radius:6px; padding:8px 10px; min-width:120px; }
-button { font:inherit; font-weight:600; color:#fff; background:var(--accent); border:none;
-  border-radius:6px; padding:9px 18px; cursor:pointer; }
-.kv { display:grid; grid-template-columns:max-content 1fr; gap:5px 18px; font-variant-numeric:tabular-nums; }
-.kv dt { color:var(--ink2); } .kv dd { margin:0; font-weight:600; }
-.big { font-size:19px; } .good { color:var(--good); } .warn { color:var(--warn); }
-.note { color:var(--muted); font-size:12px; max-width:72ch; }
-.badge { display:inline-block; font-size:11px; font-weight:600; border-radius:4px;
-  padding:1px 7px; border:1px solid var(--grid); color:var(--ink2); }
-.candidates a { display:block; padding:4px 0; color:var(--accent); }
+.wrap { max-width:860px; margin:0 auto; padding:26px 20px 70px; display:flex; flex-direction:column; gap:14px; }
+.eyebrow { font:700 11px var(--mono); letter-spacing:.3em; }
+.eyebrow b { color:var(--accent); } .eyebrow .badge { margin-left:10px; letter-spacing:.1em; }
+h1 { font-size:20px; font-weight:750; letter-spacing:-.01em; margin:6px 0 0;
+  padding-bottom:12px; border-bottom:2px solid var(--ink); }
+h1 a { color:inherit; text-decoration:none; }
+.card { background:var(--surface); border:1px solid var(--ring); padding:15px 20px 17px; }
+.card h2 { font:600 10.5px var(--mono); letter-spacing:.14em; text-transform:uppercase;
+  margin:0 0 10px; color:var(--muted); }
+.row { display:flex; flex-wrap:wrap; gap:10px; align-items:end; }
+.row label { min-width:0; } .row input, .row select { min-width:130px; }
+label { display:flex; flex-direction:column; gap:4px; font-size:11.5px; color:var(--ink2); }
+input, select { font:inherit; color:var(--ink); background:var(--plane); border:1px solid var(--ring);
+  border-radius:2px; padding:8px 10px; min-width:120px; }
+input:focus, select:focus, button:focus-visible { outline:2px solid var(--accent); outline-offset:0; }
+button { font:inherit; font-weight:600; font-size:13px; color:var(--surface); background:var(--ink);
+  border:none; border-radius:2px; padding:9px 18px; cursor:pointer; }
+button:hover { background:var(--accent); }
+.kv { display:grid; grid-template-columns:max-content 1fr; gap:6px 20px; }
+.kv dt { color:var(--ink2); font-size:12.5px; padding-top:1px; }
+.kv dd { margin:0; font-weight:600; font-family:var(--mono); font-size:13px; letter-spacing:-.01em; }
+.big { font-size:18px; } .good { color:var(--good); } .warn { color:var(--warn); }
+.note { color:var(--muted); font-size:12px; max-width:74ch; }
+.badge { display:inline-block; font:700 10px var(--mono); letter-spacing:.09em;
+  text-transform:uppercase; border-radius:2px; padding:2px 7px;
+  border:1px solid currentColor; color:var(--warn); }
+.candidates a { display:block; padding:7px 0; color:var(--accent);
+  border-bottom:1px solid var(--grid); text-decoration:none; }
+.candidates a:last-child { border-bottom:none; }
 table { border-collapse:collapse; width:100%; font-size:12.5px; }
-th,td { padding:5px 9px; text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
-th { color:var(--muted); font-weight:600; border-bottom:1px solid var(--grid); }
-td:first-child, th:first-child { text-align:left; }
+th,td { padding:6px 9px; text-align:right; white-space:nowrap; }
+td { font-family:var(--mono); letter-spacing:-.01em; }
+td:first-child { font-family:inherit; }
+th { font:600 10px var(--mono); letter-spacing:.12em; text-transform:uppercase;
+  color:var(--muted); border-bottom:1px solid var(--ring); }
+td:first-child, th:first-child { text-align:left; padding-left:0; }
+th:first-child { padding-left:0; }
+tbody tr { border-bottom:1px solid var(--grid); }
+tbody tr:last-child { border-bottom:none; }
 </style>"""
 
 
@@ -73,9 +93,10 @@ def esc(s):
 
 
 def header(env):
-    tag = "SIMULATION DATA" if env == "SIMULATION" else "REAL LEDGER"
-    return (f'<div class="wrap"><div><div class="eyebrow">DRRRK · ASSET'
-            f' INTELLIGENCE — V1 <span class="badge">{tag}</span></div>'
+    tag = "Simulation data" if env == "SIMULATION" else "Real ledger"
+    tag_color = "var(--warn)" if env == "SIMULATION" else "var(--good)"
+    return (f'<div class="wrap"><div><div class="eyebrow">DRRRK<b>·</b>ASSET'
+            f' INTELLIGENCE <span class="badge" style="color:{tag_color}">{tag}</span></div>'
             f'<h1><a href="/">실물자산 Evidence Report</a>'
             f' <span style="font-size:13px;font-weight:400">·'
             f' <a href="/console" style="color:var(--accent);text-decoration:none">'
