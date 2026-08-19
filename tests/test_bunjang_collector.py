@@ -114,6 +114,57 @@ class TestCleanBackground(unittest.TestCase):
         self.assertIsNone(b.load_bmp_pixels(None))
 
 
+def smudge_border(px, n, color=(70, 55, 40)):
+    """테두리 영역(clean_background 가 보는 범위)의 앞 n 픽셀을 어둡게 만든다.
+
+    흰 종이 위에 놓고 찍어 그림자·책상 모서리가 남은 실사를 흉내낸다.
+    """
+    h, w = len(px), len(px[0])
+    t = max(1, min(w, h) // 8)
+    marked = 0
+    for y in range(h):
+        for x in range(w):
+            if t <= y < h - t and t <= x < w - t:
+                continue
+            if marked >= n:
+                return px
+            px[y][x] = color
+            marked += 1
+    return px
+
+
+class TestJewelryBackgroundThreshold(unittest.TestCase):
+    """주얼리는 개인 판매자도 흰 종이 위에 놓고 찍어 오탐이 잦다.
+
+    테두리가 거의 완전히 균일한 진짜 누끼만 걸러내도록 기준을 따로 둔다.
+    """
+
+    def _px(self, dirty):
+        return b.load_bmp_pixels(bmp_bytes(
+            smudge_border(solid(32, 32, (246, 246, 246), center=(180, 140, 60)), dirty)))
+
+    def test_border_pixel_count(self):
+        # 32x32, t=4 → 테두리 448px. 아래 테스트들의 비율 계산 근거.
+        self.assertEqual(32 * 32 - 24 * 24, 448)
+
+    def test_shadowed_white_paper_kept_for_jewelry(self):
+        # 448 중 45px 오염 → clean 비율 약 0.90
+        px = self._px(45)
+        self.assertTrue(b.clean_background(px, b.BG_RATIO))            # 기본 기준: 제외
+        self.assertFalse(b.clean_background(px, b.BG_RATIO_BY_CAT["주얼리"]))  # 주얼리: 통과
+
+    def test_true_cutout_still_rejected_for_jewelry(self):
+        # 448 중 9px 오염 → clean 비율 약 0.98, 사실상 누끼
+        px = self._px(9)
+        self.assertTrue(b.clean_background(px, b.BG_RATIO_BY_CAT["주얼리"]))
+
+    def test_threshold_lookup_by_category(self):
+        self.assertEqual(b.BG_RATIO_BY_CAT.get("주얼리", b.BG_RATIO), b.BG_RATIO_BY_CAT["주얼리"])
+        for cat in ("가방", "시계", "패션잡화", None):
+            self.assertEqual(b.BG_RATIO_BY_CAT.get(cat, b.BG_RATIO), b.BG_RATIO)
+        self.assertGreater(b.BG_RATIO_BY_CAT["주얼리"], b.BG_RATIO)
+
+
 class TestCategoryClassification(unittest.TestCase):
     def _detail(self, *names):
         return {"categories": [{"name": n} for n in names]}
@@ -136,6 +187,37 @@ class TestCategoryClassification(unittest.TestCase):
             "주얼리")
         self.assertEqual(
             b.classify_category(self._detail("남성시계"), ("시계",)), "시계")
+
+    def test_wallet_is_fashion_goods_not_bag(self):
+        # 번개장터는 지갑을 '가방/지갑' 상위 노드 아래 두지만, 잡화로 분류해야 한다
+        allowed = ("가방", "패션잡화")
+        self.assertEqual(
+            b.classify_category(self._detail("가방/지갑", "여성지갑", "장지갑"), allowed),
+            "패션잡화")
+        self.assertEqual(
+            b.classify_category(self._detail("가방/지갑", "남성지갑", "카드케이스"), allowed),
+            "패션잡화")
+
+    def test_half_wallet_not_mistaken_for_ring(self):
+        # '반지갑' 은 '반지' 를 포함한다 — 잡화 판정이 주얼리보다 앞서야 한다
+        self.assertEqual(
+            b.classify_category(self._detail("가방/지갑", "남성지갑", "반지갑"),
+                                ("가방", "패션잡화", "주얼리")),
+            "패션잡화")
+
+    def test_bag_under_same_parent_still_bag(self):
+        # 같은 '가방/지갑' 상위 노드지만 말단이 가방이면 가방이어야 한다
+        self.assertEqual(
+            b.classify_category(self._detail("가방/지갑", "여성가방", "숄더백"),
+                                ("가방", "패션잡화")),
+            "가방")
+
+    def test_belt_and_shoes(self):
+        allowed = ("가방", "패션잡화")
+        for leaf in ("벨트", "스니커즈", "구두", "샌들", "플랫슈즈", "로퍼", "키링"):
+            self.assertEqual(
+                b.classify_category(self._detail("패션잡화", leaf), allowed),
+                "패션잡화", leaf)
 
     def test_disallowed_or_unknown_rejected(self):
         # 의류는 대상 카테고리가 아니다
@@ -226,6 +308,26 @@ class TestConfigConsistency(unittest.TestCase):
 
     def test_docstring_matches(self):
         self.assertIn("15개", b.__doc__)
+
+    def test_category_queries_are_known_categories(self):
+        for cat, terms in b.CATEGORY_QUERIES.items():
+            self.assertIn(cat, b.CATEGORY_KEYWORDS, f"{cat} 는 알 수 없는 카테고리")
+            self.assertTrue(terms, f"{cat} 검색어가 비어 있다")
+
+    def test_every_category_is_ordered(self):
+        # 새 카테고리를 추가하고 CATEGORY_ORDER 에 넣는 걸 잊으면 영영 분류되지 않는다
+        self.assertEqual(set(b.CATEGORY_ORDER), set(b.CATEGORY_KEYWORDS))
+
+    def test_fashion_goods_precede_jewelry(self):
+        # '반지갑' 오분류 방지 — 순서가 뒤집히면 지갑이 주얼리로 간다
+        order = list(b.CATEGORY_ORDER)
+        self.assertLess(order.index("패션잡화"), order.index("주얼리"))
+        self.assertEqual(order[-1], "가방", "가방은 가장 넓어서 맨 뒤여야 한다")
+
+    def test_brands_allowing_fashion_goods(self):
+        # 잡화 수집 대상 브랜드가 실제로 존재해야 한다
+        cats = [c for _, allowed in b.BRANDS for c in allowed]
+        self.assertGreaterEqual(cats.count("패션잡화"), 10)
 
 
 class TestRobotsSemantics(unittest.TestCase):
@@ -324,6 +426,108 @@ class TestHttpRetry(unittest.TestCase):
     def test_persistent_timeout_exhausts_retries(self):
         with self.assertRaises(RuntimeError):
             self._run(lambda i: TimeoutError("timed out"))
+
+
+class TestCategoryHarvest(unittest.TestCase):
+    """브랜드명만 검색하면 최신순 상위를 가방이 채워 잡화가 한 건도 안 들어온다.
+
+    카테고리 검색어로 최소 물량을 먼저 확보하는 1차 패스가 이를 막아야 한다.
+    네트워크 없이 search_products / collect_product 를 가짜로 바꿔 검증한다.
+    """
+
+    BRAND = "구찌"
+
+    def setUp(self):
+        # 브랜드 전체 검색은 가방만, 카테고리 검색은 해당 잡화/주얼리만 돌려준다
+        self.catalog = {}
+        self.feeds = {}
+
+        def add(query, prefix, cat, name, n=40):
+            items = []
+            for i in range(n):
+                pid = f"{prefix}{i:03d}"
+                self.catalog[pid] = cat
+                items.append({"pid": pid, "name": f"{self.BRAND} {name} {i}",
+                              "price": "3,000,000"})
+            self.feeds[query] = items
+
+        add(self.BRAND, "1", "가방", "GG마몽 숄더백")
+        add(f"{self.BRAND} 지갑", "2", "패션잡화", "마몽 장지갑")
+        add(f"{self.BRAND} 벨트", "3", "패션잡화", "인터로킹 벨트")
+        add(f"{self.BRAND} 목걸이", "4", "주얼리", "인터로킹 목걸이")
+
+        self.collected = []
+
+        def fake_search(query, page):
+            return self.feeds.get(query, [])[page * 100:(page + 1) * 100]
+
+        def fake_collect(pid, brand, allowed_cats, downloaded, rejects, res_state):
+            cat = self.catalog.get(pid)
+            if cat not in allowed_cats:
+                rejects[pid] = "2026-08-06"
+                return False, "카테고리 불일치"
+            downloaded.add(pid)
+            self.collected.append((pid, cat))
+            return cat, None
+
+        self.patches = [
+            mock.patch.object(b, "search_products", fake_search),
+            mock.patch.object(b, "collect_product", fake_collect),
+            mock.patch.object(b.time, "sleep", lambda s: None),
+            mock.patch.object(b, "log", lambda m: None),
+        ]
+        for p in self.patches:
+            p.start()
+
+    def tearDown(self):
+        for p in self.patches:
+            p.stop()
+
+    def _run(self, allowed=("가방", "패션잡화", "주얼리"), total=0):
+        state = {"downloaded": set(), "rejects": {},
+                 "res_state": {"res": None}, "today": "2026-08-06"}
+        ctx = b.new_ctx(total)
+        b.collect_brand(self.BRAND, allowed, ctx, state)
+        return ctx
+
+    def test_fashion_goods_are_guaranteed(self):
+        ctx = self._run()
+        self.assertGreaterEqual(ctx["cat_got"].get("패션잡화", 0), b.CATEGORY_MIN,
+                                f"잡화가 확보되지 않았다: {ctx['cat_got']}")
+        self.assertGreaterEqual(ctx["cat_got"].get("주얼리", 0), b.CATEGORY_MIN)
+
+    def test_brand_wide_search_alone_would_miss_them(self):
+        # 1차 패스가 없으면(=카테고리 검색어 없음) 전량 가방이 된다 — 회귀 대비 대조군
+        with mock.patch.object(b, "CATEGORY_QUERIES", {}):
+            ctx = self._run()
+        self.assertEqual(ctx["cat_got"], {"가방": b.DAILY_LIMIT})
+
+    def test_exact_mix_and_daily_limit(self):
+        ctx = self._run()
+        self.assertEqual(ctx["got"], b.DAILY_LIMIT)
+        self.assertEqual(sum(ctx["cat_got"].values()), b.DAILY_LIMIT)
+        # 잡화·주얼리를 최소치만 채우고 나머지는 브랜드 전체 검색(가방)이 메운다
+        self.assertEqual(ctx["cat_got"]["패션잡화"], b.CATEGORY_MIN)
+        self.assertEqual(ctx["cat_got"]["주얼리"], b.CATEGORY_MIN)
+        self.assertEqual(ctx["cat_got"]["가방"],
+                         b.DAILY_LIMIT - 2 * b.CATEGORY_MIN)
+
+    def test_disallowed_category_is_not_harvested(self):
+        # 주얼리를 허용하지 않는 브랜드는 주얼리 검색 자체를 돌지 않는다
+        ctx = self._run(allowed=("가방", "패션잡화"))
+        self.assertNotIn("주얼리", ctx["cat_got"])
+        self.assertEqual(ctx["cat_got"]["패션잡화"], b.CATEGORY_MIN)
+
+    def test_total_limit_stops_run(self):
+        ctx = self._run(total=b.TOTAL_LIMIT - 3)
+        self.assertTrue(ctx["stop"])
+        self.assertEqual(ctx["got"], 3)
+
+    def test_no_duplicate_pids(self):
+        ctx = self._run()
+        pids = [p for p, _ in self.collected]
+        self.assertEqual(len(pids), len(set(pids)))
+        self.assertEqual(len(pids), ctx["got"])
 
 
 class TestBaseDirResolution(unittest.TestCase):

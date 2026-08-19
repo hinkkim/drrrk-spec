@@ -18,6 +18,7 @@
      API 의 프로샵 플래그가 있으면 매물 전체를 수집하지 않는다.
   2. 인물이 포함된 사진: macOS Vision 프레임워크(얼굴/사람 감지)로 이미지 단위 제외.
   3. 배경이 희거나 회색으로 깨끗한 사진(스튜디오/누끼): 테두리 픽셀 분석으로 제외.
+     주얼리는 개인도 흰 종이 위에 놓고 찍는 일이 많아 기준을 따로 둔다.
   4. 유효 이미지가 2장 미만이면 매물 자체를 수집하지 않는다.
 
 준수 사항
@@ -35,6 +36,9 @@
   C2C_BASE       저장 루트 직접 지정 (기본: 구글드라이브 '70_매물 크롤링/c2c market' 자동 탐지)
   C2C_VISION     인물 감지 사용 (기본 1, 0=끔)
   C2C_ROBOTS     robots.txt 준수 (기본 1, 0=무시 — 권장하지 않음)
+  C2C_CAT_MIN    브랜드당 카테고리별 최소 확보량 (기본 2)
+  C2C_BG_RATIO         배경 흰색/회색 판정 비율 (기본 0.85)
+  C2C_BG_RATIO_JEWELRY 주얼리 전용 배경 판정 비율 (기본 0.95)
 """
 
 import http.client
@@ -89,10 +93,18 @@ IMAGE_MIN = int(os.environ.get("C2C_IMG_MIN", "2"))        # 미달 시 매물 �
 IMAGE_MAX = int(os.environ.get("C2C_IMG_MAX", "10"))
 VISION_ENABLE = os.environ.get("C2C_VISION", "1") != "0"
 ROBOTS_ENFORCE = os.environ.get("C2C_ROBOTS", "1") != "0"
+CATEGORY_MIN = int(os.environ.get("C2C_CAT_MIN", "2"))     # 브랜드당 카테고리별 최소 확보량
 MAX_PAGES = 10                                             # 검색 페이지네이션 상한 (100개/페이지)
 REQUEST_DELAY = 0.4                                        # API 호출 간격 (초)
 IMAGE_DELAY = 0.15                                         # 이미지 다운로드 간격 (초)
 REJECT_TTL_DAYS = 30                                       # 거부 pid 재확인 주기
+
+# 배경 제거(누끼)/스튜디오 판정 기준 — 테두리 픽셀 중 흰색·회색 비율.
+# 주얼리는 개인 판매자도 흰 종이·책상 위에 올려놓고 찍는 경우가 많아 오탐이 잦다.
+# 그림자·책상 모서리가 남는 실사(0.85~0.94)는 살리고, 테두리가 거의 완전히
+# 균일한 진짜 누끼(0.95+)만 걸러내도록 주얼리에만 기준을 높여 둔다.
+BG_RATIO = float(os.environ.get("C2C_BG_RATIO", "0.85"))
+BG_RATIO_BY_CAT = {"주얼리": float(os.environ.get("C2C_BG_RATIO_JEWELRY", "0.95"))}
 
 # 번개장터가 지원하는 리사이즈 폭. 앞에서부터 시도하고 유효한 이미지가 나오면 고정한다.
 IMAGE_RES_CANDIDATES = ["1100", "800", "600", "425"]
@@ -120,14 +132,24 @@ BRANDS = [
     ("반클리프아펠", ("주얼리",)),
 ]
 
-# 번개장터 카테고리 경로에 이 단어가 있으면 해당 카테고리로 분류
+# 번개장터 카테고리 경로에 이 단어가 있으면 해당 카테고리로 분류.
+# 지갑·카드케이스는 '가방/지갑' 상위 노드 아래 있지만 잡화로 다룬다.
 CATEGORY_KEYWORDS = {
-    "가방": ["가방", "백", "지갑", "파우치", "클러치", "토트", "숄더", "크로스"],
+    "가방": ["가방", "백", "파우치", "클러치", "토트", "숄더", "크로스", "보스턴", "더플"],
     "시계": ["시계", "워치"],
-    "패션잡화": ["신발", "슈즈", "스니커즈", "로퍼", "구두", "힐", "샌들", "부츠",
-               "플랫", "벨트", "스카프", "머플러", "모자", "선글라스"],
+    "패션잡화": ["지갑", "머니클립", "카드케이스", "벨트",
+               "신발", "슈즈", "스니커즈", "로퍼", "구두", "힐", "샌들", "부츠",
+               "플랫", "모카신", "슬리퍼", "뮬",
+               "스카프", "머플러", "모자", "선글라스", "넥타이", "키링", "키홀더"],
     "주얼리": ["주얼리", "쥬얼리", "귀금속", "반지", "목걸이", "네크리스", "팔찌",
              "브레이슬릿", "귀걸이", "이어링", "브로치", "펜던트"],
+}
+
+# 브랜드명만으로 최신순 검색하면 가방이 목록을 채워 잡화·주얼리가 밀려난다.
+# 카테고리별로 이 검색어를 브랜드명에 덧붙여 최소 물량을 따로 확보한다.
+CATEGORY_QUERIES = {
+    "패션잡화": ["지갑", "벨트", "신발", "스니커즈", "구두", "샌들", "스카프", "선글라스"],
+    "주얼리": ["목걸이", "반지", "팔찌", "귀걸이"],
 }
 
 # 브랜드 동의어 (상품명에 하나라도 포함되면 해당 브랜드로 인정)
@@ -387,14 +409,25 @@ def matches_brand(name, brand):
     return any(norm(a).lower().replace(" ", "") in low for a in BRAND_ALIASES[brand])
 
 
+# 판정 순서. 잡화가 주얼리보다 앞이어야 '반지갑'이 '반지'로 오분류되지 않고,
+# 가방이 맨 뒤여야 '가방/지갑 > 장지갑'이 잡화로 잡힌다.
+CATEGORY_ORDER = ("시계", "패션잡화", "주얼리", "가방")
+
+
 def classify_category(detail, allowed):
-    """상세의 카테고리 경로를 허용 카테고리로 분류. 분류 불가면 None (수집 제외)."""
-    names = " ".join(str(c.get("name", "")) for c in (detail.get("categories") or []))
-    if not names.strip():
+    """상세의 카테고리 경로를 허용 카테고리로 분류. 분류 불가면 None (수집 제외).
+
+    번개장터 경로는 상위→하위 순이고 상위 노드 이름이 '가방/지갑'처럼 뭉뚱그려져
+    있어서, 말단(leaf) 이름을 먼저 보고 안 잡힐 때만 경로 전체로 판정한다.
+    """
+    names = [str(c.get("name", "")) for c in (detail.get("categories") or [])]
+    names = [n for n in names if n.strip()]
+    if not names:
         return None
-    for cat in ("시계", "주얼리", "패션잡화", "가방"):
-        if cat in allowed and any(k in names for k in CATEGORY_KEYWORDS[cat]):
-            return cat
+    for haystack in (names[-1], " ".join(names)):
+        for cat in CATEGORY_ORDER:
+            if cat in allowed and any(k in haystack for k in CATEGORY_KEYWORDS[cat]):
+                return cat
     return None
 
 
@@ -524,10 +557,11 @@ def person_count(path):
     return None
 
 
-def image_reject_reason(path):
-    """이미지 단위 제외 사유. 통과면 None."""
+def image_reject_reason(path, cat_label=None):
+    """이미지 단위 제외 사유. 통과면 None. 배경 기준은 카테고리별로 다르다."""
+    ratio = BG_RATIO_BY_CAT.get(cat_label, BG_RATIO)
     px = pixels_for_analysis(path)
-    if px and clean_background(px):
+    if px and clean_background(px, ratio):
         return "배경 흰색/회색 (스튜디오·누끼 추정)"
     n = person_count(path)
     if n:
@@ -593,7 +627,7 @@ def append_catalog(row):
 
 # ---------- 수집 ----------
 
-def download_images(img_tpl, img_count, pid, folder, res_state):
+def download_images(img_tpl, img_count, pid, folder, res_state, cat_label=None):
     """이미지를 받아 내용 필터를 통과한 것만 저장. (저장 수, 제외 내역) 반환."""
     TMP_DIR.mkdir(parents=True, exist_ok=True)
     kept = 0
@@ -627,7 +661,7 @@ def download_images(img_tpl, img_count, pid, folder, res_state):
             rejected.append({"index": i, "reason": "다운로드/포맷 실패"})
             continue
 
-        reason = image_reject_reason(tmp)
+        reason = image_reject_reason(tmp, cat_label)
         if reason:
             rejected.append({"index": i, "reason": reason})
             log(f"    이미지 제외 pid={pid} #{i}: {reason}")
@@ -643,6 +677,7 @@ def download_images(img_tpl, img_count, pid, folder, res_state):
 
 
 def collect_product(pid, brand, allowed_cats, downloaded, rejects, res_state):
+    """수집 성공이면 (분류된 카테고리, None), 실패면 (False, 사유)."""
     detail = product_detail(pid)
     time.sleep(REQUEST_DELAY)
     today = datetime.now().strftime("%Y-%m-%d")
@@ -692,7 +727,8 @@ def collect_product(pid, brand, allowed_cats, downloaded, rejects, res_state):
     if folder.exists():
         folder = cat_dir / f"{folder_name}_{pid}"
 
-    saved, rejected_imgs = download_images(img_tpl, img_count, pid, folder, res_state)
+    saved, rejected_imgs = download_images(
+        img_tpl, img_count, pid, folder, res_state, cat_label)
     if saved < IMAGE_MIN:
         if folder.exists():
             shutil.rmtree(folder, ignore_errors=True)
@@ -717,7 +753,96 @@ def collect_product(pid, brand, allowed_cats, downloaded, rejects, res_state):
                     str(folder.relative_to(BASE_DIR)), meta["product_url"]])
     downloaded.add(pid)
     log(f"    저장: {folder.name} ({saved}/{img_count}장, 제외 {len(rejected_imgs)}장)")
-    return True, None
+    return cat_label, None
+
+
+def new_ctx(total):
+    """브랜드 한 곳을 도는 동안의 진행 상태."""
+    return {"got": 0, "cat_got": {}, "cache_skip": 0, "dealer_skip": 0,
+            "total": total, "stop": False}
+
+
+def harvest(query, brand, allowed_cats, ctx, enough, state):
+    """query 로 검색해 수집한다. enough() 가 True 를 반환하면 이 검색을 끝낸다.
+
+    수집한 매물은 검색어와 무관하게 모두 저장하고 ctx['cat_got'] 에 센다.
+    검색어는 물량을 끌어오는 힌트일 뿐, 카테고리는 상세의 경로가 정한다.
+    (여기서 allowed_cats 를 좁히면 정상 매물이 '카테고리 불일치'로 거부되어
+    거부 캐시에 30일간 박히고, 이후 어떤 검색으로도 다시 잡히지 않는다.)
+    """
+    downloaded, rejects = state["downloaded"], state["rejects"]
+    today = state["today"]
+    for page in range(MAX_PAGES):
+        if ctx["stop"] or ctx["got"] >= DAILY_LIMIT or enough():
+            return
+        try:
+            items = search_products(query, page)
+        except Exception as e:
+            log(f"  검색 실패 q='{query}' page={page}: {e}")
+            return
+        time.sleep(REQUEST_DELAY)
+        if not items:
+            return
+        for item in items:
+            if ctx["got"] >= DAILY_LIMIT or enough():
+                return
+            if TOTAL_LIMIT and ctx["total"] + ctx["got"] >= TOTAL_LIMIT:
+                log(f"  실행당 총 상한 {TOTAL_LIMIT}건 도달 — 수집 종료")
+                ctx["stop"] = True
+                return
+            pid = str(item.get("pid"))
+            if not pid or pid in downloaded:
+                continue
+            if pid in rejects:      # 이전에 거부된 매물은 상세 API를 부르지 않는다
+                ctx["cache_skip"] += 1
+                continue
+            if to_won(item.get("price")) < PRICE_MIN:
+                continue
+            if item.get("ad"):
+                continue
+            item_name = item.get("name", "")
+            if not matches_brand(item_name, brand):
+                continue
+            # 검색 결과 단계에서 업체 신호가 보이면 상세 API를 아예 부르지 않는다
+            if dealer_signal(item_name) or dealer_flagged(item):
+                rejects[pid] = today
+                ctx["dealer_skip"] += 1
+                continue
+            try:
+                cat, reason = collect_product(
+                    pid, brand, allowed_cats, downloaded, rejects, state["res_state"])
+                if cat:
+                    ctx["got"] += 1
+                    ctx["cat_got"][cat] = ctx["cat_got"].get(cat, 0) + 1
+                elif reason:
+                    log(f"    건너뜀 pid={pid}: {reason}")
+            except Exception as e:
+                log(f"    상품 실패 pid={pid}: {e}")
+
+
+def collect_brand(brand, allowed_cats, ctx, state):
+    """브랜드 한 곳을 수집한다. 카테고리별 최소 물량을 먼저 확보한 뒤 나머지를 채운다."""
+    log(f"[{brand}] 검색 시작 (허용: {', '.join(allowed_cats)})")
+
+    # 1차: 카테고리별 최소 물량 확보. 브랜드명만 검색하면 최신순 상위를 가방이
+    #      채워 지갑·벨트·신발 같은 잡화가 한 건도 안 들어온다.
+    for cat in allowed_cats:
+        for term in CATEGORY_QUERIES.get(cat, []):
+            if ctx["stop"] or ctx["got"] >= DAILY_LIMIT:
+                break
+            if ctx["cat_got"].get(cat, 0) >= CATEGORY_MIN:
+                break
+            harvest(f"{brand} {term}", brand, allowed_cats, ctx,
+                    lambda c=cat: ctx["cat_got"].get(c, 0) >= CATEGORY_MIN, state)
+
+    # 2차: 브랜드 전체 최신순으로 남은 자리를 채운다
+    if not ctx["stop"]:
+        harvest(brand, brand, allowed_cats, ctx, lambda: False, state)
+
+    mix = ", ".join(f"{c} {n}" for c, n in sorted(ctx["cat_got"].items())) or "없음"
+    log(f"[{brand}] 완료: 신규 {ctx['got']}건 [{mix}] "
+        f"(업체 제외 {ctx['dealer_skip']}건, 캐시 생략 {ctx['cache_skip']}건)")
+    return ctx["got"]
 
 
 def run():
@@ -752,63 +877,16 @@ def run():
         f"이미지 {IMAGE_MIN}~{IMAGE_MAX}장, 저장: {BASE_DIR}, "
         f"기존 수집 {len(downloaded)}건, 거부 캐시 {len(rejects)}건) ===")
 
+    state = {"downloaded": downloaded, "rejects": rejects,
+             "res_state": res_state, "today": today}
     total = 0
-    stop = False
     for brand, allowed_cats in brands:
-        if stop:
-            break
-        got = 0
-        cache_skip = dealer_skip = 0
-        log(f"[{brand}] 검색 시작 (허용: {', '.join(allowed_cats)})")
-        for page in range(MAX_PAGES):
-            if got >= DAILY_LIMIT or stop:
-                break
-            try:
-                items = search_products(brand, page)
-            except Exception as e:
-                log(f"  검색 실패 page={page}: {e}")
-                break
-            time.sleep(REQUEST_DELAY)
-            if not items:
-                break
-            for item in items:
-                if got >= DAILY_LIMIT:
-                    break
-                if TOTAL_LIMIT and total + got >= TOTAL_LIMIT:
-                    log(f"  실행당 총 상한 {TOTAL_LIMIT}건 도달 — 수집 종료")
-                    stop = True
-                    break
-                pid = str(item.get("pid"))
-                if not pid or pid in downloaded:
-                    continue
-                if pid in rejects:      # 이전에 거부된 매물은 상세 API를 부르지 않는다
-                    cache_skip += 1
-                    continue
-                if to_won(item.get("price")) < PRICE_MIN:
-                    continue
-                if item.get("ad"):
-                    continue
-                item_name = item.get("name", "")
-                if not matches_brand(item_name, brand):
-                    continue
-                # 검색 결과 단계에서 업체 신호가 보이면 상세 API를 아예 부르지 않는다
-                if dealer_signal(item_name) or dealer_flagged(item):
-                    rejects[pid] = today
-                    dealer_skip += 1
-                    continue
-                try:
-                    ok, reason = collect_product(
-                        pid, brand, allowed_cats, downloaded, rejects, res_state)
-                    if ok:
-                        got += 1
-                    elif reason:
-                        log(f"    건너뜀 pid={pid}: {reason}")
-                except Exception as e:
-                    log(f"    상품 실패 pid={pid}: {e}")
+        ctx = new_ctx(total)
+        total += collect_brand(brand, allowed_cats, ctx, state)
         save_state(downloaded)
         save_rejects(rejects)
-        total += got
-        log(f"[{brand}] 완료: 신규 {got}건 (업체 제외 {dealer_skip}건, 캐시 생략 {cache_skip}건)")
+        if ctx["stop"]:
+            break
 
     log(f"=== 수집 종료: 오늘 총 {total}건 (누적 {len(downloaded)}건, "
         f"거부 캐시 {len(rejects)}건) ===")
