@@ -161,8 +161,12 @@ elif [ -f "$CPLIST" ]; then
     warn "  등록 실패 — 직접 확인하세요: launchctl load -w '$CPLIST'"
   fi
 else
-  warn "$COLLECTOR: plist 가 없습니다 ($CPLIST)"
-  todo "이 기기에서 자동 수집을 원하면 plist 를 등록하세요."
+  warn "$COLLECTOR: 등록돼 있지 않습니다 (이 기기에서 자동 수집이 돌지 않습니다)"
+  if confirm "매일 11:00 자동 수집을 등록할까요?"; then
+    bash "$REPO/deploy/install_launchd.sh" | sed 's/^/   /'
+  else
+    todo "나중에 등록하려면: bash deploy/install_launchd.sh"
+  fi
 fi
 if [ -f "$CPLIST" ]; then
   for prog in $(plist_program "$CPLIST"); do
