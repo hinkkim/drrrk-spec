@@ -14,7 +14,9 @@ for attempt in 1 2 3 4; do
     break
   fi
   if [ "$attempt" = 4 ]; then
-    echo "git pull 실패 — 네트워크를 확인하세요." >&2
+    echo "git pull 실패." >&2
+    echo "이력이 갈라져 fast-forward 가 안 되는 경우라면 먼저 정리하세요:" >&2
+    echo "  bash deploy/setup_machine.sh" >&2
     exit 1
   fi
   sleep $((2 ** attempt))
