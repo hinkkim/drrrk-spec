@@ -8,7 +8,9 @@ bunjang_collector 순수 함수 테스트 (네트워크 호출 없음)
 """
 
 import os
+import shutil
 import sys
+import tempfile
 import unicodedata
 import unittest
 from pathlib import Path
@@ -163,6 +165,147 @@ class TestJewelryBackgroundThreshold(unittest.TestCase):
         for cat in ("가방", "시계", "패션잡화", None):
             self.assertEqual(b.BG_RATIO_BY_CAT.get(cat, b.BG_RATIO), b.BG_RATIO)
         self.assertGreater(b.BG_RATIO_BY_CAT["주얼리"], b.BG_RATIO)
+
+
+def photo(w, h, seed=0):
+    """8×8 모자이크 이미지. dHash 판정에 쓸 만한 대조를 갖도록 만든다.
+
+    - 고주파 패턴을 쓰면 축소할 때 무늬가 달라져(에일리어싱) '같은 사진' 테스트가
+      성립하지 않는다. 8×8 덩어리라 절반으로 줄여도 형태가 남는다.
+    - 매끈한 그라데이션을 쓰면 dHash 에 세워지는 비트가 몇 개뿐이라 서로 다른
+      seed 끼리도 지문이 같아진다 (usable_hash 가 걸러내는 바로 그 경우).
+    """
+    px = []
+    for y in range(h):
+        row = []
+        for x in range(w):
+            bx, by = x * 8 // w, y * 8 // h
+            # 산술 규칙으로 만들면 seed 를 바꿔도 무늬가 평행이동한 꼴이라
+            # dHash 가 비슷해진다. 블록마다 값을 흐트러뜨려 seed 끼리 무관하게 만든다.
+            v = (bx * 73856093) ^ (by * 19349663) ^ ((seed + 1) * 83492791)
+            g = 10 + ((v * 2654435761) >> 21 & 0xFF) * 235 // 255
+            row.append((g, min(255, g + 15), 255 - g))
+        px.append(row)
+    return px
+
+
+def flip_bits(value, n):
+    """value 에서 서로 다른 n 개 비트를 뒤집는다."""
+    for i in range(n):
+        value ^= 1 << (i * 3 % 64)
+    return value
+
+
+class TestPerceptualHash(unittest.TestCase):
+    """판매자가 같은 물건을 새 pid 로 재등록하면 pid 검사로는 못 잡는다.
+
+    사진 지문(dHash)으로 같은 사진인지 본다.
+    """
+
+    def _hash(self, px):
+        return b.dhash_from_pixels(b.load_bmp_pixels(bmp_bytes(px)))
+
+    def test_same_image_same_hash(self):
+        a, c = self._hash(photo(64, 64)), self._hash(photo(64, 64))
+        self.assertIsNotNone(a)
+        self.assertEqual(a, c)
+
+    def test_hash_is_64_bits(self):
+        self.assertLess(self._hash(photo(64, 64)), 1 << 64)
+
+    def test_rescaled_image_stays_close(self):
+        # 같은 사진을 다른 해상도로 받아도 지문이 거의 같아야 한다.
+        # 같은 원본을 실제로 축소해서 비교한다 (크기별로 새로 그리면 다른 그림이 된다)
+        orig = photo(64, 64)
+        a = self._hash(orig)
+        c = self._hash(b.resample(orig, 32, 32))
+        self.assertLessEqual(b.hamming(a, c), b.DUP_DIST)
+
+    def test_different_images_are_far(self):
+        a, c = self._hash(photo(64, 64, seed=1)), self._hash(photo(64, 64, seed=9))
+        self.assertGreater(b.hamming(a, c), b.DUP_DIST)
+
+    def test_too_small_returns_none(self):
+        self.assertIsNone(b.dhash_from_pixels(b.load_bmp_pixels(bmp_bytes(photo(4, 4)))))
+        self.assertIsNone(b.dhash_from_pixels(None))
+
+    def test_hamming(self):
+        self.assertEqual(b.hamming(0b1011, 0b1011), 0)
+        self.assertEqual(b.hamming(0b1011, 0b1000), 2)
+
+
+GOOD = 0xA5A55A5AC3C33C3C      # 비트 32개 — 판정에 쓸 만한 지문
+
+
+class TestHashQuality(unittest.TestCase):
+    """밋밋한 사진은 지문 비트가 몇 개뿐이라 다른 물건끼리도 값이 같아진다.
+
+    그런 지문으로 매물을 버리면 멀쩡한 게 조용히 사라지므로 판정에서 뺀다.
+    """
+
+    def test_balanced_hash_is_usable(self):
+        self.assertTrue(b.usable_hash(GOOD))
+
+    def test_too_flat_is_unusable(self):
+        self.assertFalse(b.usable_hash(0))                      # 전부 0
+        self.assertFalse(b.usable_hash((1 << 64) - 1))          # 전부 1
+        self.assertFalse(b.usable_hash(0x0101010101010101))     # 8비트 — 실제로 충돌했던 값
+        self.assertFalse(b.usable_hash(None))
+
+    def test_boundary(self):
+        just_under = (1 << (b.DUP_MIN_BITS - 1)) - 1
+        just_ok = (1 << b.DUP_MIN_BITS) - 1
+        self.assertFalse(b.usable_hash(just_under))
+        self.assertTrue(b.usable_hash(just_ok))
+
+    def test_unusable_hash_never_matches(self):
+        flat = 0x0101010101010101
+        self.assertIsNone(b.find_duplicate(flat, {f"{flat:016x}": "111"}))
+
+
+class TestDuplicateLookup(unittest.TestCase):
+    def test_exact_match_returns_owner(self):
+        table = {f"{GOOD:016x}": "111"}
+        self.assertEqual(b.find_duplicate(GOOD, table), ("111", 0))
+
+    def test_near_match_within_threshold(self):
+        table = {f"{GOOD:016x}": "111"}
+        near = flip_bits(GOOD, b.DUP_DIST)
+        hit = b.find_duplicate(near, table)
+        self.assertIsNotNone(hit)
+        self.assertEqual(hit[0], "111")
+        self.assertLessEqual(hit[1], b.DUP_DIST)
+
+    def test_beyond_threshold_is_not_duplicate(self):
+        table = {f"{GOOD:016x}": "111"}
+        far = flip_bits(GOOD, b.DUP_DIST + 1)
+        self.assertIsNone(b.find_duplicate(far, table))
+
+    def test_own_pid_is_not_duplicate(self):
+        # 같은 매물의 다른 사진끼리는 중복으로 보면 안 된다
+        table = {f"{GOOD:016x}": "111"}
+        self.assertIsNone(b.find_duplicate(GOOD, table, pid="111"))
+
+    def test_empty_table(self):
+        self.assertIsNone(b.find_duplicate(GOOD, {}))
+
+    def test_corrupt_key_is_skipped(self):
+        table = {"not-hex": "111", f"{GOOD:016x}": "222"}
+        self.assertEqual(b.find_duplicate(GOOD, table), ("222", 0))
+
+
+class TestResample(unittest.TestCase):
+    def test_shrinks_to_requested_size(self):
+        out = b.resample(photo(64, 64), 9, 8)
+        self.assertEqual(len(out), 8)
+        self.assertEqual(len(out[0]), 9)
+
+    def test_refuses_upscale(self):
+        self.assertIsNone(b.resample(photo(4, 4), 9, 8))
+
+    def test_handles_non_square(self):
+        out = b.resample(photo(64, 48), 9, 8)
+        self.assertEqual((len(out), len(out[0])), (8, 9))
 
 
 class TestCategoryClassification(unittest.TestCase):
@@ -428,6 +571,91 @@ class TestHttpRetry(unittest.TestCase):
             self._run(lambda i: TimeoutError("timed out"))
 
 
+class TestDownloadDeduplication(unittest.TestCase):
+    """재등록 매물은 사진을 한 장 받아본 시점에 걸러 나머지 다운로드를 아낀다."""
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.calls = {"n": 0}
+
+        # 이미지 번호마다 다른 사진 — 한 매물 안에서 6장이 서로 달라야
+        # '같은 매물의 다른 사진'과 '재등록된 같은 사진'을 구분해 볼 수 있다
+        def fake_get(url):
+            self.calls["n"] += 1
+            idx = int(url.rsplit("/", 1)[-1].split("_")[0])
+            self.last_idx = idx
+            return b"\xff\xd8\xff" + b"x" * 100, "image/jpeg"
+
+        def fake_pixels(path):
+            return photo(64, 64, seed=int(path.stem.split("_")[-1]))
+
+        self.patches = [
+            mock.patch.object(b, "http_get", fake_get),
+            mock.patch.object(b, "TMP_DIR", self.tmp / "tmp"),
+            mock.patch.object(b, "pixels_for_analysis", fake_pixels),
+            mock.patch.object(b, "person_count", lambda p: 0),
+            mock.patch.object(b, "ensure_preview_friendly", lambda p: p),
+            mock.patch.object(b.time, "sleep", lambda s: None),
+            mock.patch.object(b, "log", lambda m: None),
+        ]
+        for p in self.patches:
+            p.start()
+
+    def tearDown(self):
+        for p in self.patches:
+            p.stop()
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _download(self, pid, hashes, folder="f"):
+        return b.download_images("http://x/{cnt}_{res}.jpg", 6, pid,
+                                 self.tmp / folder, {"res": "1100"}, "가방", hashes)
+
+    def test_first_listing_is_kept_and_registers_hashes(self):
+        hashes = {}
+        kept, rejected, hs = self._download("111", hashes)
+        self.assertEqual(kept, 6)
+        self.assertTrue(hs)
+        for h in hs:
+            hashes.setdefault(f"{h:016x}", "111")
+        self.assertTrue(hashes)
+
+    def test_relisted_item_raises_duplicate(self):
+        hashes = {}
+        _, _, hs = self._download("111", hashes)
+        for h in hs:
+            hashes.setdefault(f"{h:016x}", "111")
+
+        before = self.calls["n"]
+        with self.assertRaises(b.DuplicateListing) as cm:
+            self._download("222", hashes, folder="g")
+        self.assertEqual(cm.exception.pid, "111")
+        # 겹치는 사진 DUP_MIN_MATCHES 장에서 멈춰야 한다 — 6장을 다 받으면 아낀 게 없다
+        self.assertEqual(self.calls["n"] - before, b.DUP_MIN_MATCHES)
+
+    def test_single_shared_photo_is_not_a_duplicate(self):
+        # 사진 한 장이 우연히 겹쳤다고 매물을 버리면 멀쩡한 게 조용히 사라진다
+        one = b.dhash_from_pixels(photo(64, 64, seed=1))
+        hashes = {f"{one:016x}": "999"}
+        kept, _, _ = self._download("222", hashes)
+        self.assertEqual(kept, 6)
+
+    def test_same_pid_is_not_self_duplicate(self):
+        # 한 매물 안의 여러 사진이 서로를 중복으로 잡으면 안 된다
+        hashes = {}
+        kept, _, _ = self._download("111", hashes)
+        self.assertEqual(kept, 6)
+
+    def test_dedupe_disabled_collects_anyway(self):
+        hashes = {}
+        _, _, hs = self._download("111", hashes)
+        for h in hs:
+            hashes.setdefault(f"{h:016x}", "111")
+        with mock.patch.object(b, "DUP_ENABLE", False):
+            kept, _, hs2 = self._download("222", hashes, folder="g")
+        self.assertEqual(kept, 6)
+        self.assertEqual(hs2, [])
+
+
 class TestCategoryHarvest(unittest.TestCase):
     """브랜드명만 검색하면 최신순 상위를 가방이 채워 잡화가 한 건도 안 들어온다.
 
@@ -461,7 +689,8 @@ class TestCategoryHarvest(unittest.TestCase):
         def fake_search(query, page):
             return self.feeds.get(query, [])[page * 100:(page + 1) * 100]
 
-        def fake_collect(pid, brand, allowed_cats, downloaded, rejects, res_state):
+        def fake_collect(pid, brand, allowed_cats, downloaded, rejects, res_state,
+                         hashes=None):
             cat = self.catalog.get(pid)
             if cat not in allowed_cats:
                 rejects[pid] = "2026-08-06"
@@ -528,6 +757,59 @@ class TestCategoryHarvest(unittest.TestCase):
         pids = [p for p, _ in self.collected]
         self.assertEqual(len(pids), len(set(pids)))
         self.assertEqual(len(pids), ctx["got"])
+
+
+class TestDedupeGrouping(unittest.TestCase):
+    """정리 스크립트(deploy/dedupe.py)의 묶기 규칙."""
+
+    @classmethod
+    def setUpClass(cls):
+        import importlib.util
+        path = Path(__file__).resolve().parent.parent / "deploy" / "dedupe.py"
+        spec = importlib.util.spec_from_file_location("dedupe", path)
+        cls.d = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(cls.d)
+
+    def _h(self, *seeds):
+        return [b.dhash_from_pixels(photo(64, 64, s)) for s in seeds]
+
+    def _group(self, folders, matches=None):
+        g = self.d.Grouper(b.DUP_DIST,
+                           b.DUP_MIN_MATCHES if matches is None else matches)
+        for name, seeds in folders.items():
+            g.add(name, self._h(*seeds))
+        return sorted(sorted(grp) for grp in g.groups())
+
+    def test_relisted_item_is_grouped(self):
+        got = self._group({"a": (1, 2, 3), "b": (1, 2, 3)})
+        self.assertEqual(got, [["a", "b"]])
+
+    def test_three_way_relist(self):
+        got = self._group({"a": (1, 2, 3), "b": (1, 2, 3), "c": (1, 2, 3)})
+        self.assertEqual(got, [["a", "b", "c"]])
+
+    def test_one_shared_photo_is_not_grouped(self):
+        # 서로 다른 물건이 사진 한 장을 공유하는 경우 — 묶으면 멀쩡한 게 사라진다
+        self.assertEqual(self._group({"a": (1, 2, 3), "b": (1, 20, 21)}), [])
+
+    def test_distinct_items_are_not_grouped(self):
+        self.assertEqual(self._group({"a": (1, 2), "b": (30, 31), "c": (10, 11)}), [])
+
+    def test_rescaled_copy_is_grouped(self):
+        # 같은 사진을 다른 해상도로 저장한 재등록도 잡아야 한다
+        g = self.d.Grouper(b.DUP_DIST, b.DUP_MIN_MATCHES)
+        big = [photo(64, 64, 1), photo(64, 64, 2)]
+        g.add("a", [b.dhash_from_pixels(p) for p in big])
+        g.add("b", [b.dhash_from_pixels(b.resample(p, 32, 32)) for p in big])
+        self.assertEqual([sorted(x) for x in g.groups()], [["a", "b"]])
+
+    def test_folder_without_hashes_is_isolated(self):
+        self.assertEqual(self._group({"a": (1, 2), "empty": ()}), [])
+
+    def test_threshold_of_one_groups_on_single_photo(self):
+        # 임계값을 낮추면 한 장만 겹쳐도 묶인다 — 기본값이 2인 이유
+        self.assertEqual(self._group({"a": (1, 2, 3), "b": (1, 20, 21)}, matches=1),
+                         [["a", "b"]])
 
 
 class TestBaseDirResolution(unittest.TestCase):

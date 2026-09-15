@@ -20,6 +20,8 @@
   3. 배경이 희거나 회색으로 깨끗한 사진(스튜디오/누끼): 테두리 픽셀 분석으로 제외.
      주얼리는 개인도 흰 종이 위에 놓고 찍는 일이 많아 기준을 따로 둔다.
   4. 유효 이미지가 2장 미만이면 매물 자체를 수집하지 않는다.
+  5. 이미 수집한 매물과 같은 사진: 판매자가 새 pid 로 재등록하면 pid 검사를
+     통과해 버리므로, 사진 지문(dHash)으로 같은 물건인지 확인해 제외한다.
 
 준수 사항
   - robots.txt 를 매 실행 시 확인하고, 금지된 경로는 요청하지 않는다.
@@ -39,6 +41,9 @@
   C2C_CAT_MIN    브랜드당 카테고리별 최소 확보량 (기본 2)
   C2C_BG_RATIO         배경 흰색/회색 판정 비율 (기본 0.85)
   C2C_BG_RATIO_JEWELRY 주얼리 전용 배경 판정 비율 (기본 0.95)
+  C2C_DEDUPE     재등록 매물 중복 제거 (기본 1, 0=끔)
+  C2C_DUP_DIST   같은 사진으로 볼 해밍 거리 (기본 5, 0~64)
+  C2C_DUP_MATCHES 같은 물건으로 볼 최소 겹친 사진 수 (기본 2)
 """
 
 import http.client
@@ -83,6 +88,7 @@ LOG_DIR = STATE_DIR / "logs"
 TMP_DIR = STATE_DIR / "tmp"
 PID_STATE = STATE_DIR / "downloaded_pids.json"
 REJECT_STATE = STATE_DIR / "rejected_pids.json"
+HASH_STATE = STATE_DIR / "image_hashes.json"     # 사진 지문 → 최초 수집 pid
 MASTER_CSV = BASE_DIR / "catalog.csv"
 LOCK_FILE = STATE_DIR / ".lock"
 
@@ -98,6 +104,14 @@ MAX_PAGES = 10                                             # 검색 페이지네
 REQUEST_DELAY = 0.4                                        # API 호출 간격 (초)
 IMAGE_DELAY = 0.15                                         # 이미지 다운로드 간격 (초)
 REJECT_TTL_DAYS = 30                                       # 거부 pid 재확인 주기
+DUP_DIST = int(os.environ.get("C2C_DUP_DIST", "5"))        # 같은 사진으로 볼 해밍 거리
+DUP_ENABLE = os.environ.get("C2C_DEDUPE", "1") != "0"
+# 사진 한 장만 겹쳐도 매물을 버리면, 지문이 우연히 같아졌을 때 멀쩡한 매물이
+# 조용히 사라진다. 서로 다른 사진이 이만큼 겹쳐야 같은 물건으로 본다.
+DUP_MIN_MATCHES = int(os.environ.get("C2C_DUP_MATCHES", "2"))
+# 밋밋한 그라데이션 사진은 dHash 가 몇 비트만 세워져 서로 다른 물건끼리도
+# 값이 같아진다. 정보량이 이 범위를 벗어난 지문은 판정에 쓰지 않는다.
+DUP_MIN_BITS, DUP_MAX_BITS = 12, 52
 
 # 배경 제거(누끼)/스튜디오 판정 기준 — 테두리 픽셀 중 흰색·회색 비율.
 # 주얼리는 개인 판매자도 흰 종이·책상 위에 올려놓고 찍는 경우가 많아 오탐이 잦다.
@@ -557,16 +571,62 @@ def person_count(path):
     return None
 
 
-def image_reject_reason(path, cat_label=None):
+def resample(px, w, h):
+    """픽셀 행렬을 w×h 로 박스 축소. sips 를 한 번 더 부르지 않으려고 직접 줄인다."""
+    if not px or w < 1 or h < 1:
+        return None
+    sh, sw = len(px), len(px[0])
+    if sh < h or sw < w:
+        return None
+    out = []
+    for y in range(h):
+        y0, y1 = y * sh // h, max(y * sh // h + 1, (y + 1) * sh // h)
+        row = []
+        for x in range(w):
+            x0, x1 = x * sw // w, max(x * sw // w + 1, (x + 1) * sw // w)
+            r = g = bl = n = 0
+            for yy in range(y0, y1):
+                for xx in range(x0, x1):
+                    p = px[yy][xx]
+                    r += p[0]; g += p[1]; bl += p[2]; n += 1
+            row.append((r // n, g // n, bl // n))
+        out.append(row)
+    return out
+
+
+def dhash_from_pixels(px, size=8):
+    """dHash (size*size 비트). 좌우 인접 픽셀의 밝기 대소만 기록하므로
+    같은 사진이 재인코딩·재업로드돼도 값이 거의 같다 — 재등록 매물 판별용."""
+    small = resample(px, size + 1, size)
+    if not small:
+        return None
+    bits = 0
+    for row in small:
+        for x in range(size):
+            lum_l = row[x][0] * 299 + row[x][1] * 587 + row[x][2] * 114
+            lum_r = row[x + 1][0] * 299 + row[x + 1][1] * 587 + row[x + 1][2] * 114
+            bits = (bits << 1) | (1 if lum_l > lum_r else 0)
+    return bits
+
+
+def hamming(a, b):
+    """두 해시의 다른 비트 수."""
+    return bin(a ^ b).count("1")
+
+
+def reject_reason_for(px, path, cat_label=None):
     """이미지 단위 제외 사유. 통과면 None. 배경 기준은 카테고리별로 다르다."""
     ratio = BG_RATIO_BY_CAT.get(cat_label, BG_RATIO)
-    px = pixels_for_analysis(path)
     if px and clean_background(px, ratio):
         return "배경 흰색/회색 (스튜디오·누끼 추정)"
     n = person_count(path)
     if n:
         return f"인물 포함 (감지 {n})"
     return None
+
+
+def image_reject_reason(path, cat_label=None):
+    return reject_reason_for(pixels_for_analysis(path), path, cat_label)
 
 
 def ensure_preview_friendly(path):
@@ -615,6 +675,61 @@ def save_rejects(rejects):
     REJECT_STATE.write_text(json.dumps(rejects, sort_keys=True))
 
 
+class DuplicateListing(Exception):
+    """이미 수집한 매물과 같은 사진이 나왔다 (판매자가 새 pid 로 재등록한 경우)."""
+
+    def __init__(self, pid, dist):
+        super().__init__(pid)
+        self.pid = pid
+        self.dist = dist
+
+
+def load_hashes():
+    """이미지 해시(16진) → 그 사진을 처음 가져온 pid."""
+    if not HASH_STATE.exists():
+        return {}
+    try:
+        raw = json.loads(HASH_STATE.read_text())
+    except (ValueError, OSError):
+        return {}
+    return raw if isinstance(raw, dict) else {}
+
+
+def save_hashes(table):
+    HASH_STATE.parent.mkdir(parents=True, exist_ok=True)
+    HASH_STATE.write_text(json.dumps(table, sort_keys=True))
+
+
+def usable_hash(h):
+    """판정에 쓸 만큼 정보가 있는 지문인지. 너무 밋밋하면 못 믿는다."""
+    if h is None:
+        return False
+    return DUP_MIN_BITS <= bin(h).count("1") <= DUP_MAX_BITS
+
+
+def find_duplicate(h, table, pid=None):
+    """h 와 DUP_DIST 이내로 겹치는 기존 해시의 (pid, 거리). 없으면 None.
+
+    완전 일치를 먼저 보고, 없을 때만 전체를 훑는다 (재인코딩된 사진 대비).
+    """
+    if not usable_hash(h):
+        return None
+    key = f"{h:016x}"
+    owner = table.get(key)
+    if owner and owner != pid:
+        return owner, 0
+    for k, owner in table.items():
+        if owner == pid:
+            continue
+        try:
+            d = hamming(h, int(k, 16))
+        except ValueError:
+            continue
+        if d <= DUP_DIST:
+            return owner, d
+    return None
+
+
 def append_catalog(row):
     new_file = not MASTER_CSV.exists()
     with open(MASTER_CSV, "a", newline="", encoding="utf-8-sig") as f:
@@ -627,11 +742,19 @@ def append_catalog(row):
 
 # ---------- 수집 ----------
 
-def download_images(img_tpl, img_count, pid, folder, res_state, cat_label=None):
-    """이미지를 받아 내용 필터를 통과한 것만 저장. (저장 수, 제외 내역) 반환."""
+def download_images(img_tpl, img_count, pid, folder, res_state, cat_label=None,
+                    hashes=None):
+    """이미지를 받아 내용 필터를 통과한 것만 저장.
+
+    (저장 수, 제외 내역, 저장분 해시) 반환. 받은 사진이 이미 수집한 매물의
+    것과 같으면 DuplicateListing 을 올려 나머지 다운로드를 건너뛴다 —
+    판매자가 같은 물건을 새 pid 로 재등록하면 pid 검사로는 걸러지지 않는다.
+    """
     TMP_DIR.mkdir(parents=True, exist_ok=True)
     kept = 0
     rejected = []
+    kept_hashes = []
+    dup_hits = {}          # 기존 pid → 겹친 사진 수
     for i in range(1, img_count + 1):
         if kept >= IMAGE_MAX:
             break
@@ -661,7 +784,19 @@ def download_images(img_tpl, img_count, pid, folder, res_state, cat_label=None):
             rejected.append({"index": i, "reason": "다운로드/포맷 실패"})
             continue
 
-        reason = image_reject_reason(tmp, cat_label)
+        # 픽셀 행렬은 한 번만 만들어 중복 판정과 내용 필터에 함께 쓴다 (sips 호출 절약)
+        px = pixels_for_analysis(tmp)
+        h = dhash_from_pixels(px) if (DUP_ENABLE and hashes is not None) else None
+        if h is not None:
+            hit = find_duplicate(h, hashes, pid)
+            if hit:
+                owner, dist = hit
+                dup_hits[owner] = dup_hits.get(owner, 0) + 1
+                if dup_hits[owner] >= DUP_MIN_MATCHES:
+                    tmp.unlink(missing_ok=True)
+                    raise DuplicateListing(owner, dist)
+
+        reason = reject_reason_for(px, tmp, cat_label)
         if reason:
             rejected.append({"index": i, "reason": reason})
             log(f"    이미지 제외 pid={pid} #{i}: {reason}")
@@ -673,10 +808,13 @@ def download_images(img_tpl, img_count, pid, folder, res_state, cat_label=None):
         os.replace(tmp, final)
         ensure_preview_friendly(final)
         kept += 1
-    return kept, rejected
+        if usable_hash(h):
+            kept_hashes.append(h)
+    return kept, rejected, kept_hashes
 
 
-def collect_product(pid, brand, allowed_cats, downloaded, rejects, res_state):
+def collect_product(pid, brand, allowed_cats, downloaded, rejects, res_state,
+                    hashes=None):
     """수집 성공이면 (분류된 카테고리, None), 실패면 (False, 사유)."""
     detail = product_detail(pid)
     time.sleep(REQUEST_DELAY)
@@ -727,8 +865,12 @@ def collect_product(pid, brand, allowed_cats, downloaded, rejects, res_state):
     if folder.exists():
         folder = cat_dir / f"{folder_name}_{pid}"
 
-    saved, rejected_imgs = download_images(
-        img_tpl, img_count, pid, folder, res_state, cat_label)
+    try:
+        saved, rejected_imgs, img_hashes = download_images(
+            img_tpl, img_count, pid, folder, res_state, cat_label, hashes)
+    except DuplicateListing as e:
+        shutil.rmtree(folder, ignore_errors=True)
+        return reject(f"중복 매물 — 기존 pid={e.pid} 과 같은 사진 (거리 {e.dist})")
     if saved < IMAGE_MIN:
         if folder.exists():
             shutil.rmtree(folder, ignore_errors=True)
@@ -752,6 +894,9 @@ def collect_product(pid, brand, allowed_cats, downloaded, rejects, res_state):
                     year or "", saved, meta["inspection"] or "",
                     str(folder.relative_to(BASE_DIR)), meta["product_url"]])
     downloaded.add(pid)
+    if hashes is not None:
+        for h in img_hashes:
+            hashes.setdefault(f"{h:016x}", pid)
     log(f"    저장: {folder.name} ({saved}/{img_count}장, 제외 {len(rejected_imgs)}장)")
     return cat_label, None
 
@@ -810,7 +955,8 @@ def harvest(query, brand, allowed_cats, ctx, enough, state):
                 continue
             try:
                 cat, reason = collect_product(
-                    pid, brand, allowed_cats, downloaded, rejects, state["res_state"])
+                    pid, brand, allowed_cats, downloaded, rejects,
+                    state["res_state"], state.get("hashes"))
                 if cat:
                     ctx["got"] += 1
                     ctx["cat_got"][cat] = ctx["cat_got"].get(cat, 0) + 1
@@ -870,14 +1016,16 @@ def run():
     brands = BRANDS[: int(os.environ.get("C2C_BRANDS", len(BRANDS)))]
     downloaded = load_state()
     rejects = load_rejects()
+    hashes = load_hashes() if DUP_ENABLE else None
     res_state = {"res": None}   # 유효 이미지 해상도 (첫 성공 시 확정)
     today = datetime.now().strftime("%Y-%m-%d")
 
     log(f"=== 수집 시작 (브랜드 {len(brands)}개 × {DAILY_LIMIT}개, "
         f"이미지 {IMAGE_MIN}~{IMAGE_MAX}장, 저장: {BASE_DIR}, "
-        f"기존 수집 {len(downloaded)}건, 거부 캐시 {len(rejects)}건) ===")
+        f"기존 수집 {len(downloaded)}건, 거부 캐시 {len(rejects)}건, "
+        f"사진 지문 {len(hashes or {})}개) ===")
 
-    state = {"downloaded": downloaded, "rejects": rejects,
+    state = {"downloaded": downloaded, "rejects": rejects, "hashes": hashes,
              "res_state": res_state, "today": today}
     total = 0
     for brand, allowed_cats in brands:
@@ -885,11 +1033,13 @@ def run():
         total += collect_brand(brand, allowed_cats, ctx, state)
         save_state(downloaded)
         save_rejects(rejects)
+        if hashes is not None:
+            save_hashes(hashes)
         if ctx["stop"]:
             break
 
     log(f"=== 수집 종료: 오늘 총 {total}건 (누적 {len(downloaded)}건, "
-        f"거부 캐시 {len(rejects)}건) ===")
+        f"거부 캐시 {len(rejects)}건, 사진 지문 {len(hashes or {})}개) ===")
 
 
 if __name__ == "__main__":
